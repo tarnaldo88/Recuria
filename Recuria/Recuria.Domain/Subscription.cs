@@ -35,6 +35,15 @@ namespace Recuria.Domain
             PeriodEnd = DateTime.UtcNow.AddDays(14);
         }
 
+        public void Activate(DateTime now)
+        {
+            Status = SubscriptionStatus.Active;
+            PeriodStart = now;
+            PeriodEnd = now.AddMonths(1);
+        }
 
+        public void Cancel() { Status = SubscriptionStatus.Canceled; }
+
+        public void MarkPastDue() {Status = SubscriptionStatus.PastDue; }
     }
 }

@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Recuria.Application\Recuria.Application.csproj" />
+    <ProjectReference Include="..\Recuria.Domain\Recuria.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
