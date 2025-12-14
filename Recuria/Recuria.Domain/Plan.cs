@@ -18,5 +18,12 @@ namespace Recuria.Domain
         public PlanType Type { get; private set; }
         public int MaxUsers { get; private set; }
         public decimal MonthlyPrice { get; private set; }
+
+        public Plan(PlanType type, int maxUsers, decimal monthly)
+        {
+            Type = type;
+            MaxUsers = maxUsers;
+            MonthlyPrice = monthly;
+        }
     }
 }
