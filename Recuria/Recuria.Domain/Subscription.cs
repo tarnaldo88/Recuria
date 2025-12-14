@@ -26,9 +26,9 @@ namespace Recuria.Domain
         public DateTime PeriodStart { get; private set; }
         public DateTime PeriodEnd { get; private set; }
 
-        public Subscription(Guid id, PlanType plan)
+        public Subscription(Guid orgId, PlanType plan)
         {
-            OrganizationId = id;
+            OrganizationId = orgId;
             Plan_ = plan;
             Status = SubscriptionStatus.Trialing;
             PeriodStart = DateTime.UtcNow;
