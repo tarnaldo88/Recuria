@@ -17,5 +17,25 @@ namespace Recuria.Application
             org.AssignSubscription(subscription);
             return subscription;
         }
+
+        public void UpgradePlan(Subscription subscription, PlanType newPlan)
+        {
+            if(subscription.Status == SubscriptionStatus.Canceled)
+            {
+                throw new InvalidOperationException("Cannot upgrade a canceled subscription");
+            }
+
+            subscription.Plan_ = newPlan;
+        }
+
+        public void CancelSubscription(Subscription subscription)
+        {
+            subscription.Cancel();
+        }
+
+        public Invoice GenerateInvoice(Subscription subscription, decimal amount)
+        {
+            return new Invoice(subscription.Id, amount);
+        }
     }
 }
