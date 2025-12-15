@@ -9,7 +9,7 @@ namespace Recuria.Application
 {
     public class OrganizationService : IOrganizationService
     {
-        Organization CreateOrganization(string name, User owner)
+        public Organization CreateOrganization(string name, User owner)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Organization name is required.");
@@ -19,7 +19,7 @@ namespace Recuria.Application
             return newOrg;
         }
 
-        void AddUser(Organization organization, User user, UserRole role)
+        public void AddUser(Organization organization, User user, UserRole role)
         {
             if (organization.Users.Any(u => u.Id == user.Id))
                 throw new InvalidOperationException("User already exists in organization.");
@@ -28,7 +28,7 @@ namespace Recuria.Application
             organization.Users.Add(user);
         }
 
-        void ChangeUserRole(Organization organization, Guid userId, UserRole newRole)
+        public void ChangeUserRole(Organization organization, Guid userId, UserRole newRole)
         {
             var user = organization.Users.FirstOrDefault(u => u.Id == userId) ?? throw new InvalidOperationException("User not found.");
             if(user.Role == UserRole.Owner)
@@ -39,7 +39,7 @@ namespace Recuria.Application
 
         }
 
-        void RemoveUser(Organization organization, Guid userId)
+        public void RemoveUser(Organization organization, Guid userId)
         {
             var user = organization.Users.FirstOrDefault(u => u.Id == userId) ?? throw new InvalidOperationException("User not found.");
             if (user.Role == UserRole.Owner)
