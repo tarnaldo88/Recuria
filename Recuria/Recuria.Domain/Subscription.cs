@@ -45,5 +45,11 @@ namespace Recuria.Domain
         public void Cancel() { Status = SubscriptionStatus.Canceled; }
 
         public void MarkPastDue() {Status = SubscriptionStatus.PastDue; }
+
+        public void AdvancePeriod(DateTime now)
+        {
+            PeriodStart = now;
+            PeriodEnd = now.AddMonths(1);
+        }
     }
 }
