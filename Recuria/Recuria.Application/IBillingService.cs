@@ -9,6 +9,14 @@ namespace Recuria.Application
 {
     public interface IBillingService
     {
-       
+        Invoice RunBillingCycle(
+             Subscription subscription,
+             DateTime now
+         );
+
+        void HandleOverdueSubscription(
+            Subscription subscription,
+            DateTime now
+        );
     }
 }
