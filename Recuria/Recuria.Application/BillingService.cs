@@ -11,14 +11,35 @@ namespace Recuria.Application
     {
         private static readonly int GracePeriodDays = 7;
 
-        Invoice RunBillingCycle(Subscription subscription, DateTime now)
+        public Invoice RunBillingCycle(Subscription subscription, DateTime now)
         {
-            var inv = new Invoice(subscription.Id, subscription.Plan_.);
+            if (subscription.Status != SubscriptionStatus.Active)
+                throw new InvalidOperationException("Billing can only run on active subscriptions.");
+
+            if(now < subscription.PeriodEnd)
+            {
+                throw new InvalidOperationException("Billing period has not ended.");
+            }
+
+            var amount = GetAmountForPlan(subscription.Plan_);
+
+            var inv = new Invoice(subscription.Id, amount);
+
+            return inv;
         }
 
-        void HandleOverdueSubscription(Subscription subscription, DateTime now)
+        public void HandleOverdueSubscription(Subscription subscription, DateTime now)
         {
 
         }
+        private decimal GetAmountForPlan(PlanType plan)
+        {
+            return plan switch
+            {
+                PlanType.Free => 0m,
+                PlanType.Pro => 29m,
+                PlanType.Enterprise => 99m,
+                _ => throw new ArgumentOutOfRangeException(nameof(plan))
+            };
     }
 }
