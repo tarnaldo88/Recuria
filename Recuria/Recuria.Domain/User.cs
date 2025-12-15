@@ -27,6 +27,18 @@ namespace Recuria.Domain
             Organization = org;
             OrganizationId = org.Id;
         }
+
+        public void AssignToOrganization(Organization organization, UserRole role)
+        {
+            Organization = organization;
+            OrganizationId = organization.Id;
+            Role = role;
+        }
+
+        public void ChangeRole(UserRole newRole)
+        {
+            Role = newRole;
+        }
     }
 
     public enum UserRole {

@@ -11,13 +11,20 @@ namespace Recuria.Application
     {
         Organization CreateOrganization(string name, User owner)
         {
-            Organization newOrg = new Organization(name);
-            newOrg.Users.Add(owner);
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Organization name is required.");
+
+            Organization newOrg = new(name);            
+            AddUser(newOrg, owner, UserRole.Owner);
             return newOrg;
         }
 
         void AddUser(Organization organization, User user, UserRole role)
         {
+            if (organization.Users.Any(u => u.Id == user.Id))
+                throw new InvalidOperationException("User already exists in organization.");
+
+            user.AssignToOrganization(organization, role);
             var newUser = new User(user.Email, user.Name, user.Role, organization);
             organization.Users.Add(newUser);
         }
@@ -27,6 +34,9 @@ namespace Recuria.Application
 
         }
 
-        void RemoveUser(Organization organization, Guid userId);
+        void RemoveUser(Organization organization, Guid userId)
+        {
+
+        }
     }
 }
