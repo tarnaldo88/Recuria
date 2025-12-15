@@ -25,18 +25,29 @@ namespace Recuria.Application
                 throw new InvalidOperationException("User already exists in organization.");
 
             user.AssignToOrganization(organization, role);
-            var newUser = new User(user.Email, user.Name, user.Role, organization);
-            organization.Users.Add(newUser);
+            organization.Users.Add(user);
         }
 
-        void ChangeUserRole(Organization organization, Guid userId, UserRole role)
+        void ChangeUserRole(Organization organization, Guid userId, UserRole newRole)
         {
+            var user = organization.Users.FirstOrDefault(u => u.Id == userId) ?? throw new InvalidOperationException("User not found.");
+            if(user.Role == UserRole.Owner)
+            {
+                throw new InvalidOperationException("Cannot change owner role.");
+            }
+            user.ChangeRole(newRole);
 
         }
 
         void RemoveUser(Organization organization, Guid userId)
         {
+            var user = organization.Users.FirstOrDefault(u => u.Id == userId) ?? throw new InvalidOperationException("User not found.");
+            if (user.Role == UserRole.Owner)
+            {
+                throw new InvalidOperationException("Cannot change owner role.");
+            }
 
+            organization.Users.Remove(user);
         }
     }
 }
