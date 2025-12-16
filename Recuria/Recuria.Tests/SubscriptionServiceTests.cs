@@ -78,6 +78,28 @@ namespace Recuria.Tests
             sub.Status.Should().Be(SubscriptionStatus.Canceled);
         }
 
+        [Fact]
+        public void GenerateInvoice_Should_Throw_ForInactiveSubscription()
+        {
+            var sub = _service.CreateTrial(_org);
 
+            Action act = () => _service.GenerateInvoice(sub, 100);
+
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("Cannot generate invoice for inactive subscription.");
+        }
+
+        [Fact]
+        public void GenerateInvoice_Should_CreateInvoice_ForActiveSubscription()
+        {
+            var sub = _service.CreateTrial(_org);
+            sub.Activate();
+
+            var invoice = _service.GenerateInvoice(sub, 100);
+
+            invoice.Should().NotBeNull();
+            invoice.Amount.Should().Be(100);
+            invoice.SubscriptionId.Should().Be(sub.Id);
+        }
     }
 }
