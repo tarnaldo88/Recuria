@@ -117,5 +117,17 @@ namespace Recuria.Tests
             org.Users.Should().HaveCount(1);
             org.Users.Should().NotContain(user);
         }
+
+        [Fact]
+        public void RemoveUser_Should_Throw_WhenRemovingOwner()
+        {
+            var owner = CreateUser("owner@test.com");
+            var org = _service.CreateOrganization("Test Org", owner);
+
+            Action act = () => _service.RemoveUser(org, owner.Id);
+
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("Cannot remove owner.");
+        }
     }
 }
