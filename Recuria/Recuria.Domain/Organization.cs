@@ -6,32 +6,41 @@ using System.Threading.Tasks;
 
 namespace Recuria.Domain
 {
-    //internal class Organization
-    //{
-    //}
-
     public class Organization
     {
-        public Guid Id { get; set; }
+        public Guid Id { get; private set; }   // make setter private
         public string Name { get; private set; } = null!;
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+
         public List<User> Users { get; private set; } = new();
-        public ICollection<Subscription> Subscriptions { get; private set; } = new List<Subscription>();
+        public ICollection<Subscription> Subscriptions { get; private set; }
+            = new List<Subscription>();
 
-        //public Subscription? CurrentSubscription { get; private set; }
+        protected Organization() { } // EF Core
 
-        public Organization(string name) {
+        public Organization(string name)
+        {
+            Id = Guid.NewGuid();
             Name = name;
         }
 
         public void AssignSubscription(Subscription subscription)
         {
             if (subscription.Organization != this)
-                throw new InvalidOperationException("Subscription belongs to a different organization.");
+                throw new InvalidOperationException(
+                    "Subscription belongs to a different organization.");
 
             Subscriptions.Add(subscription);
         }
 
+        public Subscription? GetCurrentSubscription()
+        {
+            return Subscriptions
+                .Where(s => s.Status == SubscriptionStatus.Active)
+                .OrderByDescending(s => s.PeriodStart)
+                .FirstOrDefault();
+        }
     }
+
 
 }

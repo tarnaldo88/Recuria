@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Recuria.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddInvoicePrecision : Migration
+    public partial class FixSubscriptionRelationship : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,49 +32,17 @@ namespace Recuria.Infrastructure.Migrations
                 table: "Subscriptions",
                 newName: "Plan");
 
-            migrationBuilder.AddColumn<Guid>(
-                name: "OrganizationId1",
-                table: "Subscriptions",
-                type: "uniqueidentifier",
-                nullable: true);
-
             migrationBuilder.CreateIndex(
                 name: "IX_Subscriptions_OrganizationId",
                 table: "Subscriptions",
                 column: "OrganizationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Subscriptions_OrganizationId1",
-                table: "Subscriptions",
-                column: "OrganizationId1",
-                unique: true,
-                filter: "[OrganizationId1] IS NOT NULL");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Subscriptions_Organizations_OrganizationId1",
-                table: "Subscriptions",
-                column: "OrganizationId1",
-                principalTable: "Organizations",
-                principalColumn: "Id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Subscriptions_Organizations_OrganizationId1",
-                table: "Subscriptions");
-
             migrationBuilder.DropIndex(
                 name: "IX_Subscriptions_OrganizationId",
-                table: "Subscriptions");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Subscriptions_OrganizationId1",
-                table: "Subscriptions");
-
-            migrationBuilder.DropColumn(
-                name: "OrganizationId1",
                 table: "Subscriptions");
 
             migrationBuilder.RenameColumn(

@@ -15,11 +15,12 @@ namespace Recuria.Infrastructure.Persistence.Configurations
         {
             builder.HasKey(o => o.Id);
 
-            builder.Property(o => o.Name).IsRequired().HasMaxLength(200);
+            builder.Property(o => o.Name)
+                .IsRequired()
+                .HasMaxLength(200);
 
-            builder.HasMany(o => o.Users).WithOne(u => u.Organization!).HasForeignKey(u => u.OrganizationId);
-
-            builder.HasOne(o => o.CurrentSubscription).WithOne().HasForeignKey<Subscription>(s => s.OrganizationId);
+            builder.Property(o => o.CreatedAt)
+                .IsRequired();
         }
     }
 }

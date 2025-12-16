@@ -76,9 +76,6 @@ namespace Recuria.Infrastructure.Migrations
                     b.Property<Guid>("OrganizationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("OrganizationId1")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("PeriodEnd")
                         .HasColumnType("datetime2");
 
@@ -94,10 +91,6 @@ namespace Recuria.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("OrganizationId");
-
-                    b.HasIndex("OrganizationId1")
-                        .IsUnique()
-                        .HasFilter("[OrganizationId1] IS NOT NULL");
 
                     b.ToTable("Subscriptions");
                 });
@@ -148,10 +141,6 @@ namespace Recuria.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Recuria.Domain.Organization", null)
-                        .WithOne("CurrentSubscription")
-                        .HasForeignKey("Recuria.Domain.Subscription", "OrganizationId1");
-
                     b.Navigation("Organization");
                 });
 
@@ -168,8 +157,6 @@ namespace Recuria.Infrastructure.Migrations
 
             modelBuilder.Entity("Recuria.Domain.Organization", b =>
                 {
-                    b.Navigation("CurrentSubscription");
-
                     b.Navigation("Subscriptions");
 
                     b.Navigation("Users");
