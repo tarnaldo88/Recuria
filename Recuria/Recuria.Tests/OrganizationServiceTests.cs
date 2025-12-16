@@ -76,5 +76,19 @@ namespace Recuria.Tests
             act.Should().Throw<InvalidOperationException>()
                 .WithMessage("User already exists in organization.");
         }
+
+        [Fact]
+        public void ChangeUserRole_Should_UpdateRole_WhenNotOwner()
+        {
+            var owner = CreateUser("owner@test.com");
+            var org = _service.CreateOrganization("Test Org", owner);
+            var user = CreateUser("member@test.com");
+
+            _service.AddUser(org, user, UserRole.Member);
+
+            _service.ChangeUserRole(org, user.Id, UserRole.Admin);
+
+            user.Role.Should().Be(UserRole.Admin);
+        }
     }
 }
