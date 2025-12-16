@@ -17,12 +17,20 @@ namespace Recuria.Domain
 
         // Reference to organization
         public Guid OrganizationId { get; private set; }
-        public Organization Organization { get; private set; } = null!;
+        public Organization? Organization { get; private set; } = null!;
 
         public User(string email, string name)
         {
             Email = email;
             Name = name;
+        }
+
+        public User(string email, string name, UserRole role, Organization? org)
+        {
+            Email = email;
+            Name = name;
+            Role = role;
+            Organization = org;
         }
 
         private User() { } //For EF Core
