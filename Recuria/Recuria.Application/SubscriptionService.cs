@@ -12,8 +12,14 @@ namespace Recuria.Application
     {
         public Subscription CreateTrial(Organization org)
         {
-            var now = DateTime.UtcNow;
+            // Ensure only one active subscription at a time
+            var current = org.GetCurrentSubscription();
+            if (current != null && current.Status == SubscriptionStatus.Active)
+            {
+                throw new InvalidOperationException("Organization already has an active subscription.");
+            }
 
+            var now = DateTime.UtcNow;
             var subscription = new Subscription(
                 organization: org,
                 plan: PlanType.Free,
@@ -22,18 +28,12 @@ namespace Recuria.Application
             );
 
             org.AssignSubscription(subscription);
-
             return subscription;
         }
 
         public void UpgradePlan(Subscription subscription, PlanType newPlan)
         {
-            if(subscription.Status == SubscriptionStatus.Canceled)
-            {
-                throw new InvalidOperationException("Cannot upgrade a canceled subscription");
-            }
-
-            subscription.Plan = newPlan;
+            subscription.UpgradePlan(newPlan);
         }
 
         public void CancelSubscription(Subscription subscription)
@@ -43,6 +43,9 @@ namespace Recuria.Application
 
         public Invoice GenerateInvoice(Subscription subscription, decimal amount)
         {
+            if (subscription.Status != SubscriptionStatus.Active)
+                throw new InvalidOperationException("Cannot generate invoice for inactive subscription.");
+
             return new Invoice(subscription.Id, amount);
         }
     }
