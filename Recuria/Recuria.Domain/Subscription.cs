@@ -35,6 +35,8 @@ namespace Recuria.Domain
             PeriodEnd = DateTime.UtcNow.AddDays(14);
         }
 
+        private Subscription() {} //EF Core
+
         public void Activate(DateTime now)
         {
             Status = SubscriptionStatus.Active;
