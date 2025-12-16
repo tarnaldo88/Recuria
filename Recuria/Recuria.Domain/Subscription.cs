@@ -11,7 +11,8 @@ namespace Recuria.Domain
         Trialing,
         Active,
         PastDue,
-        Canceled
+        Canceled,
+        Expired
     }
 
 
@@ -55,7 +56,37 @@ namespace Recuria.Domain
             Status = SubscriptionStatus.Active;
         }
 
-        public void Cancel() { Status = SubscriptionStatus.Canceled; }
+        public void Activate()
+        {
+            if (Status != SubscriptionStatus.Trial)
+                throw new InvalidOperationException("Only trial subscriptions can be activated.");
+
+            Status = SubscriptionStatus.Active;
+        }
+
+        public void Cancel()
+        {
+            if (Status != SubscriptionStatus.Active)
+                throw new InvalidOperationException("Only active subscriptions can be canceled.");
+
+            Status = SubscriptionStatus.Canceled;
+        }
+
+        public void Expire()
+        {
+            if (Status != SubscriptionStatus.Active)
+                throw new InvalidOperationException("Only active subscriptions can expire.");
+
+            Status = SubscriptionStatus.Expired;
+        }
+
+        public void UpgradePlan(PlanType newPlan)
+        {
+            if (Status == SubscriptionStatus.Canceled || Status == SubscriptionStatus.Expired)
+                throw new InvalidOperationException("Cannot upgrade a canceled or expired subscription.");
+
+            Plan = newPlan;
+        }
 
         public void MarkPastDue() {Status = SubscriptionStatus.PastDue; }
 
