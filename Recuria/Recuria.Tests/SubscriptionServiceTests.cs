@@ -32,5 +32,17 @@ namespace Recuria.Tests
             subscription.Status.Should().Be(SubscriptionStatus.Trial);
             _org.Subscriptions.Should().Contain(subscription);
         }
+
+        [Fact]
+        public void CreateTrial_Should_Throw_WhenActiveSubsriptionExits()
+        {
+            var activeSub = new Subscription(_org, PlanType.Pro, DateTime.UtcNow, DateTime.UtcNow);
+            activeSub.Activate();
+            _org.AssignSubscription(activeSub);
+
+            Action act = () => _service.CreateTrial(_org);
+
+            act.Should().Throw<InvalidOperationException>().WithMessage("Organization already has an active subscription.");
+        }
     }
 }
