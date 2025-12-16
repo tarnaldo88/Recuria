@@ -30,8 +30,13 @@ namespace Recuria.Tests
         public void CreateOrganization_Should_CreateOrg_And_AddOwner()
         {
             var owner = CreateUser("owner@test.com");
-
             var org = _service.CreateOrganization("Test Org", owner);
+
+            org.Should().NotBeNull();
+            org.Name.Should().Be("Test Org");
+            org.Users.Should().HaveCount(1);
+            org.Users[0].Role.Should().Be(UserRole.Owner);
+            org.Users[0].Organization.Should().Be(org);
         }
     }
 }
