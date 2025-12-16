@@ -16,6 +16,8 @@ namespace Recuria.Domain
         public string Name { get; private set; } = null!;
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
         public List<User> Users { get; private set; } = new();
+        public ICollection<Subscription> Subscriptions { get; private set; } = new List<Subscription>();
+
         public Subscription? CurrentSubscription { get; private set; }
 
         public Organization(string name) {

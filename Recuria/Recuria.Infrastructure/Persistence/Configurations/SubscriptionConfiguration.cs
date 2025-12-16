@@ -1,0 +1,32 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Recuria.Domain;
+
+namespace Recuria.Infrastructure.Persistence.Configurations
+{
+    public class SubscriptionConfiguration
+        : IEntityTypeConfiguration<Subscription>
+    {
+        public void Configure(EntityTypeBuilder<Subscription> builder)
+        {
+            builder.HasKey(s => s.Id);
+
+            builder
+                .HasOne(s => s.Organization)
+                .WithMany(o => o.Subscriptions)
+                .HasForeignKey(s => s.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Property(s => s.Plan)
+                .IsRequired();
+
+            builder.Property(s => s.Status)
+                .IsRequired();
+        }
+    }
+}
