@@ -18,16 +18,16 @@ namespace Recuria.Domain
         public List<User> Users { get; private set; } = new();
         public ICollection<Subscription> Subscriptions { get; private set; } = new List<Subscription>();
 
-        public Subscription? CurrentSubscription { get; private set; }
+        //public Subscription? CurrentSubscription { get; private set; }
 
         public Organization(string name) {
             Name = name;
         }
 
-        public void AssignSubscription(Subscription subscription)
-        {
-            CurrentSubscription = subscription;
-        }
+        //public void AssignSubscription(Subscription subscription)
+        //{
+        //    CurrentSubscription = subscription;
+        //}
 
     }
 

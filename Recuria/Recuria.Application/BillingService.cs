@@ -21,7 +21,7 @@ namespace Recuria.Application
                 throw new InvalidOperationException("Billing period has not ended.");
             }
 
-            var amount = GetAmountForPlan(subscription.Plan_);
+            var amount = GetAmountForPlan(subscription.Plan);
 
             var inv = new Invoice(subscription.Id, amount);
 

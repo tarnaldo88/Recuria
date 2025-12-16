@@ -26,16 +26,22 @@ namespace Recuria.Domain
         public DateTime PeriodStart { get; private set; }
         public DateTime PeriodEnd { get; private set; }
 
-        public Subscription(Guid orgId, PlanType plan)
+        public Subscription(
+            Organization organization,
+            PlanType plan,
+            DateTime periodStart,
+            DateTime periodEnd)
         {
-            OrganizationId = orgId;
+            Id = Guid.NewGuid();
+            Organization = organization;
+            OrganizationId = organization.Id;
             Plan = plan;
-            Status = SubscriptionStatus.Trialing;
-            PeriodStart = DateTime.UtcNow;
-            PeriodEnd = DateTime.UtcNow.AddDays(14);
+            Status = SubscriptionStatus.Active;
+            PeriodStart = periodStart;
+            PeriodEnd = periodEnd;
         }
 
-        private Subscription() {} //EF Core
+        protected Subscription() { } //EF Core
 
         public void Activate(DateTime now)
         {

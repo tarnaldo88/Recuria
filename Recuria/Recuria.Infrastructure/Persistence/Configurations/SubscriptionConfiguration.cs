@@ -22,11 +22,10 @@ namespace Recuria.Infrastructure.Persistence.Configurations
                 .HasForeignKey(s => s.OrganizationId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Property(s => s.Plan)
-                .IsRequired();
-
-            builder.Property(s => s.Status)
-                .IsRequired();
+            builder.Property(s => s.Plan).IsRequired();
+            builder.Property(s => s.Status).IsRequired();
+            builder.Property(s => s.PeriodStart).IsRequired();
+            builder.Property(s => s.PeriodEnd).IsRequired();
         }
     }
 }

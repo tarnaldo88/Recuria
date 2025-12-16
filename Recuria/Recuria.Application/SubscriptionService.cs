@@ -25,7 +25,7 @@ namespace Recuria.Application
                 throw new InvalidOperationException("Cannot upgrade a canceled subscription");
             }
 
-            subscription.Plan_ = newPlan;
+            subscription.Plan = newPlan;
         }
 
         public void CancelSubscription(Subscription subscription)
