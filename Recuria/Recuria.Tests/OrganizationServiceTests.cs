@@ -42,13 +42,27 @@ namespace Recuria.Tests
         [Fact]
         public void AddUser_Should_AddUserToOrganization()
         {
+            var owner = CreateUser("owner@test.com");
+            var org = _service.CreateOrganization("Test Org", owner);
+            var user = CreateUser("member@test.com");
+
+            _service.AddUser(org, user, UserRole.Member);
+
+            org.Users.Should().HaveCount(2);
+            org.Users.Should().Contain(user);
+            user.Organization.Should().Be(org);
+            user.Role.Should().Be(UserRole.Member);
+
+        }
+
+        [Fact]
+        public void CreateOrganization_Should_Throw_WhenNameIsEmpty()
+        {
             var owner = CreateUser();
 
             Action act = () => _service.CreateOrganization("", owner);
 
             act.Should().Throw<ArgumentException>().WithMessage("Organization name is required.");
         }
-
-
     }
 }
