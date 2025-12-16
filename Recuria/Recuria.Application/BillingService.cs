@@ -30,9 +30,16 @@ namespace Recuria.Application
 
         public void HandleOverdueSubscription(Subscription subscription, DateTime now)
         {
-            if(now > subscription.PeriodEnd + GracePeriodDays)
+            if(subscription.Status != SubscriptionStatus.PastDue)
             {
+                return;
+            }
 
+            var overDueDays = (now - subscription.PeriodEnd).Days;
+
+            if(overDueDays > GracePeriodDays)
+            {
+                subscription.Cancel();
             }
 
         }
