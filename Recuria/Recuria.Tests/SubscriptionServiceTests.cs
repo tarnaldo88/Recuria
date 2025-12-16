@@ -55,5 +55,17 @@ namespace Recuria.Tests
 
             sub.Plan.Should().Be(PlanType.Enterprise);
         }
+
+        [Fact]
+        public void UpgradePlan_SHould_Throw_WhenCanceled()
+        {
+            var sub = _service.CreateTrial(_org);
+            sub.Activate();
+            sub.Cancel();
+
+            Action act = () => _service.UpgradePlan(sub, PlanType.Enterprise);
+
+            act.Should().Throw<InvalidOperationException>().WithMessage("Cannot upgrade a canceled or expired subscription.");
+        }
     }
 }
