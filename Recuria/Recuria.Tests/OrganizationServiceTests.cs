@@ -64,5 +64,17 @@ namespace Recuria.Tests
 
             act.Should().Throw<ArgumentException>().WithMessage("Organization name is required.");
         }
+
+        [Fact]
+        public void AddUser_Should_Throw_WhenUserAlreadyExists()
+        {
+            var owner = CreateUser("owner@test.com");
+            var org = _service.CreateOrganization("Test Org", owner);
+
+            Action act = () => _service.AddUser(org, owner, UserRole.Admin);
+
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("User already exists in organization.");
+        }
     }
 }
