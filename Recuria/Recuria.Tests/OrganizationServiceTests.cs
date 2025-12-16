@@ -102,5 +102,20 @@ namespace Recuria.Tests
             act.Should().Throw<InvalidOperationException>()
                 .WithMessage("Cannot change owner role.");
         }
+
+        [Fact]
+        public void RemoveUser_Should_RemoveUser_WhenNotOwner()
+        {
+            var owner = CreateUser("owner@test.com");
+            var org = _service.CreateOrganization("Test Org", owner);
+            var user = CreateUser("member@test.com");
+
+            _service.AddUser(org, user, UserRole.Member);
+
+            _service.RemoveUser(org, user.Id);
+
+            org.Users.Should().HaveCount(1);
+            org.Users.Should().NotContain(user);
+        }
     }
 }
