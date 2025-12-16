@@ -19,16 +19,13 @@ namespace Recuria.Domain
         public Guid OrganizationId { get; private set; }
         public Organization Organization { get; private set; } = null!;
 
-        public User(string email, string name, UserRole role, Organization org)
+        public User(string email, string name)
         {
             Email = email;
             Name = name;
-            Role = role;
-            Organization = org;
-            OrganizationId = org.Id;
         }
 
-        private User() { }
+        private User() { } //For EF Core
 
         public void AssignToOrganization(Organization organization, UserRole role)
         {

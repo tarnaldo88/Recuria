@@ -11,14 +11,17 @@ namespace Recuria.Infrastructure.Persistence.Configurations
 {
     public class UserConfiguration : IEntityTypeConfiguration<User>
     {
-        builder.HasKey(u => u.Id);
+        public void Configure(EntityTypeBuilder<User> builder)
+        {
+            builder.HasKey(u => u.Id);
 
             builder.Property(u => u.Role)
                 .IsRequired();
 
-        builder.HasOne(u => u.Organization)
+            builder.HasOne(u => u.Organization)
                 .WithMany(o => o.Users)
                 .HasForeignKey(u => u.OrganizationId)
                 .OnDelete(DeleteBehavior.Cascade);
+        }
     }
 }
