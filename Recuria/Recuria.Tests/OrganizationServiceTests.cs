@@ -90,5 +90,17 @@ namespace Recuria.Tests
 
             user.Role.Should().Be(UserRole.Admin);
         }
+
+        [Fact]
+        public void ChangeUserRole_Should_Throw_WhenUserIsOwner()
+        {
+            var owner = CreateUser("owner@test.com");
+            var org = _service.CreateOrganization("Test Org", owner);
+
+            Action act = () => _service.ChangeUserRole(org, owner.Id, UserRole.Admin);
+
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("Cannot change owner role.");
+        }
     }
 }
