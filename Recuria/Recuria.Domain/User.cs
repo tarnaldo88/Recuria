@@ -28,6 +28,8 @@ namespace Recuria.Domain
             OrganizationId = org.Id;
         }
 
+        private User() { }
+
         public void AssignToOrganization(Organization organization, UserRole role)
         {
             Organization = organization;

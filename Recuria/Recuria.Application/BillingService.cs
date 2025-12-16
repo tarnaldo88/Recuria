@@ -52,5 +52,6 @@ namespace Recuria.Application
                 PlanType.Enterprise => 99m,
                 _ => throw new ArgumentOutOfRangeException(nameof(plan))
             };
+        }
     }
 }

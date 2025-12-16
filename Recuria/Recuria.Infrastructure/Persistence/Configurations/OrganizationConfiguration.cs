@@ -17,7 +17,7 @@ namespace Recuria.Infrastructure.Persistence.Configurations
 
             builder.Property(o => o.Name).IsRequired().HasMaxLength(200);
 
-            builder.HasMany(o => o.Users).WithOne(u => u.Organization!).HasForeignKey(u => u.Organization.Id);
+            builder.HasMany(o => o.Users).WithOne(u => u.Organization!).HasForeignKey(u => u.OrganizationId);
 
             builder.HasOne(o => o.CurrentSubscription).WithOne().HasForeignKey<Subscription>(s => s.OrganizationId);
         }
