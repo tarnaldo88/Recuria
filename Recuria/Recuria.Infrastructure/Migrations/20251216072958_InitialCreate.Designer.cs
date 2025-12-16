@@ -12,7 +12,7 @@ using Recuria.Infrastructure.Persistence;
 namespace Recuria.Infrastructure.Migrations
 {
     [DbContext(typeof(RecuriaDbContext))]
-    [Migration("20251216045641_InitialCreate")]
+    [Migration("20251216072958_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -32,6 +32,7 @@ namespace Recuria.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("InvoiceDate")
@@ -78,16 +79,13 @@ namespace Recuria.Infrastructure.Migrations
                     b.Property<Guid>("OrganizationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("Organization_Id")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("PeriodEnd")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("PeriodStart")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Plan_")
+                    b.Property<int>("Plan")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
@@ -95,10 +93,7 @@ namespace Recuria.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrganizationId")
-                        .IsUnique();
-
-                    b.HasIndex("Organization_Id");
+                    b.HasIndex("OrganizationId");
 
                     b.ToTable("Subscriptions");
                 });
@@ -143,19 +138,13 @@ namespace Recuria.Infrastructure.Migrations
 
             modelBuilder.Entity("Recuria.Domain.Subscription", b =>
                 {
-                    b.HasOne("Recuria.Domain.Organization", null)
-                        .WithOne("CurrentSubscription")
-                        .HasForeignKey("Recuria.Domain.Subscription", "OrganizationId")
+                    b.HasOne("Recuria.Domain.Organization", "Organization")
+                        .WithMany("Subscriptions")
+                        .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Recuria.Domain.Organization", "Organization_")
-                        .WithMany()
-                        .HasForeignKey("Organization_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Organization_");
+                    b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("Recuria.Domain.User", b =>
@@ -171,7 +160,7 @@ namespace Recuria.Infrastructure.Migrations
 
             modelBuilder.Entity("Recuria.Domain.Organization", b =>
                 {
-                    b.Navigation("CurrentSubscription");
+                    b.Navigation("Subscriptions");
 
                     b.Navigation("Users");
                 });

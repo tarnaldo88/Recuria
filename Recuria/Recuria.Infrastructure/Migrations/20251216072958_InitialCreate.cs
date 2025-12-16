@@ -30,8 +30,7 @@ namespace Recuria.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     OrganizationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Organization_Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Plan_ = table.Column<int>(type: "int", nullable: false),
+                    Plan = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     PeriodStart = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PeriodEnd = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -42,12 +41,6 @@ namespace Recuria.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Subscriptions_Organizations_OrganizationId",
                         column: x => x.OrganizationId,
-                        principalTable: "Organizations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Subscriptions_Organizations_Organization_Id",
-                        column: x => x.Organization_Id,
                         principalTable: "Organizations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -81,7 +74,7 @@ namespace Recuria.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SubscriptionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     InvoiceDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Paid = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -101,15 +94,9 @@ namespace Recuria.Infrastructure.Migrations
                 column: "SubscriptionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Subscriptions_Organization_Id",
-                table: "Subscriptions",
-                column: "Organization_Id");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Subscriptions_OrganizationId",
                 table: "Subscriptions",
-                column: "OrganizationId",
-                unique: true);
+                column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_OrganizationId",
