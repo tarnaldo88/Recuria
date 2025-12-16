@@ -67,5 +67,17 @@ namespace Recuria.Tests
 
             act.Should().Throw<InvalidOperationException>().WithMessage("Cannot upgrade a canceled or expired subscription.");
         }
+
+        [Fact]
+        public void CancelSubscription_Should_SetStatusToCanceled()
+        {
+            var sub = _service.CreateTrial(_org);
+            sub.Activate();
+
+            _service.CancelSubscription(sub);
+            sub.Status.Should().Be(SubscriptionStatus.Canceled);
+        }
+
+
     }
 }
