@@ -44,5 +44,16 @@ namespace Recuria.Tests
 
             act.Should().Throw<InvalidOperationException>().WithMessage("Organization already has an active subscription.");
         }
+
+        [Fact]
+        public void UpgradePlan_Should_ChangePlan_WhenActive()
+        {
+            var sub = _service.CreateTrial(_org);
+            sub.Activate();
+
+            _service.UpgradePlan(sub, PlanType.Enterprise);
+
+            sub.Plan.Should().Be(PlanType.Enterprise);
+        }
     }
 }
