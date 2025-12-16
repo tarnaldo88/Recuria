@@ -8,7 +8,7 @@ namespace Recuria.Domain
 {
     public enum SubscriptionStatus
     {
-        Trialing,
+        Trial,
         Active,
         PastDue,
         Canceled,

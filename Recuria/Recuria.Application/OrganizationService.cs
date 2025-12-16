@@ -13,6 +13,8 @@ namespace Recuria.Application
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Organization name is required.");
+            if (owner == null) throw new ArgumentNullException(nameof(owner));
+
 
             Organization newOrg = new(name);            
             AddUser(newOrg, owner, UserRole.Owner);
@@ -23,6 +25,8 @@ namespace Recuria.Application
         {
             if (organization.Users.Any(u => u.Id == user.Id))
                 throw new InvalidOperationException("User already exists in organization.");
+            if (organization == null) throw new ArgumentNullException(nameof(organization));
+            if (user == null) throw new ArgumentNullException(nameof(user));
 
             user.AssignToOrganization(organization, role);
             organization.Users.Add(user);
@@ -31,7 +35,10 @@ namespace Recuria.Application
         public void ChangeUserRole(Organization organization, Guid userId, UserRole newRole)
         {
             var user = organization.Users.FirstOrDefault(u => u.Id == userId) ?? throw new InvalidOperationException("User not found.");
-            if(user.Role == UserRole.Owner)
+            if (newRole == UserRole.Owner)
+                throw new InvalidOperationException("Cannot assign owner role.");
+
+            if (user.Role == UserRole.Owner)
             {
                 throw new InvalidOperationException("Cannot change owner role.");
             }
@@ -44,7 +51,7 @@ namespace Recuria.Application
             var user = organization.Users.FirstOrDefault(u => u.Id == userId) ?? throw new InvalidOperationException("User not found.");
             if (user.Role == UserRole.Owner)
             {
-                throw new InvalidOperationException("Cannot change owner role.");
+                throw new InvalidOperationException("Cannot remove owner.");
             }
 
             organization.Users.Remove(user);
