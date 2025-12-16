@@ -22,9 +22,7 @@ namespace Recuria.Infrastructure.Persistence
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfigurationsFromAssembly(
-                typeof(RecuriaDbContext).Assembly
-            );
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(RecuriaDbContext).Assembly);
         }
     }
 }

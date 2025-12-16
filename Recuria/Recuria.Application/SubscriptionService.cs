@@ -12,9 +12,17 @@ namespace Recuria.Application
     {
         public Subscription CreateTrial(Organization org)
         {
-            var subscription = new Subscription(org.Id, PlanType.Free);
-            subscription.Activate(DateTime.UtcNow);
+            var now = DateTime.UtcNow;
+
+            var subscription = new Subscription(
+                organization: org,
+                plan: PlanType.Free,
+                periodStart: now,
+                periodEnd: now.AddDays(14)
+            );
+
             org.AssignSubscription(subscription);
+
             return subscription;
         }
 

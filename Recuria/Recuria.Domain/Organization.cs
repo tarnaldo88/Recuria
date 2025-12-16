@@ -24,10 +24,13 @@ namespace Recuria.Domain
             Name = name;
         }
 
-        //public void AssignSubscription(Subscription subscription)
-        //{
-        //    CurrentSubscription = subscription;
-        //}
+        public void AssignSubscription(Subscription subscription)
+        {
+            if (subscription.Organization != this)
+                throw new InvalidOperationException("Subscription belongs to a different organization.");
+
+            Subscriptions.Add(subscription);
+        }
 
     }
 

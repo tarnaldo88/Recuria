@@ -43,11 +43,16 @@ namespace Recuria.Domain
 
         protected Subscription() { } //EF Core
 
-        public void Activate(DateTime now)
+        //public void Activate(DateTime now)
+        //{
+        //    Status = SubscriptionStatus.Active;
+        //    PeriodStart = now;
+        //    PeriodEnd = now.AddMonths(1);
+        //}
+
+        public void MarkPaid()
         {
             Status = SubscriptionStatus.Active;
-            PeriodStart = now;
-            PeriodEnd = now.AddMonths(1);
         }
 
         public void Cancel() { Status = SubscriptionStatus.Canceled; }
