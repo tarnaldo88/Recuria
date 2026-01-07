@@ -53,6 +53,10 @@ namespace Recuria.Domain
 
         public void MarkPaid()
         {
+            if(Status == SubscriptionStatus.Expired || Status == SubscriptionStatus.Canceled)
+            {
+                throw new InvalidOperationException("Subscriptions cannot be expired or cancelled to be mark paid.");
+            }
             Status = SubscriptionStatus.Active;
         }
 
@@ -74,7 +78,7 @@ namespace Recuria.Domain
 
         public void Expire()
         {
-            if (Status != SubscriptionStatus.Active)
+            if (Status != SubscriptionStatus.Active || Status != SubscriptionStatus.Trial)
                 throw new InvalidOperationException("Only active subscriptions can expire.");
 
             Status = SubscriptionStatus.Expired;
