@@ -148,5 +148,14 @@ namespace Recuria.Domain
         }
 
         public bool IsExpired(DateTime now) => now > PeriodEnd;
+
+        public void ExpireIfOverdue(DateTime now)
+        {
+            if (Status != SubscriptionStatus.Active)
+                return;
+
+            if (now > PeriodEnd)
+                Status = SubscriptionStatus.Expired;
+        }
     }
 }
