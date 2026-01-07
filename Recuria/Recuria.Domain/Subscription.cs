@@ -99,10 +99,13 @@ namespace Recuria.Domain
             Status = SubscriptionStatus.Canceled;
         }
 
-        public void Expire()
+        public void Expire(DateTime now)
         {
-            if (Status != SubscriptionStatus.Active || Status != SubscriptionStatus.Trial)
-                throw new InvalidOperationException("Only active subscriptions can expire.");
+            if (Status != SubscriptionStatus.Trial && Status != SubscriptionStatus.Active)
+                throw new InvalidOperationException("Only trial or active subscriptions can expire.");
+
+            if (now < PeriodEnd)
+                throw new InvalidOperationException("Subscription period has not ended.");
 
             Status = SubscriptionStatus.Expired;
         }
