@@ -24,8 +24,11 @@ namespace Recuria.Domain
 
         public PlanType Plan {  get; private set; }
         public SubscriptionStatus Status { get; private set; }
+
         public DateTime PeriodStart { get; private set; }
         public DateTime PeriodEnd { get; private set; }
+
+        protected Subscription() { } //EF Core
 
         public Subscription(
             Organization organization,
@@ -41,8 +44,6 @@ namespace Recuria.Domain
             PeriodStart = periodStart;
             PeriodEnd = periodEnd;
         }
-
-        protected Subscription() { } //EF Core
 
         //public void Activate(DateTime now)
         //{
@@ -93,7 +94,10 @@ namespace Recuria.Domain
 
         public void Cancel()
         {
-            if (Status != SubscriptionStatus.Active)
+            if (Status == SubscriptionStatus.Canceled)
+                return; // idempotent
+
+            if (Status != SubscriptionStatus.Active && Status != SubscriptionStatus.PastDue)
                 throw new InvalidOperationException("Only active subscriptions can be canceled.");
 
             Status = SubscriptionStatus.Canceled;
