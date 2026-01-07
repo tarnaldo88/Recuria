@@ -115,7 +115,13 @@ namespace Recuria.Domain
             Plan = newPlan;
         }
 
-        public void MarkPastDue() {Status = SubscriptionStatus.PastDue; }
+        public void MarkPastDue() 
+        {
+            if (Status != SubscriptionStatus.Active)
+                throw new InvalidOperationException("Only active subscriptions can become past due.");
+
+            Status = SubscriptionStatus.PastDue; 
+        }
 
         public void AdvancePeriod(DateTime now)
         {
