@@ -128,5 +128,7 @@ namespace Recuria.Domain
             PeriodStart = now;
             PeriodEnd = now.AddMonths(1);
         }
+
+        public bool IsExpired(DateTime now) => now > PeriodEnd;
     }
 }
