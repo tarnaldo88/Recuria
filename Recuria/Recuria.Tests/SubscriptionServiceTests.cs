@@ -72,8 +72,7 @@ namespace Recuria.Tests
         public void CancelSubscription_Should_SetStatusToCanceled()
         {
             var sub = _service.CreateTrial(_org);
-            DateTime now = DateTime.UtcNow;
-            sub.Activate(now);
+            _service.ActivateSubscription(sub);
 
             _service.CancelSubscription(sub);
             sub.Status.Should().Be(SubscriptionStatus.Canceled);
@@ -94,7 +93,7 @@ namespace Recuria.Tests
         public void GenerateInvoice_Should_CreateInvoice_ForActiveSubscription()
         {
             var sub = _service.CreateTrial(_org);
-            sub.Activate();
+            _service.ActivateSubscription(sub);
 
             var invoice = _service.GenerateInvoice(sub, 100);
 
