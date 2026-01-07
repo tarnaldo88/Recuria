@@ -61,11 +61,6 @@ namespace Recuria.Domain
             if (Status != SubscriptionStatus.Trial)
                 throw new InvalidOperationException("Only trial subscriptions can be activated.");
 
-            if(Status == SubscriptionStatus.Active)
-            {
-                throw new InvalidOperationException("Subscription already Active.");
-            }
-
             Status = SubscriptionStatus.Active;
         }
 
