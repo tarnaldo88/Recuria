@@ -77,6 +77,18 @@ namespace Recuria.Domain
                 throw new InvalidOperationException("Only trial subscriptions can be activated.");
 
             Status = SubscriptionStatus.Active;
+            PeriodEnd.AddMonths(1);
+            PeriodStart = DateTime.Now;
+        }
+
+        public void Activate(DateTime now)
+        {
+            if (Status != SubscriptionStatus.Trial && Status != SubscriptionStatus.PastDue)
+                throw new InvalidOperationException("Only trial or past-due subscriptions can be activated.");
+
+            Status = SubscriptionStatus.Active;
+            PeriodStart = now;
+            PeriodEnd = now.AddMonths(1);
         }
 
         public void Cancel()
