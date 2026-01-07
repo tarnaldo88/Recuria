@@ -22,7 +22,7 @@ namespace Recuria.Domain
         public Guid OrganizationId { get; private set; }
         public Organization Organization { get; private set; }
 
-        public PlanType Plan {  get; set; }
+        public PlanType Plan {  get; private set; }
         public SubscriptionStatus Status { get; private set; }
         public DateTime PeriodStart { get; private set; }
         public DateTime PeriodEnd { get; private set; }
