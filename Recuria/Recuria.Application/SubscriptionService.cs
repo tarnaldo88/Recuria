@@ -44,7 +44,7 @@ namespace Recuria.Application
         public Invoice GenerateInvoice(Subscription subscription, decimal amount)
         {
             if (subscription.Status != SubscriptionStatus.Active)
-                throw new InvalidOperationException("Cannot generate invoice for inactive subscription.");
+                throw new InvalidOperationException("Invoices can only be generated for active subscriptions.");
 
             return new Invoice(subscription.Id, amount);
         }
