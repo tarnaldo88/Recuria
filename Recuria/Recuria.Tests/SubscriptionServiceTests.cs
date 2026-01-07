@@ -36,13 +36,13 @@ namespace Recuria.Tests
         [Fact]
         public void CreateTrial_Should_Throw_WhenActiveSubsriptionExits()
         {
-            var activeSub = new Subscription(_org, PlanType.Pro, DateTime.UtcNow, DateTime.UtcNow);
-            activeSub.Activate();
-            _org.AssignSubscription(activeSub);
+            var trial = _service.CreateTrial(_org);
+            _service.ActivateSubscription(trial);
 
             Action act = () => _service.CreateTrial(_org);
 
-            act.Should().Throw<InvalidOperationException>().WithMessage("Organization already has an active subscription.");
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("Organization already has an active subscription.");
         }
 
         [Fact]
@@ -72,7 +72,8 @@ namespace Recuria.Tests
         public void CancelSubscription_Should_SetStatusToCanceled()
         {
             var sub = _service.CreateTrial(_org);
-            sub.Activate();
+            DateTime now = DateTime.UtcNow;
+            sub.Activate(now);
 
             _service.CancelSubscription(sub);
             sub.Status.Should().Be(SubscriptionStatus.Canceled);
