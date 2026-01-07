@@ -1,290 +1,139 @@
-# \# Recuria
+﻿# Recuria
 
-# 
+Recuria is a **SaaS subscription and billing platform** built with **ASP.NET Core (.NET 8)**.  
+It models real-world SaaS business rules such as organization ownership, subscription lifecycles, role-based access, and invoice generation.
 
-# \## Overview
+This project is designed as a **portfolio-quality, industry-aligned system** emphasizing domain modeling, correctness, and testability rather than simple CRUD operations.
 
-# 
+---
 
-# Recuria is a \*\*multi-tenant SaaS subscription and billing platform\*\* designed for \*\*B2B software products\*\*. It provides the core billing capabilities that modern SaaS applications require, including subscription lifecycle management, recurring invoicing, plan enforcement, and role-based access.
+## Purpose
 
-# 
+Recuria simulates the backend architecture of a modern SaaS product that supports:
 
-# Recuria is intentionally scoped to reflect \*\*real-world production systems\*\*, focusing on correctness, separation of concerns, and maintainability rather than surface-level features.
+- Organization-based accounts
+- Role-based user management
+- Subscription lifecycle management (trial → active → canceled)
+- Plan upgrades
+- Invoice generation
+- Enforced business invariants
 
-# 
+The goal is to demonstrate **professional backend engineering practices** suitable for full-stack or backend roles.
 
-# This project is built as a \*\*full-stack ASP.NET Core application\*\* with a Blazor WebAssembly frontend and a cleanly layered backend architecture.
+---
 
-# 
+## Architecture
 
-# ---
+Recuria follows a Clean Architecture / DDD-inspired structure:
 
-# 
+Recuria
+│
+├── Recuria.Domain // Core domain entities & business rules
+├── Recuria.Application // Services & interfaces
+├── Recuria.Infrastructure // EF Core persistence & configurations
+├── Recuria.Api // ASP.NET Core Web API
+├── Recuria.Blazor // Blazor WebAssembly frontend (in progress)
+└── Recuria.Tests // Unit tests
 
-# \## SaaS Scenario: What Recuria Is For
 
-# 
+### Architectural Principles
 
-# Recuria represents the \*\*billing subsystem for a B2B SaaS product\*\* such as:
+- Domain logic is isolated from frameworks and persistence
+- Business rules are enforced in domain entities and services
+- EF Core is configured explicitly (no convention-only modeling)
+- Code is validated through unit tests, not just manual testing
 
-# 
+---
 
-# \* Internal analytics dashboards
+## Domain Model
 
-# \* Developer tools
+### Core Entities
 
-# \* Collaboration or productivity platforms
+- **Organization**
+  - Owns users and subscriptions
+  - Enforces ownership and subscription rules
+  - Determines the currently active subscription
 
-# \* Admin or back-office systems
+- **User**
+  - Belongs to a single organization
+  - Has a role: `Owner`, `Admin`, or `Member`
 
-# 
+- **Subscription**
+  - Belongs to an organization
+  - Tracks billing period and plan
+  - Has lifecycle states: `Trial`, `Active`, `Canceled`
 
-# \### Conceptual Example
+- **Invoice**
+  - Generated from subscriptions
+  - Represents billable charges
 
-# 
+---
 
-# A fictional company, \*\*Acme Analytics\*\*, offers a web-based analytics dashboard for teams.
+## Business Rules & Invariants
 
-# 
+Recuria enforces realistic SaaS constraints:
 
-# \* Companies sign up and create an \*\*Organization\*\*
+- An organization must always have an **Owner**
+- Owners cannot be removed or demoted
+- Users cannot belong to multiple organizations
+- Subscriptions cannot be upgraded once canceled
+- Only one active subscription per organization
+- Trial subscriptions have a fixed duration
 
-# \* Each organization chooses a \*\*subscription plan\*\*
+All rules are enforced **in code**, not just in the database.
 
-# \* Users are invited to the organization with specific roles
+---
 
-# \* Billing is handled automatically on a recurring cycle
+## Testing
 
-# 
+The project includes unit tests focused on **business behavior**, not implementation details.
 
-# Recuria is the system responsible for:
+### Test Coverage
 
-# 
+- `OrganizationService`
+  - Organization creation
+  - User management
+  - Role enforcement
 
-# \* Managing subscriptions and plans
+- `SubscriptionService`
+  - Trial creation
+  - Plan upgrades
+  - Cancellation logic
+  - Invoice generation
 
-# \* Enforcing plan limits
+### Testing Stack
 
-# \* Generating invoices
+- **xUnit**
+- **FluentAssertions**
 
-# \* Tracking subscription state transitions
+---
 
-# 
+## Technology Stack
 
-# It does \*\*not\*\* process real payments; instead, it simulates billing behavior to focus on backend correctness and architecture.
+- .NET 8
+- ASP.NET Core Web API
+- Entity Framework Core
+- SQL Server
+- Blazor WebAssembly (planned)
+- xUnit + FluentAssertions
 
-# 
+---
 
-# ---
+## Getting Started
 
-# 
+### Prerequisites
 
-# \## Core Features
+- .NET SDK 8.0+
+- SQL Server (local or Docker)
+- Visual Studio 2022+
 
-# 
+### Setup
 
-# \### Subscription Management
+```bash
+dotnet restore
+dotnet ef database update
+dotnet run --project Recuria.Api
 
-# 
+### Run Tests
 
-# \* Free trial and paid plans
-
-# \* One active subscription per organization
-
-# \* Explicit subscription states:
-
-# 
-
-# &nbsp; \* Trialing
-
-# &nbsp; \* Active
-
-# &nbsp; \* PastDue
-
-# &nbsp; \* Canceled
-
-# \* Plan upgrades and downgrades
-
-# 
-
-# \### Billing \& Invoicing
-
-# 
-
-# \* Recurring billing cycles
-
-# \* Invoice generation per period
-
-# \* Immutable invoices once finalized
-
-# \* Grace periods for overdue subscriptions
-
-# 
-
-# \### Multi-Tenancy
-
-# 
-
-# \* Organizations own subscriptions
-
-# \* Users can belong to multiple organizations
-
-# \* Role-based access per organization
-
-# 
-
-# \### Authentication \& Authorization
-
-# 
-
-# \* Secure authentication using ASP.NET Core Identity
-
-# \* JWT-based API authentication
-
-# \* Role-based authorization for protected operations
-
-# 
-
-# ---
-
-# 
-
-# \## Architecture
-
-# 
-
-# Recuria follows a \*\*Clean Architecture\*\* approach, separating business logic from infrastructure and presentation layers.
-
-# 
-
-# ```text
-
-# Recuria.sln
-
-# │
-
-# ├── Recuria.Api            // ASP.NET Core Web API
-
-# ├── Recuria.Blazor         // Blazor WebAssembly frontend
-
-# ├── Recuria.Domain         // Domain entities and enums
-
-# ├── Recuria.Application    // Business logic and use cases
-
-# ├── Recuria.Infrastructure // EF Core, Identity, persistence
-
-# ```
-
-# 
-
-# \### Key Design Principles
-
-# 
-
-# \* Business rules live in the Application layer
-
-# \* Domain models are persistence-agnostic
-
-# \* API layer exposes DTOs, not entities
-
-# \* Infrastructure concerns are isolated
-
-# 
-
-# ---
-
-# 
-
-# \## Technology Stack
-
-# 
-
-# \* \*\*Backend:\*\* ASP.NET Core (.NET 8)
-
-# \* \*\*Frontend:\*\* Blazor WebAssembly
-
-# \* \*\*Database:\*\* SQL Server (EF Core)
-
-# \* \*\*Authentication:\*\* ASP.NET Core Identity + JWT
-
-# \* \*\*API Documentation:\*\* Swagger / OpenAPI
-
-# 
-
-# ---
-
-# 
-
-# \## Goals of This Project
-
-# 
-
-# This project is designed to:
-
-# 
-
-# \* Demonstrate professional ASP.NET Core architecture
-
-# \* Model non-trivial business domains (billing, subscriptions)
-
-# \* Show full-stack capability using modern .NET technologies
-
-# \* Serve as a portfolio project aligned with real industry practices
-
-# 
-
-# ---
-
-# 
-
-# \## Non-Goals
-
-# 
-
-# \* Real payment processing (Stripe, PayPal, etc.)
-
-# \* Production-grade UI/UX polish
-
-# \* Microservices or distributed systems
-
-# 
-
-# These are intentionally excluded to keep the focus on correctness and design.
-
-# 
-
-# ---
-
-# 
-
-# \## Future Enhancements
-
-# 
-
-# Potential extensions include:
-
-# 
-
-# \* Usage-based billing
-
-# \* Webhooks for external systems
-
-# \* Audit logs and billing history
-
-# \* Dockerized deployment
-
-# 
-
-# ---
-
-# 
-
-# \## Author
-
-# 
-
-# Built as a professional portfolio project to demonstrate full-stack ASP.NET Core development and SaaS billing concepts.
-
-
-
+- dotnet test
