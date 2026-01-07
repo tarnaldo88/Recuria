@@ -48,5 +48,20 @@ namespace Recuria.Application
 
             return new Invoice(subscription.Id, amount);
         }
+
+        public Subscription GenerateTrial(Organization organization)
+        {
+            if(organization.GetCurrentSubscription() != null)
+            {
+                throw new InvalidOperationException("Organization already has an active subscription.");
+            }
+
+            var now = DateTime.UtcNow;
+            var subscription = Subscription.CreateTrial(organization, now); 
+
+            organization.AssignSubscription(subscription);
+
+            return subscription;
+        }
     }
 }
