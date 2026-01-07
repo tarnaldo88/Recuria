@@ -46,10 +46,10 @@ namespace Recuria.Tests
         }
 
         [Fact]
-        public void UpgradePlan_Should_ChangePlan_WhenActive()
+        public void UpgradePlan_Should_ChangePlan_When_Active()
         {
             var sub = _service.CreateTrial(_org);
-            sub.Activate();
+            _service.ActivateSubscription(sub);
 
             _service.UpgradePlan(sub, PlanType.Enterprise);
 
@@ -57,11 +57,11 @@ namespace Recuria.Tests
         }
 
         [Fact]
-        public void UpgradePlan_SHould_Throw_WhenCanceled()
+        public void UpgradePlan_Should_Throw_When_Canceled()
         {
             var sub = _service.CreateTrial(_org);
-            sub.Activate();
-            sub.Cancel();
+            _service.ActivateSubscription(sub);
+            _service.CancelSubscription(sub);
 
             Action act = () => _service.UpgradePlan(sub, PlanType.Enterprise);
 
