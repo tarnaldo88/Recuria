@@ -33,12 +33,20 @@ namespace Recuria.Domain
             Subscriptions.Add(subscription);
         }
 
-        public Subscription? GetCurrentSubscription()
+        public Subscription? GetCurrentSubscription(DateTime now)
         {
-            return Subscriptions
-                .Where(s => s.Status == SubscriptionStatus.Active)
-                .OrderByDescending(s => s.PeriodStart)
-                .FirstOrDefault();
+            var activeSubscriptions = Subscriptions
+                .Where(s =>
+                    s.Status == SubscriptionStatus.Active &&
+                    s.PeriodStart <= now &&
+                    s.PeriodEnd >= now)
+                .ToList();
+
+            if (activeSubscriptions.Count > 1)
+                throw new InvalidOperationException(
+                    "Organization has multiple active subscriptions. Data integrity violation.");
+
+            return activeSubscriptions.SingleOrDefault();
         }
     }
 
