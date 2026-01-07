@@ -112,5 +112,16 @@ namespace Recuria.Tests
 
             act.Should().Throw<InvalidOperationException>().WithMessage("Cannot advance period before the current period ends.");
         }
+
+        [Fact]
+        public void AdvancePeriod_When_NotActive_Should_Throw()
+        {
+            var sub = _service.CreateTrial(_org);
+            _service.CancelSubscription(sub);
+
+            Action act = () => sub.AdvancePeriod(DateTime.UtcNow);
+
+            act.Should().Throw<InvalidOperationException>().WithMessage("Only active subscriptions can advance billing period.");
+        }
     }
 }
