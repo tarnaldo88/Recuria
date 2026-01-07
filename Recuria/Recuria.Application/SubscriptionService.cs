@@ -10,26 +10,9 @@ namespace Recuria.Application
 {
     public class SubscriptionService : ISubscriptionService
     {
-        public Subscription CreateTrial(Organization org)
+        public void ActivateSubscription(Subscription subscription)
         {
-            // Ensure only one active subscription at a time
-            var current = org.GetCurrentSubscription();
-            if (current != null && current.Status == SubscriptionStatus.Active)
-            {
-                throw new InvalidOperationException("Organization already has an active subscription.");
-            }
-
-            var now = DateTime.UtcNow;
-            var subscription = new Subscription(
-                organization: org,
-                plan: PlanType.Free,
-                SubscriptionStatus.Trial,
-                periodStart: now,
-                periodEnd: now.AddDays(14)
-            );
-
-            org.AssignSubscription(subscription);
-            return subscription;
+            subscription.Activate(DateTime.UtcNow);
         }
 
         public void UpgradePlan(Subscription subscription, PlanType newPlan)
@@ -50,7 +33,7 @@ namespace Recuria.Application
             return new Invoice(subscription.Id, amount);
         }
 
-        public Subscription GenerateTrial(Organization organization)
+        public Subscription CreateTrial(Organization organization)
         {
             if(organization.GetCurrentSubscription() != null)
             {
