@@ -37,7 +37,7 @@ namespace Recuria.Domain
             Organization = organization;
             OrganizationId = organization.Id;
             Plan = plan;
-            Status = SubscriptionStatus.Active;
+            Status = SubscriptionStatus.Trial;
             PeriodStart = periodStart;
             PeriodEnd = periodEnd;
         }
