@@ -33,6 +33,7 @@ namespace Recuria.Domain
         public Subscription(
             Organization organization,
             PlanType plan,
+            SubscriptionStatus status,
             DateTime periodStart,
             DateTime periodEnd)
         {
