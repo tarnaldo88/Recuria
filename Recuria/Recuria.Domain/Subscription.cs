@@ -51,6 +51,17 @@ namespace Recuria.Domain
         //    PeriodEnd = now.AddMonths(1);
         //}
 
+        public static Subscription CreateTrial(Organization organization, DateTime now)
+        {
+            return new Subscription(
+                organization,
+                PlanType.Free,
+                SubscriptionStatus.Trial,
+                now,
+                now.AddDays(14)
+            );
+        }
+
         public void MarkPaid()
         {
             if(Status == SubscriptionStatus.Expired || Status == SubscriptionStatus.Canceled)
