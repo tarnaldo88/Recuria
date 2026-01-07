@@ -101,5 +101,16 @@ namespace Recuria.Tests
             invoice.Amount.Should().Be(100);
             invoice.SubscriptionId.Should().Be(sub.Id);
         }
+
+        [Fact]
+        public void AdvancePeriod_Before_PeriodEnd_Should_Throw()
+        {
+            var sub = _service.CreateTrial(_org);
+            _service.ActivateSubscription(sub);
+
+            Action act = () => sub.AdvancePeriod(DateTime.UtcNow);
+
+            act.Should().Throw<InvalidOperationException>().WithMessage("Cannot advance period before the current period ends.");
+        }
     }
 }
