@@ -23,6 +23,7 @@ namespace Recuria.Application
             var subscription = new Subscription(
                 organization: org,
                 plan: PlanType.Free,
+                SubscriptionStatus.Trial,
                 periodStart: now,
                 periodEnd: now.AddDays(14)
             );
