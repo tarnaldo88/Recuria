@@ -133,8 +133,18 @@ namespace Recuria.Domain
 
         public void AdvancePeriod(DateTime now)
         {
-            PeriodStart = now;
-            PeriodEnd = now.AddMonths(1);
+            if (Status != SubscriptionStatus.Active)
+            {
+                throw new InvalidOperationException("Only active subscriptions can advance billing period.");
+            }
+
+            if(now < PeriodEnd)
+            {
+                throw new InvalidOperationException("Cannot advance period before the current period ends.");
+            }
+
+            PeriodStart = PeriodEnd;
+            PeriodEnd = PeriodEnd.AddMonths(1);
         }
 
         public bool IsExpired(DateTime now) => now > PeriodEnd;
