@@ -88,5 +88,18 @@ namespace Recuria.Tests
 
             act.Should().Throw<InvalidOperationException>().WithMessage("Billing can only run on active subscriptions.");
         }
+
+        [Fact]
+        public void HandleOverdueSubscription_Should_Cancel_When_GracePeriodExceeded()
+        {
+            var now = DateTime.UtcNow;
+            var subscription = CreateActiveSubscription( periodEnd: now.AddDays(-10));
+
+            subscription.MarkPastDue();
+
+            _service.HandleOverdueSubscription(subscription, now); 
+            
+            subscription.Status.Should().Be(SubscriptionStatus.Canceled);
+        }
     }
 }
