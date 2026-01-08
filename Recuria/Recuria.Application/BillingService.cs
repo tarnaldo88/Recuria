@@ -16,16 +16,16 @@ namespace Recuria.Application
             if (subscription.Status != SubscriptionStatus.Active)
                 throw new InvalidOperationException("Billing can only run on active subscriptions.");
 
-            if(now < subscription.PeriodEnd)
-            {
+            if (now < subscription.PeriodEnd)
                 throw new InvalidOperationException("Billing period has not ended.");
-            }
 
             var amount = GetAmountForPlan(subscription.Plan);
 
-            var inv = new Invoice(subscription.Id, amount);
+            var invoice = new Invoice(subscription.Id, amount);
 
-            return inv;
+            subscription.AdvancePeriod(now);
+
+            return invoice;
         }
 
         public void HandleOverdueSubscription(Subscription subscription, DateTime now)
