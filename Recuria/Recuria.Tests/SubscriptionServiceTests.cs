@@ -173,5 +173,23 @@ namespace Recuria.Tests
             // Assert
             subscription.Status.Should().Be(SubscriptionStatus.Active);
         }
+
+        [Fact]
+        public void ExpireIfOverdue_Should_NotChangeCanceledSubscription()
+        {
+            var subscription = new Subscription(
+                _org,
+                PlanType.Pro,
+                SubscriptionStatus.Active,
+                DateTime.UtcNow.AddMonths(-2),
+                DateTime.UtcNow.AddMonths(-1)
+            );
+
+            subscription.Cancel();
+
+            subscription.ExpireIfOverdue(DateTime.UtcNow);
+
+            subscription.Status.Should().Be(SubscriptionStatus.Canceled);
+        }
     }
 }
