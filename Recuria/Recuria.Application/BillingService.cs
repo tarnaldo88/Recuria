@@ -39,7 +39,7 @@ namespace Recuria.Application
 
             if(overDueDays > GracePeriodDays)
             {
-                subscription.Cancel();
+               subscription.CancelForNonPayment();
             }
 
         }
