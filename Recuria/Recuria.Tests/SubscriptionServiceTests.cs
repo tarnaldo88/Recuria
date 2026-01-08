@@ -125,10 +125,32 @@ namespace Recuria.Tests
         }
 
         [Fact]
-        public void ExpireIfOverdue_Should_ExpireSub_When_PeriodEnds()
+        public void ExpireIfOverdue_Should_ExpireSubscription_WhenPastPeriodEnd()
         {
-            var sub = _service.CreateTrial(_org);
+            // Arrange
+            var org = new Organization("Test Org");
 
+            var periodStart = DateTime.UtcNow.AddMonths(-2);
+            var periodEnd = DateTime.UtcNow.AddMonths(-1);
+
+            var subscription = new Subscription(
+                organization: org,
+                plan: PlanType.Pro,
+                SubscriptionStatus.Active,
+                periodStart: periodStart,
+                periodEnd: periodEnd
+            );
+
+            subscription.MarkPaid(); // ensure Active
+            org.AssignSubscription(subscription);
+
+            var now = DateTime.UtcNow;
+
+            // Act
+            subscription.ExpireIfOverdue(now);
+
+            // Assert
+            subscription.Status.Should().Be(SubscriptionStatus.Expired);
         }
     }
 }
