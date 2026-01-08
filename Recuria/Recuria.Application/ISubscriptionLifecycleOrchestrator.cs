@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Recuria.Domain;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,6 @@ namespace Recuria.Application
 {
     internal interface ISubscriptionLifecycleOrchestrator
     {
-
+        void Process(Subscription subscription, DateTime now);
     }
 }

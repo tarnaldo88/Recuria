@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Recuria.Application
 {
-    internal class SubscriptionLifecycleOrchestrator
+    public class SubscriptionLifecycleOrchestrator : ISubscriptionLifecycleOrchestrator
     {
     }
 }
