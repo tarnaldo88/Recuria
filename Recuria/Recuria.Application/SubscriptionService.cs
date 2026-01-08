@@ -35,7 +35,7 @@ namespace Recuria.Application
 
         public Subscription CreateTrial(Organization organization)
         {
-            if(organization.GetCurrentSubscription() != null)
+            if(organization.GetCurrentSubscription(DateTime.UtcNow) != null)
             {
                 throw new InvalidOperationException("Organization already has an active subscription.");
             }

@@ -123,5 +123,12 @@ namespace Recuria.Tests
 
             act.Should().Throw<InvalidOperationException>().WithMessage("Only active subscriptions can advance billing period.");
         }
+
+        [Fact]
+        public void ExpireIfOverdue_Should_ExpireSub_When_PeriodEnds()
+        {
+            var sub = _service.CreateTrial(_org);
+
+        }
     }
 }
