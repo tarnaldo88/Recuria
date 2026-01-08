@@ -114,5 +114,15 @@ namespace Recuria.Tests
 
             subscription.Status.Should().Be(SubscriptionStatus.PastDue);
         }
+
+        [Fact]
+        public void HandleOverdueSubscription_Should_DoNothing_When_NotPastDue()
+        {
+            var subscription = CreateActiveSubscription();
+
+            _service.HandleOverdueSubscription(subscription, DateTime.UtcNow);
+
+            subscription.Status.Should().Be(SubscriptionStatus.Active);
+        }
     }
 }
