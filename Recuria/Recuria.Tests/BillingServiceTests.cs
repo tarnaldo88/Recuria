@@ -101,5 +101,18 @@ namespace Recuria.Tests
             
             subscription.Status.Should().Be(SubscriptionStatus.Canceled);
         }
+
+        [Fact]
+        public void HandleOverdueSubscription_Should_NotCancel_When_WithinGracePeriod()
+        {
+            var now = DateTime.UtcNow;
+            var subscription = CreateActiveSubscription(periodEnd: now.AddDays(-3));
+
+            subscription.MarkPastDue();
+
+            _service.HandleOverdueSubscription(subscription, now);
+
+            subscription.Status.Should().Be(SubscriptionStatus.PastDue);
+        }
     }
 }
