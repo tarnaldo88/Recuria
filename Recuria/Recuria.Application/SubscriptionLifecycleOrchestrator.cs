@@ -18,6 +18,27 @@ namespace Recuria.Application
 
         public void Process(Subscription subscription, DateTime now)
         {
+            switch (subscription.Status)
+            { 
+                case SubscriptionStatus.Trial:
+                    HandleTrial(subscription, now);
+                    break;
+            }
+
+        }
+
+        private void HandleTrial(Subscription subscription, DateTime now)
+        {
+
+        }
+
+        private void HandleActive(Subscription subscription, DateTime now)
+        {
+
+        }
+
+        private void HandlePastDue(Subscription subscription, DateTime now)
+        {
 
         }
     }
