@@ -68,7 +68,7 @@ namespace Recuria.Application
 
         private void HandlePastDue(Subscription subscription, DateTime now)
         {
-
+            _billingService.HandleOverdueSubscription(subscription, now);
         }
     }
 }
