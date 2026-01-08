@@ -152,5 +152,26 @@ namespace Recuria.Tests
             // Assert
             subscription.Status.Should().Be(SubscriptionStatus.Expired);
         }
+
+        [Fact]
+        public void ExpireIfOverdue_Should_NotExpire_WhenWithinPeriod()
+        {            
+            var subscription = new Subscription(
+                organization: _org,
+                plan: PlanType.Pro,
+                SubscriptionStatus.Active,
+                periodStart: DateTime.UtcNow.AddDays(-5),
+                periodEnd: DateTime.UtcNow.AddDays(5)
+            );
+
+            subscription.MarkPaid();
+            _org.AssignSubscription(subscription);
+
+            // Act
+            subscription.ExpireIfOverdue(DateTime.UtcNow);
+
+            // Assert
+            subscription.Status.Should().Be(SubscriptionStatus.Active);
+        }
     }
 }
