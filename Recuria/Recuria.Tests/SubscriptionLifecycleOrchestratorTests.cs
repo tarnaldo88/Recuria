@@ -3,6 +3,7 @@ using Moq;
 using Recuria.Application;
 using Recuria.Domain;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -63,4 +64,18 @@ namespace Recuria.Tests
             subscription.PeriodStart.Should().BeCloseTo(now, TimeSpan.FromSeconds(1));
             subscription.PeriodEnd.Should().BeAfter(now);
         }
+
+        [Fact]
+        public void Process_Should_MarkPastDue_WhenBillingFails()
+        {
+            var subscription = new Subscription(_org, PlanType.Pro, SubscriptionStatus.Active, start, end);
+
+            _billingService.Setup(b => b.RunBillingCycle(subscription, It.IsAny<DateTime>()))
+                .Throws<InvalidOperationException>();
+
+            _orchestrator.Process(subscription, DateTime.UtcNow);
+
+            subscription.Status.Should().Be(SubscriptionStatus.PastDue);
+        }
+    }
 }
