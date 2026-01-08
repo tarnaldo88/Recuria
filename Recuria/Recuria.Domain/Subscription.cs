@@ -157,5 +157,13 @@ namespace Recuria.Domain
             if (now > PeriodEnd)
                 Status = SubscriptionStatus.Expired;
         }
+
+        public void CancelForNonPayment()
+        {
+            if (Status != SubscriptionStatus.PastDue)
+                throw new InvalidOperationException("Only past-due subscriptions can be canceled.");
+
+            Status = SubscriptionStatus.Canceled;
+        }
     }
 }
