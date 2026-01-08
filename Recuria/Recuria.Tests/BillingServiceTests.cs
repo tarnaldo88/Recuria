@@ -13,12 +13,12 @@ namespace Recuria.Tests
 {
     internal class BillingServiceTests
     {
-        private readonly SubscriptionService _service;
+        private readonly BillingService _service;
         private readonly Organization _org;
 
         public BillingServiceTests()
         {
-            _service = new SubscriptionService();
+            _service = new BillingService();
             _org = new Organization("Test Org");
         }
         private Subscription CreateActiveSubscription(
@@ -46,8 +46,21 @@ namespace Recuria.Tests
 
         //Billing refuses inactive subscriptions
 
-        //[Fact]
-        //public void 
+        [Fact]
+        public void RunBillingCycle_Should_CreateInvoice_And_AdvancePeriod()
+        {
+            var now = DateTime.UtcNow;
+            var subscription = CreateActiveSubscription(periodStart: now.AddMonths(-1), periodEnd: now);
+
+            var invoice = _service.RunBillingCycle(subscription, now);
+
+            invoice.Should().NotBeNull();
+            invoice.SubscriptionId.Should().Be(subscription.Id);
+            invoice.Amount.Should().Be(29m);
+
+            subscription.PeriodStart.Should().Be(now);
+            subscription.PeriodEnd.Should().Be(now.AddMonths(1));
+        }
 
     }
 }
