@@ -75,5 +75,18 @@ namespace Recuria.Tests
             act.Should().Throw<InvalidOperationException>()
                 .WithMessage("Billing period has not ended.");
         }
+
+        [Fact]
+        public void RunBillingCycle_Should_Throw_When_SubscriptionNotActive()
+        {
+            var now = DateTime.UtcNow;
+            var subscription = CreateActiveSubscription();
+
+            subscription.Cancel();
+
+            Action act = () => _service.RunBillingCycle(subscription, now);
+
+            act.Should().Throw<InvalidOperationException>().WithMessage("Billing can only run on active subscriptions.");
+        }
     }
 }
