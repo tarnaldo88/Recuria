@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Recuria.Tests
 {
-    internal class BillingServiceTests
+    public class BillingServiceTests
     {
         private readonly BillingService _service;
         private readonly Organization _org;
@@ -62,5 +62,18 @@ namespace Recuria.Tests
             subscription.PeriodEnd.Should().Be(now.AddMonths(1));
         }
 
+        [Fact]
+        public void RunBillingCycle_Should_Throw_When_PeriodNotEnded()
+        {
+            var now = DateTime.UtcNow;
+            var subscription = CreateActiveSubscription(
+                periodEnd: now.AddDays(5)
+            );
+
+            Action act = () => _service.RunBillingCycle(subscription, now);
+
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("Billing period has not ended.");
+        }
     }
 }
