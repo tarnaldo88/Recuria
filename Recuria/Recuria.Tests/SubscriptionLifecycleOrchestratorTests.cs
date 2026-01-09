@@ -99,8 +99,6 @@ namespace Recuria.Tests
                    DateTime.UtcNow.AddDays(-10)
             );
 
-            subscription.MarkPastDue();
-
             _billingService
                 .Setup(b => b.HandleOverdueSubscription(subscription, It.IsAny<DateTime>()))
                 .Callback(() => subscription.Cancel());
