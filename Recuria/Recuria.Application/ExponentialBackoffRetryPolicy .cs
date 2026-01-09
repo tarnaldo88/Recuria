@@ -15,5 +15,10 @@ namespace Recuria.Application
             return attempt < MaxAttempts &&
                    exception is InvalidOperationException;
         }
+
+        public TimeSpan GetRetryDelay(int attempt)
+        {
+            return TimeSpan.FromSeconds(Math.Pow(2, attempt));
+        }
     }
 }
