@@ -119,8 +119,6 @@ namespace Recuria.Tests
                 DateTime.UtcNow.AddMonths(-1)
             );
 
-            subscription.Cancel();
-
             _orchestrator.Process(subscription, DateTime.UtcNow);
 
             subscription.Status.Should().Be(SubscriptionStatus.Canceled);
