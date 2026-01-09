@@ -72,6 +72,7 @@ namespace Recuria.Application
                 }
                 catch (Exception ex)
                 {
+                    subscription.RecordBillingAttempt(BillingAttempt.Failure(subscription.Id, ex.Message));
                     attempt++;
 
                     if (!_retryPolicy.ShouldRetry(attempt, ex))
