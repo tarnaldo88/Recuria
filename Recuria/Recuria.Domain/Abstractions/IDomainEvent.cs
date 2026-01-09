@@ -8,6 +8,6 @@ namespace Recuria.Domain.Abstractions
 {
     public interface IDomainEvent
     {
-        DateTime OccuredOn { get; }
+        DateTime OccurredOn { get; }
     }
 }

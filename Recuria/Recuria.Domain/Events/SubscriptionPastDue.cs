@@ -9,6 +9,6 @@ namespace Recuria.Domain.Events
 {
     public sealed record SubscriptionPastDue : IDomainEvent
     {
-        public DateTime OccuredOn { get; } = DateTime.UtcNow;
+        public DateTime OccurredOn { get; } = DateTime.UtcNow;
     }
 }
