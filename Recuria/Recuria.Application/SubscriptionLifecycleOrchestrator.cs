@@ -59,14 +59,29 @@ namespace Recuria.Application
             if (now < subscription.PeriodEnd)
                 return;
 
-            try
+            var attempt = 0;
+
+            while (true)
             {
-                _billingService.RunBillingCycle(subscription,now);
-                subscription.AdvancePeriod(now);
-            }
-            catch (Exception ex)
-            {
-                subscription.MarkPastDue();
+                try
+                {
+                    _billingService.RunBillingCycle(subscription, now);
+                    subscription.AdvancePeriod(now);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    attempt++;
+
+                    if (!_retryPolicy.ShouldRetry(attempt, ex))
+                    {
+                        subscription.MarkPastDue();
+                        return;
+                    }
+
+                    // In real systems, this would schedule a retry
+                    // Here we simply allow the loop to continue
+                }
             }
         }
 
