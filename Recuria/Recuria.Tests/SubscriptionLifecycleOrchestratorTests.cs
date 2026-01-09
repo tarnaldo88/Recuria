@@ -53,13 +53,15 @@ namespace Recuria.Tests
         {
             var start = DateTime.UtcNow.AddMonths(-1);
             var end = DateTime.UtcNow.AddDays(-1);
+            var now = DateTime.UtcNow;
 
             var subscription = new Subscription(_org, PlanType.Pro, SubscriptionStatus.Active, start, end);
 
-            _billingService.Setup(b => b.RunBillingCycle(subscription, It.IsAny<DateTime>()))
+            _billingService
+                .Setup(b => b.RunBillingCycle(subscription, now))
                 .Returns(new Invoice(subscription.Id, 29m));
 
-            var now = DateTime.UtcNow;
+
 
             _orchestrator.Process(subscription, now);
 
