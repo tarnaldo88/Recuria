@@ -10,10 +10,14 @@ namespace Recuria.Application
     public class SubscriptionLifecycleOrchestrator : ISubscriptionLifecycleOrchestrator
     {
         private readonly IBillingService _billingService;
+        private readonly IBillingRetryPolicy _retryPolicy;
 
-        public SubscriptionLifecycleOrchestrator(IBillingService billingService)
+        public SubscriptionLifecycleOrchestrator(
+            IBillingService billingService,
+            IBillingRetryPolicy retryPolicy)
         {
             _billingService = billingService;
+            _retryPolicy = retryPolicy;
         }
 
         public void Process(Subscription subscription, DateTime now)
