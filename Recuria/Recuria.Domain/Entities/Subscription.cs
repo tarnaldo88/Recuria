@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Recuria.Domain.Events;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +18,7 @@ namespace Recuria.Domain.Entities
     }
 
 
-    public class Subscription
+    public class Subscription : Entity
     {
         public Guid Id { get; init; }
         public Guid OrganizationId { get; private set; }
@@ -115,6 +117,7 @@ namespace Recuria.Domain.Entities
                 throw new InvalidOperationException("Subscription period has not ended.");
 
             Status = SubscriptionStatus.Expired;
+            RaiseDomainEvent(new SubscriptionExpired(Id));
         }
 
         public void UpgradePlan(PlanType newPlan)
