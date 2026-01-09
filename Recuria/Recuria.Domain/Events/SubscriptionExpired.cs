@@ -10,5 +10,7 @@ namespace Recuria.Domain.Events
     public sealed record SubscriptionExpired(Guid SubscriptionId) : IDomainEvent
     {
         public DateTime OccurredOn { get; } = DateTime.UtcNow;
+
+        public DateTime OccuredOn => throw new NotImplementedException();
     }
 }
