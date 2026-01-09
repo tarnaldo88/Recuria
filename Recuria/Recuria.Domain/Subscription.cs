@@ -27,6 +27,8 @@ namespace Recuria.Domain
 
         public DateTime PeriodStart { get; private set; }
         public DateTime PeriodEnd { get; private set; }
+        private readonly List<BillingAttempt> _billingAttempts = new();
+        public IReadOnlyCollection<BillingAttempt> BillingAttempts => _billingAttempts.AsReadOnly();
 
         protected Subscription() { } //EF Core
 
@@ -164,6 +166,16 @@ namespace Recuria.Domain
                 throw new InvalidOperationException("Only past-due subscriptions can be canceled.");
 
             Status = SubscriptionStatus.Canceled;
+        }
+
+        public void RecordBillingAttempt(BillingAttempt billingAttempt)
+        {
+            if(billingAttempt.SubscriptionId != Id)
+            {
+                throw new InvalidOperationException("Billing attempt does not belong to this subscription.");
+            }
+
+            _billingAttempts.Add(billingAttempt);
         }
     }
 }
