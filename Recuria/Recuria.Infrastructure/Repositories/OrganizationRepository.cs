@@ -23,7 +23,7 @@ namespace Recuria.Infrastructure.Repositories
         {
             return await _context.Organizations
                 .Include(o => o.Users)
-                .Include(o => o.GetCurrentSubscription())
+                .Include(o => o.GetCurrentSubscription(DateTime.UtcNow))
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 
