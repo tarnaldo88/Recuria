@@ -16,12 +16,13 @@ namespace Recuria.Tests
     {
         private readonly Mock<IBillingService> _billingService;
         private readonly SubscriptionLifecycleOrchestrator _orchestrator;
+        private readonly Mock<IBillingRetryPolicy> _billingRetryService;
         private readonly Organization _org;
 
         public SubscriptionLifecycleOrchestratorTests()
         {
             _billingService = new Mock<IBillingService>();
-            _orchestrator = new SubscriptionLifecycleOrchestrator(_billingService.Object);
+            _orchestrator = new SubscriptionLifecycleOrchestrator(_billingService.Object, _billingRetryService.Object);
             _org = new Organization("Test Org");
         }
 
