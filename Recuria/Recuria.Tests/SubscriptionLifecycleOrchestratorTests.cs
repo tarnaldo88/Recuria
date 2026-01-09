@@ -79,6 +79,10 @@ namespace Recuria.Tests
             _billingService.Setup(b => b.RunBillingCycle(subscription, It.IsAny<DateTime>()))
                 .Throws<InvalidOperationException>();
 
+            _retryPolicy
+                .Setup(r => r.ShouldRetry(It.IsAny<int>(), It.IsAny<Exception>()))
+                .Returns(false);
+
             _orchestrator.Process(subscription, DateTime.UtcNow);
 
             subscription.Status.Should().Be(SubscriptionStatus.PastDue);
