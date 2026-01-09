@@ -68,7 +68,8 @@ namespace Recuria.Tests
         [Fact]
         public void Process_Should_MarkPastDue_WhenBillingFails()
         {
-            var subscription = new Subscription(_org, PlanType.Pro, SubscriptionStatus.Active, start, end);
+            var subscription = new Subscription(_org, PlanType.Pro, SubscriptionStatus.Active, DateTime.UtcNow.AddMonths(-1),
+                DateTime.UtcNow.AddDays(-1));
 
             _billingService.Setup(b => b.RunBillingCycle(subscription, It.IsAny<DateTime>()))
                 .Throws<InvalidOperationException>();
@@ -76,6 +77,28 @@ namespace Recuria.Tests
             _orchestrator.Process(subscription, DateTime.UtcNow);
 
             subscription.Status.Should().Be(SubscriptionStatus.PastDue);
+        }
+
+        [Fact]
+        public void Process_Should_CancelSubscription_WhenPastDueBeyondGracePeriod()
+        {
+            var subscription = new Subscription(
+                   _org,
+                   PlanType.Pro,
+                   SubscriptionStatus.Active,
+                   DateTime.UtcNow.AddMonths(-2),
+                   DateTime.UtcNow.AddDays(-10)
+            );
+
+            subscription.MarkPastDue();
+
+            _billingService
+                .Setup(b => b.HandleOverdueSubscription(subscription, It.IsAny<DateTime>()))
+                .Callback(() => subscription.Cancel());
+
+            _orchestrator.Process(subscription, DateTime.UtcNow);
+
+            subscription.Status.Should().Be(SubscriptionStatus.Canceled);
         }
     }
 }
