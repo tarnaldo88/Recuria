@@ -27,5 +27,10 @@ namespace Recuria.Tests.Fakes
 
             return new Invoice(subscription.Id, 29m);
         }
+
+        public void HandleOverdueSubscription(Subscription subscription, DateTime now)
+        {
+            // not used here
+        }
     }
 }
