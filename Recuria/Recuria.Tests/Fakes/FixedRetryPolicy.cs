@@ -15,5 +15,10 @@ namespace Recuria.Tests.Fakes
         {
             _maxRetries = maxRetries;
         }
+
+        public bool ShouldRetry(int attempt, Exception ex)
+        {
+            return attempt < _maxRetries;
+        }
     }
 }
