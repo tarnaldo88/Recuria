@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Recuria.Domain.Events
 {
-    public sealed record SubscriptionCanceled : IDomainEvent
+    public sealed record SubscriptionCanceled(Guid SubscriptionId) : IDomainEvent
     {
         public DateTime OccurredOn { get; } = DateTime.UtcNow;
     }
