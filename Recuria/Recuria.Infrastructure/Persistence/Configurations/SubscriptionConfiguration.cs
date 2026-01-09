@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Recuria.Domain;
+using Recuria.Domain.Entities;
 
 namespace Recuria.Infrastructure.Persistence.Configurations
 {

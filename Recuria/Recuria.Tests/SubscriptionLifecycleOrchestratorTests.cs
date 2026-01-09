@@ -2,6 +2,7 @@
 using Moq;
 using Recuria.Application;
 using Recuria.Domain;
+using Recuria.Domain.Entities;
 using System;
 using System.Collections;
 using System.Collections.Generic;

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Recuria.Application;
+using Recuria.Domain.Entities;
 
 namespace Recuria.Infrastructure.Persistence
 {

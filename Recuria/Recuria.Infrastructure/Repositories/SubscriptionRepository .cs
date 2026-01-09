@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Recuria.Application;
-using Recuria.Domain;
+using Recuria.Domain.Entities;
 using Recuria.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;

@@ -8,6 +8,7 @@ using FluentAssertions;
 using Recuria.Domain;
 //using Recuria.Services;
 using Recuria.Application;
+using Recuria.Domain.Entities;
 
 namespace Recuria.Tests
 {
