@@ -16,6 +16,11 @@ namespace Recuria.Tests.Fakes
             _maxRetries = maxRetries;
         }
 
+        public TimeSpan GetRetryDelay(int attempt)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool ShouldRetry(int attempt, Exception ex)
         {
             return attempt < _maxRetries;
