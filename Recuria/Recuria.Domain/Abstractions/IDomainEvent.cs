@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Recuria.Domain.Events
+namespace Recuria.Domain.Abstractions
 {
     public interface IDomainEvent
     {

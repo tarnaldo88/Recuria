@@ -1,4 +1,4 @@
-﻿using Recuria.Domain.Events;
+﻿using Recuria.Domain.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
