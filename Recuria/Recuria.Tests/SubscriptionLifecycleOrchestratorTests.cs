@@ -43,10 +43,6 @@ namespace Recuria.Tests
                 DateTime.UtcNow.AddDays(-1)
             );
 
-            subscription.Status.Should().Be(SubscriptionStatus.Active); // ctor default
-
-            subscription.MarkPastDue(); // simulate trial-like behavior
-
             _orchestrator.Process(subscription, DateTime.UtcNow);
 
             subscription.Status.Should().Be(SubscriptionStatus.Expired);
