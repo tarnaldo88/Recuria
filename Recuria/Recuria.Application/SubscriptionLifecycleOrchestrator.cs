@@ -66,6 +66,7 @@ namespace Recuria.Application
                 try
                 {
                     _billingService.RunBillingCycle(subscription, now);
+                    subscription.RecordBillingAttempt(BillingAttempt.Success(subscription.Id));
                     subscription.AdvancePeriod(now);
                     return;
                 }
