@@ -21,6 +21,10 @@ namespace Recuria.Domain
             AttemptedAt = DateTime.UtcNow;
             Succeeded = succeeded;
             FailureReason = failureReason;
-        }    
+        }
+
+        public static BillingAttempt Success(Guid subscriptionId) => new(subscriptionId, true, null);
+
+        public static BillingAttempt Failure(Guid subscriptionId, string reason) => new(subscriptionId, false, reason);
     }
 }
