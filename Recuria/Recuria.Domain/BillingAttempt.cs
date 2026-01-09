@@ -13,5 +13,14 @@ namespace Recuria.Domain
         public DateTime AttemptedAt { get; }
         public bool Succeeded { get; }
         public string? FailureReason { get; }
+
+        private BillingAttempt(Guid subscriptionId, bool succeeded, string? failureReason)
+        {
+            Id = Guid.NewGuid();
+            SubscriptionId = subscriptionId;
+            AttemptedAt = DateTime.UtcNow;
+            Succeeded = succeeded;
+            FailureReason = failureReason;
+        }    
     }
 }
