@@ -100,5 +100,24 @@ namespace Recuria.Tests
 
             subscription.Status.Should().Be(SubscriptionStatus.Canceled);
         }
+
+        [Fact]
+        public void Process_Should_DoNothing_ForCanceledSubscription()
+        {
+            var subscription = new Subscription(
+                _org,
+                PlanType.Pro,
+                SubscriptionStatus.Active,
+                DateTime.UtcNow.AddMonths(-2),
+                DateTime.UtcNow.AddMonths(-1)
+            );
+
+            subscription.Cancel();
+
+            _orchestrator.Process(subscription, DateTime.UtcNow);
+
+            subscription.Status.Should().Be(SubscriptionStatus.Canceled);
+            _billingService.VerifyNoOtherCalls();
+        }
     }
 }
