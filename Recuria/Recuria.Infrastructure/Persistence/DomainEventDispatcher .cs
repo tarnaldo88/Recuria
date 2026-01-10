@@ -1,4 +1,5 @@
-﻿using Recuria.Domain.Abstractions;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Recuria.Domain.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,14 @@ namespace Recuria.Infrastructure.Persistence
 
         public Task DispatchAsync(IDomainEvent domainEvent, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(domainEvent.GetType());
+
+            var handlers = _provider.GetServices(handlerType);
+
+            foreach (var handler in handlers)
+            {
+                await((dynamic)handler).HandleAsync((dynamic)domainEvent, ct);
+            }
         }
     }
 }
