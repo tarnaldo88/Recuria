@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Recuria.Domain;
 
-namespace Recuria.Application
+namespace Recuria.Application.Interface
 {
     public interface IInvoiceRepository
     {

@@ -1,4 +1,4 @@
-﻿using Recuria.Application;
+﻿using Recuria.Application.Interface;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
 using System;

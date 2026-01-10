@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Recuria.Application
+namespace Recuria.Application.Interface
 {
     public interface IBillingService
     {

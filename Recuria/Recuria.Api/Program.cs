@@ -1,8 +1,8 @@
-using Recuria.Application;
 using Recuria.Infrastructure.Persistence;
 using Recuria.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Recuria.Infrastructure.Repositories;
+using Recuria.Application.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
 
