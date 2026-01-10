@@ -134,6 +134,7 @@ namespace Recuria.Domain.Entities
                 throw new InvalidOperationException("Only active subscriptions can become past due.");
 
             Status = SubscriptionStatus.PastDue; 
+            RaiseDomainEvent(new SubscriptionPastDue(Id));
         }
 
         public void AdvancePeriod(DateTime now)
