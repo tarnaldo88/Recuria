@@ -1,5 +1,6 @@
-﻿using Recuria.Domain.Events;
-
+﻿using Recuria.Domain.Abstractions;
+using Recuria.Domain.Events;
+using Recuria.Domain.Events.Subscription;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +32,8 @@ namespace Recuria.Domain.Entities
         public DateTime PeriodEnd { get; private set; }
         private readonly List<BillingAttempt> _billingAttempts = new();
         public IReadOnlyCollection<BillingAttempt> BillingAttempts => _billingAttempts.AsReadOnly();
+        private readonly List<IDomainEvent> _domainEvents = new();
+        public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents;
 
         protected Subscription() { } //EF Core
 
@@ -186,6 +189,16 @@ namespace Recuria.Domain.Entities
             }
 
             _billingAttempts.Add(billingAttempt);
+        }
+
+        protected void AddDomainEvent(IDomainEvent domainEvent)
+        {
+            _domainEvents.Add(domainEvent);
+        }
+
+        public void ClearDomainEvents()
+        {
+            _domainEvents.Clear();
         }
     }
 }
