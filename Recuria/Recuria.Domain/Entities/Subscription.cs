@@ -171,6 +171,7 @@ namespace Recuria.Domain.Entities
                 throw new InvalidOperationException("Only past-due subscriptions can be canceled.");
 
             Status = SubscriptionStatus.Canceled;
+            RaiseDomainEvent(new SubscriptionCanceled(Id));
         }
 
         public void RecordBillingAttempt(BillingAttempt billingAttempt)
