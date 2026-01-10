@@ -25,7 +25,7 @@ namespace Recuria.Infrastructure.Persistence
 
             foreach (var handler in handlers)
             {
-                await((dynamic)handler).HandleAsync((dynamic)domainEvent, ct);
+                await((dynamic)handler).HandleAsync((dynamic)domainEvent, cancellationToken);
             }
         }
     }
