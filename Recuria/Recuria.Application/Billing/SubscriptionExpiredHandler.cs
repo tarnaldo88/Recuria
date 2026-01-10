@@ -1,5 +1,5 @@
 ﻿using Recuria.Domain.Abstractions;
-using Recuria.Domain.Events;
+using Recuria.Domain.Events.Subscription;
 using System;
 using System.Collections.Generic;
 using System.Linq;

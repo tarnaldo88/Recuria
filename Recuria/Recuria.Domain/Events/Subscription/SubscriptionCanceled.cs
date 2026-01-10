@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Recuria.Domain.Events
+namespace Recuria.Domain.Events.Subscription
 {
     public sealed record SubscriptionCanceled(Guid SubscriptionId) : IDomainEvent
     {
