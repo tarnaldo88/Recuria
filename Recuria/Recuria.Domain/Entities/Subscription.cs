@@ -75,6 +75,7 @@ namespace Recuria.Domain.Entities
                 throw new InvalidOperationException("Subscriptions cannot be expired or cancelled to be mark paid.");
             }
             Status = SubscriptionStatus.Active;
+            RaiseDomainEvent(new BillingSucceeded(Id));
         }
 
         public void Activate()
