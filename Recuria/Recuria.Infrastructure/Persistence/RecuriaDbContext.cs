@@ -1,12 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Recuria.Application;
 using Recuria.Domain;
+using Recuria.Domain.Abstractions;
+using Recuria.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Recuria.Application;
-using Recuria.Domain.Entities;
 
 namespace Recuria.Infrastructure.Persistence
 {
@@ -24,6 +25,28 @@ namespace Recuria.Infrastructure.Persistence
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(RecuriaDbContext).Assembly);
+        }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            var domainEvents = ChangeTracker
+                .Entries<Entity>()
+                .SelectMany(e => e.Entity.DomainEvents)
+                .ToList();
+
+            var result = await base.SaveChangesAsync(cancellationToken);
+
+            foreach (var domainEvent in domainEvents)
+            {
+                await _domainEventDispatcher.DispatchAsync(domainEvent, cancellationToken);
+            }
+
+            foreach (var entity in ChangeTracker.Entries<Entity>())
+            {
+                entity.Entity.ClearDomainEvents();
+            }
+
+            return result;
         }
     }
 }
