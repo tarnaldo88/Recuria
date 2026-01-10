@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace Recuria.Domain.Events
 {
-    public sealed record BillingSucceeded(Guid SubscriptionId, decimal Amount) : IDomainEvent
+    // Took out argument: , decimal Amount , not sure why we need to know how much paid for event 
+    public sealed record BillingSucceeded(Guid SubscriptionId) : IDomainEvent
     {
         public DateTime OccurredOn { get; } = DateTime.UtcNow;
     }
