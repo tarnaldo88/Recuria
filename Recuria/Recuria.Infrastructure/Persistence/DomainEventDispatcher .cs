@@ -9,6 +9,13 @@ namespace Recuria.Infrastructure.Persistence
 {
     public class DomainEventDispatcher : IDomainEventDispatcher
     {
+        private readonly IServiceProvider _provider;
+
+        public DomainEventDispatcher(IServiceProvider provider)
+        {
+            _provider = provider;
+        }
+
         public Task DispatchAsync(IDomainEvent domainEvent, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
