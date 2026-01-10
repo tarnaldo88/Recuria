@@ -161,8 +161,11 @@ namespace Recuria.Domain.Entities
             if (Status != SubscriptionStatus.Active)
                 return;
 
-            if (now > PeriodEnd)
+            if (IsExpired(now))
+            {
                 Status = SubscriptionStatus.Expired;
+                RaiseDomainEvent(new SubscriptionExpired(Id));
+            }   
         }
 
         public void CancelForNonPayment()
