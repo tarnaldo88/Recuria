@@ -5,6 +5,7 @@ using Recuria.Domain.Events;
 using Recuria.Infrastructure;
 using Recuria.Infrastructure.Persistence;
 using Recuria.Infrastructure.Repositories;
+using Scrutor;
 
 var builder = WebApplication.CreateBuilder(args);
 
