@@ -1,8 +1,10 @@
-using Recuria.Infrastructure.Persistence;
-using Recuria.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using Recuria.Infrastructure.Repositories;
 using Recuria.Application.Interface;
+using Recuria.Domain.Abstractions;
+using Recuria.Domain.Events;
+using Recuria.Infrastructure;
+using Recuria.Infrastructure.Persistence;
+using Recuria.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +19,13 @@ builder.Services.AddDbContext<RecuriaDbContext>(options =>
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
+builder.Services.Scan(scan => scan
+    .FromAssembliesOf(typeof(IDomainEventHandler<>))
+    .AddClasses(classes => classes.AssignableTo(typeof(IDomainEventHandler<>)))
+    .AsImplementedInterfaces()
+    .WithScopedLifetime());
 
 var app = builder.Build();
 
