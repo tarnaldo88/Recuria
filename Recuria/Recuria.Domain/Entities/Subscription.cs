@@ -99,6 +99,7 @@ namespace Recuria.Domain.Entities
             Status = SubscriptionStatus.Active;
             PeriodStart = now;
             PeriodEnd = now.AddMonths(1);
+            AddDomainEvent(new SubscriptionActivatedDomainEvent(Id, OrganizationId));
         }
 
         public void Cancel()
