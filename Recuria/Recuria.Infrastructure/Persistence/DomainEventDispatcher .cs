@@ -17,7 +17,7 @@ namespace Recuria.Infrastructure.Persistence
             _provider = provider;
         }
 
-        public Task DispatchAsync(IDomainEvent domainEvent, CancellationToken cancellationToken)
+        public async Task DispatchAsync(IDomainEvent domainEvent, CancellationToken cancellationToken)
         {
             var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(domainEvent.GetType());
 
