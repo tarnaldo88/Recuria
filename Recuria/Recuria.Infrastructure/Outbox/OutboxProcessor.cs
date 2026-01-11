@@ -1,4 +1,5 @@
-﻿using Recuria.Domain.Abstractions;
+﻿using Microsoft.EntityFrameworkCore;
+using Recuria.Domain.Abstractions;
 using Recuria.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,23 @@ namespace Recuria.Infrastructure.Outbox
         {
             _db = db;
             _dispatcher = dispatcher;
+        }
+            
+        public async Task ProcessAsync(CancellationToken ct)
+        {
+            var messages = await _db.OutBoxMessages.Where(m => m.ProcessedOnUtc == null)
+                    .OrderBy(m => m.OccurredOnUtc)
+                    .Take(20)
+                    .ToListAsync(ct);
+
+            foreach (var message in messages)
+            {
+                try
+                {
+                    var type = Type.GetType(message.Type)!;
+
+                }
+            }
         }
 
     }
