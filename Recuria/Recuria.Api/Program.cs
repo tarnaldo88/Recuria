@@ -3,6 +3,7 @@ using Recuria.Application.Interface;
 using Recuria.Domain.Abstractions;
 using Recuria.Domain.Events;
 using Recuria.Infrastructure;
+using Recuria.Infrastructure.Outbox;
 using Recuria.Infrastructure.Persistence;
 using Recuria.Infrastructure.Repositories;
 using Scrutor;
@@ -21,6 +22,7 @@ builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+builder.Services.AddScoped<OutboxProcessor>();
 
 builder.Services.Scan(scan => scan
     .FromAssembliesOf(typeof(IDomainEventHandler<>))
