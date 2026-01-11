@@ -3,6 +3,7 @@ using Recuria.Application;
 using Recuria.Domain;
 using Recuria.Domain.Abstractions;
 using Recuria.Domain.Entities;
+using Recuria.Infrastructure.Outbox;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +23,8 @@ namespace Recuria.Infrastructure.Persistence
         public DbSet<Subscription> Subscriptions => Set<Subscription>();
         public DbSet<Invoice> Invoices => Set<Invoice>();
 
+        public DbSet<OutBoxMessage> OutBoxMessages => Set<OutBoxMessage>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(RecuriaDbContext).Assembly);
@@ -30,23 +33,28 @@ namespace Recuria.Infrastructure.Persistence
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             var domainEvents = ChangeTracker
-                .Entries<Entity>()
-                .SelectMany(e => e.Entity.DomainEvents)
+        .Entries<IHasDomainEvents>()
+        .SelectMany(e => e.Entity.DomainEvents)
+        .ToList();
+
+            var outBoxMessages = domainEvents
+                .Select(OutBoxMessage.FromDomainEvent)
                 .ToList();
 
-            var result = await base.SaveChangesAsync(cancellationToken);
+            await base.SaveChangesAsync(cancellationToken);
 
-            foreach (var domainEvent in domainEvents)
+            if (outBoxMessages.Any())
             {
-                await _domainEventDispatcher.DispatchAsync(domainEvent, cancellationToken);
+                outBoxMessages.AddRange(outBoxMessages);
+                await base.SaveChangesAsync(cancellationToken);
             }
 
-            foreach (var entity in ChangeTracker.Entries<Entity>())
+            foreach (var entity in ChangeTracker.Entries<IHasDomainEvents>())
             {
                 entity.Entity.ClearDomainEvents();
             }
 
-            return result;
+            return 1;
         }
     }
 }
