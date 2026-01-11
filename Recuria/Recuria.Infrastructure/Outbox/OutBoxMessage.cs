@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Recuria.Domain.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,5 +16,16 @@ namespace Recuria.Infrastructure.Outbox
 
         public DateTime? ProcessedOnUtc { get; set; }
         public string? Error { get; set; }
+
+        public static OutBoxMessage FromDomainEvent(IDomainEvent domainEvent)
+        {
+            return new OutBoxMessage
+            {
+                Id = Guid.NewGuid(),
+                OccurredOnUtc = domainEvent.OccurredOn,
+                Type = domainEvent.GetType().AssemblyQualifiedName!,
+                Content = System.Text.Json.JsonSerializer.Serialize(domainEvent)
+            };
+        }
     }
 }
