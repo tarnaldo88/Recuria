@@ -34,9 +34,19 @@ namespace Recuria.Infrastructure.Outbox
                 try
                 {
                     var type = Type.GetType(message.Type)!;
+                    var domainEvent = (IDomainEvent)System.Text.Json.JsonSerializer.Deserialize(message.Content, type)!;
 
+                    await _dispatcher.DispatchAsync(domainEvent, ct);
+
+                    message.ProcessedOnUtc = DateTime.UtcNow;
+                }
+                catch(Exception ex)
+                {
+                    message.Error = ex.Message;
                 }
             }
+
+            await _db.SaveChangesAsync(ct);
         }
 
     }
