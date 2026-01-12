@@ -5,6 +5,7 @@ using Recuria.Domain.Events;
 using Recuria.Infrastructure;
 using Recuria.Infrastructure.Outbox;
 using Recuria.Infrastructure.Persistence;
+using Recuria.Infrastructure.Persistence.Locking;
 using Recuria.Infrastructure.Repositories;
 using Scrutor;
 
@@ -24,6 +25,7 @@ builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 builder.Services.AddScoped<OutboxProcessor>();
 builder.Services.AddHostedService<OutboxProcessorHostedService>();
+builder.Services.AddScoped<IDatabaseDistributedLock, SqlServerDistributedLock>();
 
 builder.Services.Scan(scan => scan
     .FromAssembliesOf(typeof(IDomainEventHandler<>))
