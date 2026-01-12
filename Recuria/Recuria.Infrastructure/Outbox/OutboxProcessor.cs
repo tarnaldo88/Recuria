@@ -35,7 +35,7 @@ namespace Recuria.Infrastructure.Outbox
             try
             {
                 var messages = await _db.OutBoxMessages
-                    .Where(m => m.ProcessedOnUtc == null)
+                    .Where(m => m.ProcessedOnUtc == null && (m.NextRetryOnUtc == null || m.NextRetryOnUtc <= DateTime.UtcNow))
                     .OrderBy(m => m.OccurredOnUtc)
                     .Take(20)
                     .ToListAsync(ct);
