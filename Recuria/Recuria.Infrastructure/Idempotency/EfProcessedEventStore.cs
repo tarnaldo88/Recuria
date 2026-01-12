@@ -1,4 +1,5 @@
-﻿using Recuria.Application.Interface.Idempotency;
+﻿using Microsoft.EntityFrameworkCore;
+using Recuria.Application.Interface.Idempotency;
 using Recuria.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;
@@ -21,10 +22,10 @@ namespace Recuria.Infrastructure.Idempotency
         public Task<bool> ExistsAsync(Guid eventId, CancellationToken ct)
             => _db.ProcessedEvents.AnyAsync(x => x.EventId == eventId, ct);
 
-        public Task MarkProcessedAsync(Guid eventId, CancellationToken ct)
+        public async Task MarkProcessedAsync(Guid eventId, CancellationToken ct)
         {
             _db.ProcessedEvents.Add(new ProcessedEvent(eventId));
-                await _db.SaveChangesAsync(ct);
+            await _db.SaveChangesAsync(ct);
         }
     }
 }
