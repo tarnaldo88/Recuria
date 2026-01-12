@@ -32,34 +32,41 @@ namespace Recuria.Infrastructure.Outbox
             if (!await _lock.TryAcquireAsync(LockName, ct))
                 return; // another instance is running
 
-            var messages = await _db.OutBoxMessages
-                .Where(m =>
-                    m.ProcessedOnUtc == null &&
-                    (m.NextAttemptOnUtc == null || m.NextAttemptOnUtc <= DateTime.UtcNow))
-                .OrderBy(m => m.OccurredOnUtc)
-                .Take(20)
-                .ToListAsync(ct);
-
-
-            foreach (var message in messages)
+            try
             {
-                try
-                {
-                    var type = Type.GetType(message.Type)!;
-                    var domainEvent = (IDomainEvent)
-                        JsonSerializer.Deserialize(message.Content, type)!;
+                var messages = await _db.OutBoxMessages
+                    .Where(m => m.ProcessedOnUtc == null)
+                    .OrderBy(m => m.OccurredOnUtc)
+                    .Take(20)
+                    .ToListAsync(ct);
 
-                    await _dispatcher.DispatchAsync(domainEvent, ct);
-
-                    message.MarkProcessed();
-                }
-                catch (Exception ex)
+                foreach (var message in messages)
                 {
-                    message.MarkFailed(ex.ToString());
+                    try
+                    {
+                        var type = Type.GetType(message.Type)!;
+                        var domainEvent = (IDomainEvent)
+                            JsonSerializer.Deserialize(message.Content, type)!;
+
+                        await _dispatcher.DispatchAsync(domainEvent, ct);
+
+                        message.ProcessedOnUtc = DateTime.UtcNow;
+                    }
+                    catch (Exception ex)
+                    {
+                        message.Error = ex.Message;
+                        message.RetryCount++;
+                        message.NextRetryOnUtc =
+                            DateTime.UtcNow.AddMinutes(Math.Pow(2, message.RetryCount));
+                    }
                 }
+
+                await _db.SaveChangesAsync(ct);
             }
-
-            await _db.SaveChangesAsync(ct);
+            finally
+            {
+                await _lock.ReleaseAsync(LockName, ct);
+            }
         }
 
     }
