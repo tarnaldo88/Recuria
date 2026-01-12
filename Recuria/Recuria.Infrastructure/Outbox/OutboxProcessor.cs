@@ -15,6 +15,7 @@ namespace Recuria.Infrastructure.Outbox
         private readonly RecuriaDbContext _db;
         private readonly IDomainEventDispatcher _dispatcher;
         private readonly IDatabaseDistributedLock _lock;
+        private const string LockName = "OutboxProcessorLock";
 
         public OutboxProcessor(
             RecuriaDbContext db,
