@@ -23,6 +23,7 @@ builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 builder.Services.AddScoped<OutboxProcessor>();
+builder.Services.AddHostedService<OutboxProcessorHostedService>();
 
 builder.Services.Scan(scan => scan
     .FromAssembliesOf(typeof(IDomainEventHandler<>))
