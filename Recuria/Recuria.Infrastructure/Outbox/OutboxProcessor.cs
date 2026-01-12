@@ -24,10 +24,14 @@ namespace Recuria.Infrastructure.Outbox
             
         public async Task ProcessAsync(CancellationToken ct)
         {
-            var messages = await _db.OutBoxMessages.Where(m => m.ProcessedOnUtc == null)
-                    .OrderBy(m => m.OccurredOnUtc)
-                    .Take(20)
-                    .ToListAsync(ct);
+            var messages = await _db.OutBoxMessages
+                .Where(m =>
+                    m.ProcessedOnUtc == null &&
+                    (m.NextAttemptOnUtc == null || m.NextAttemptOnUtc <= DateTime.UtcNow))
+                .OrderBy(m => m.OccurredOnUtc)
+                .Take(20)
+                .ToListAsync(ct);
+
 
             foreach (var message in messages)
             {
