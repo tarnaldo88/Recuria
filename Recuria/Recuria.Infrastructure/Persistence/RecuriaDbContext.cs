@@ -22,8 +22,8 @@ namespace Recuria.Infrastructure.Persistence
         public DbSet<User> Users => Set<User>();
         public DbSet<Subscription> Subscriptions => Set<Subscription>();
         public DbSet<Invoice> Invoices => Set<Invoice>();
-
         public DbSet<OutBoxMessage> OutBoxMessages => Set<OutBoxMessage>();
+        public DbSet<BillingAttempt> BillingAttempts => Set<BillingAttempt>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
