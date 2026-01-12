@@ -30,5 +30,18 @@ namespace Recuria.Infrastructure.Outbox
                 Content = System.Text.Json.JsonSerializer.Serialize(domainEvent)
             };
         }
+
+        public void MarkFailed(string error)
+        {
+            AttemptCount++;
+            Error = error;
+            NextAttemptOnUtc = DateTime.UtcNow.AddMinutes(Math.Pow(2, AttemptCount));
+        }
+
+        public void MarkProcessed()
+        {
+            ProcessedOnUtc = DateTime.UtcNow;
+            Error = null;
+        }
     }
 }
