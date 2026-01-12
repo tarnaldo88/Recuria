@@ -14,7 +14,8 @@ namespace Recuria.Domain
         public bool Succeeded { get; }
         public string? FailureReason { get; }
 
-        private BillingAttempt(Guid subscriptionId, bool succeeded, string? failureReason)
+        private BillingAttempt() { } //EF CORE
+        public BillingAttempt(Guid subscriptionId, bool succeeded, string? failureReason)
         {
             Id = Guid.NewGuid();
             SubscriptionId = subscriptionId;
