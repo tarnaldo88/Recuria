@@ -11,6 +11,7 @@ namespace Recuria.Application.Subscriptions
 {
     public sealed class SubscriptionActivatedHandler : IDomainEventHandler<SubscriptionActivatedDomainEvent>
     {
+        private readonly IProcessedEventStore _store;
         public Task HandleAsync(SubscriptionActivatedDomainEvent domainEvent, CancellationToken cancellationToken)
         {
             // Placeholder for real behavior:
@@ -21,6 +22,25 @@ namespace Recuria.Application.Subscriptions
             Console.WriteLine($"Subscription {domainEvent.SubscriptionId} activated for Org {domainEvent.OrganizationId}");
 
             return Task.CompletedTask;
+        }
+       
+
+        public async Task Handle(
+            SubscriptionActivated evt,
+            CancellationToken ct)
+        {
+            var alreadyHandled = await _db.ProcessedEvents
+                .AnyAsync(x => x.EventId == evt.Id, ct);
+
+            if (alreadyHandled)
+                return;
+
+            // perform side effects safely here
+
+            _db.ProcessedEvents.Add(
+                new ProcessedEvent(evt.Id));
+
+            await _db.SaveChangesAsync(ct);
         }
     }
 }
