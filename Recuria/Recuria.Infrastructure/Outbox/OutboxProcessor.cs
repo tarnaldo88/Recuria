@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Recuria.Infrastructure.Outbox
@@ -38,16 +39,16 @@ namespace Recuria.Infrastructure.Outbox
                 try
                 {
                     var type = Type.GetType(message.Type)!;
-                    var domainEvent = (IDomainEvent)System.Text.Json.JsonSerializer.Deserialize(message.Content, type)!;
+                    var domainEvent = (IDomainEvent)
+                        JsonSerializer.Deserialize(message.Content, type)!;
 
                     await _dispatcher.DispatchAsync(domainEvent, ct);
 
-                    message.ProcessedOnUtc = DateTime.UtcNow;
+                    message.MarkProcessed();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    message.Error = ex.Message;
-                    //message.IncrementRetry();
+                    message.MarkFailed(ex.ToString());
                 }
             }
 
