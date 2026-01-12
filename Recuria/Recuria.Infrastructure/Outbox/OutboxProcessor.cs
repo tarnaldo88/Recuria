@@ -14,13 +14,16 @@ namespace Recuria.Infrastructure.Outbox
     {
         private readonly RecuriaDbContext _db;
         private readonly IDomainEventDispatcher _dispatcher;
+        private readonly IDatabaseDistributedLock _lock;
 
         public OutboxProcessor(
             RecuriaDbContext db,
-            IDomainEventDispatcher dispatcher)
+            IDomainEventDispatcher dispatcher,
+            IDatabaseDistributedLock distributedLock)
         {
             _db = db;
             _dispatcher = dispatcher;
+            _lock = distributedLock;
         }
             
         public async Task ProcessAsync(CancellationToken ct)
