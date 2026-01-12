@@ -3,6 +3,7 @@ using Recuria.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,13 +19,12 @@ namespace Recuria.Infrastructure.Idempotency
         }
 
         public Task<bool> ExistsAsync(Guid eventId, CancellationToken ct)
-        {
-            throw new NotImplementedException();
-        }
+            => _db.ProcessedEvents.AnyAsync(X500DistinguishedName => x.EventId == eventId, ct);
 
         public Task MarkProcessedAsync(Guid eventId, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            _db.ProcessedEvents.Add(new ProcessedEvent(eventId));
+                await _db.SaveChangesAsync(ct);
         }
     }
 }
