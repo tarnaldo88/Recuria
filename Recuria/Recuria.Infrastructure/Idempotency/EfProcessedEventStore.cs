@@ -19,7 +19,7 @@ namespace Recuria.Infrastructure.Idempotency
         }
 
         public Task<bool> ExistsAsync(Guid eventId, CancellationToken ct)
-            => _db.ProcessedEvents.AnyAsync(X500DistinguishedName => x.EventId == eventId, ct);
+            => _db.ProcessedEvents.AnyAsync(x => x.EventId == eventId, ct);
 
         public Task MarkProcessedAsync(Guid eventId, CancellationToken ct)
         {
