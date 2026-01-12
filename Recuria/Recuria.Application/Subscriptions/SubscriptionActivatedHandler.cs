@@ -1,4 +1,5 @@
-﻿using Recuria.Domain.Abstractions;
+﻿using Recuria.Application.Interface.Idempotency;
+using Recuria.Domain.Abstractions;
 using Recuria.Domain.Events;
 using Recuria.Domain.Events.Subscription;
 using System;
@@ -12,6 +13,12 @@ namespace Recuria.Application.Subscriptions
     public sealed class SubscriptionActivatedHandler : IDomainEventHandler<SubscriptionActivatedDomainEvent>
     {
         private readonly IProcessedEventStore _store;
+
+        public SubscriptionActivatedHandler(IProcessedEventStore store)
+        {
+            _store = store;
+        }
+
         public Task HandleAsync(SubscriptionActivatedDomainEvent domainEvent, CancellationToken cancellationToken)
         {
             // Placeholder for real behavior:
@@ -23,24 +30,16 @@ namespace Recuria.Application.Subscriptions
 
             return Task.CompletedTask;
         }
-       
 
-        public async Task Handle(
-            SubscriptionActivated evt,
-            CancellationToken ct)
+
+        public async Task Handle(SubscriptionActivated evt, CancellationToken ct)
         {
-            var alreadyHandled = await _db.ProcessedEvents
-                .AnyAsync(x => x.EventId == evt.Id, ct);
-
-            if (alreadyHandled)
+            if (await _store.ExistsAsync(evt.Id, ct))
                 return;
 
-            // perform side effects safely here
+            // business side effects here
 
-            _db.ProcessedEvents.Add(
-                new ProcessedEvent(evt.Id));
-
-            await _db.SaveChangesAsync(ct);
+            await _store.MarkProcessedAsync(evt.Id, ct);
         }
     }
 }
