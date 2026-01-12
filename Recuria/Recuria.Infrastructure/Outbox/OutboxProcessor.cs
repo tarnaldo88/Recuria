@@ -28,6 +28,9 @@ namespace Recuria.Infrastructure.Outbox
             
         public async Task ProcessAsync(CancellationToken ct)
         {
+            if (!await _lock.TryAcquireAsync(LockName, ct))
+                return; // another instance is running
+
             var messages = await _db.OutBoxMessages
                 .Where(m =>
                     m.ProcessedOnUtc == null &&
