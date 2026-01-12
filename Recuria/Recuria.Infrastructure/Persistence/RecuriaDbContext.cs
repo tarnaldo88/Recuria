@@ -33,9 +33,9 @@ namespace Recuria.Infrastructure.Persistence
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             var domainEvents = ChangeTracker
-        .Entries<IHasDomainEvents>()
-        .SelectMany(e => e.Entity.DomainEvents)
-        .ToList();
+                .Entries<IHasDomainEvents>()
+                .SelectMany(e => e.Entity.DomainEvents)
+                .ToList();
 
             var outBoxMessages = domainEvents
                 .Select(OutBoxMessage.FromDomainEvent)
