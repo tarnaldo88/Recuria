@@ -17,6 +17,9 @@ namespace Recuria.Infrastructure.Outbox
         public DateTime? ProcessedOnUtc { get; set; }
         public string? Error { get; set; }
 
+        public int AttemptCount { get; private set; }
+        public DateTime? NextAttemptOnUtc { get; private set; }
+
         public static OutBoxMessage FromDomainEvent(IDomainEvent domainEvent)
         {
             return new OutBoxMessage
