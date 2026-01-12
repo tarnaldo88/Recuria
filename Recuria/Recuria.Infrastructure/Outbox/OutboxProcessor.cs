@@ -43,6 +43,7 @@ namespace Recuria.Infrastructure.Outbox
                 catch(Exception ex)
                 {
                     message.Error = ex.Message;
+                    //message.IncrementRetry();
                 }
             }
 
