@@ -3,6 +3,7 @@ using Recuria.Application;
 using Recuria.Domain;
 using Recuria.Domain.Abstractions;
 using Recuria.Domain.Entities;
+using Recuria.Infrastructure.Idempotency;
 using Recuria.Infrastructure.Outbox;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,7 @@ namespace Recuria.Infrastructure.Persistence
         public DbSet<Invoice> Invoices => Set<Invoice>();
         public DbSet<OutBoxMessage> OutBoxMessages => Set<OutBoxMessage>();
         public DbSet<BillingAttempt> BillingAttempts => Set<BillingAttempt>();
+        public DbSet<ProcessedEvent> ProcessedEvents => Set<ProcessedEvent>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
