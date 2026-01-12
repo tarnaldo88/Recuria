@@ -30,9 +30,9 @@ namespace Recuria.Domain.Entities
 
         public DateTime PeriodStart { get; private set; }
         public DateTime PeriodEnd { get; private set; }
-        private readonly List<BillingAttempt> _billingAttempts = new();
+        private readonly List<BillingAttempt> _billingAttempts = new List<BillingAttempt>();
         public IReadOnlyCollection<BillingAttempt> BillingAttempts => _billingAttempts.AsReadOnly();
-        private readonly List<IDomainEvent> _domainEvents = new();
+        private readonly List<IDomainEvent> _domainEvents = new List<IDomainEvent>();
         public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents;
 
         protected Subscription() { } //EF Core

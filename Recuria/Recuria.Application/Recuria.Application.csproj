@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Recuria.Domain\Recuria.Domain.csproj" />
+  
   </ItemGroup>
 
 </Project>
