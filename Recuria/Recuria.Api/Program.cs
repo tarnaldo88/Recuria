@@ -1,7 +1,14 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using OpenTelemetry.Instrumentation.AspNetCore;
+using OpenTelemetry.Instrumentation.Http;
+using OpenTelemetry.Instrumentation.EntityFrameworkCore;
+using OpenTelemetry.Instrumentation.Runtime;
+using OpenTelemetry.Instrumentation.Process;
+using OpenTelemetry.Exporter.Prometheus;
 using Recuria.Application.Interface;
 using Recuria.Application.Observability;
 using Recuria.Application.Subscriptions;
@@ -48,11 +55,11 @@ builder.Services.Scan(scan => scan
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource =>
-        resource.AddService(Telemetry.ServiceName))
+        resource.AddService("Recuria"))
     .WithTracing(tracing =>
     {
         tracing
-            .AddSource(Telemetry.ServiceName)
+            .AddSource("Recuria")
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
             .AddEntityFrameworkCoreInstrumentation()
@@ -61,7 +68,7 @@ builder.Services.AddOpenTelemetry()
     .WithMetrics(metrics =>
     {
         metrics
-            .AddMeter(Telemetry.ServiceName)
+            .AddMeter("Recuria")
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
