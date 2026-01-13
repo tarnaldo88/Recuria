@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Recuria.Application.Interface;
 using Recuria.Domain.Abstractions;
 using System;
 using System.Collections.Generic;
@@ -10,22 +11,30 @@ namespace Recuria.Infrastructure.Persistence
 {
     public class DomainEventDispatcher : IDomainEventDispatcher
     {
-        private readonly IServiceProvider _provider;
+        private readonly IServiceProvider _serviceProvider;
 
         public DomainEventDispatcher(IServiceProvider provider)
         {
-            _provider = provider;
+            _serviceProvider = provider;
         }
 
-        public async Task DispatchAsync(IDomainEvent domainEvent, CancellationToken cancellationToken)
+        public async Task DispatchAsync(IDomainEvent domainEvent, CancellationToken ct)
         {
-            var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(domainEvent.GetType());
+            var eventType = domainEvent.GetType();
 
-            var handlers = _provider.GetServices(handlerType);
+            var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(eventType);
+
+            var handlers = _serviceProvider.GetServices(handlerType);
 
             foreach (var handler in handlers)
             {
-                await((dynamic)handler).HandleAsync((dynamic)domainEvent, cancellationToken);
+                var method = handlerType.GetMethod(nameof(IDomainEventHandler<IDomainEvent>.HandleAsync));
+
+                if (method is null)
+                    continue;
+
+                var task = (Task)method.Invoke(handler, new object[] { domainEvent, ct })!;
+                await task;
             }
         }
     }

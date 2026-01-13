@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Recuria.Application.Interface;
+using Recuria.Application.Subscriptions;
 using Recuria.Domain.Abstractions;
 using Recuria.Domain.Events;
 using Recuria.Infrastructure;
@@ -28,7 +29,9 @@ builder.Services.AddHostedService<OutboxProcessorHostedService>();
 builder.Services.AddScoped<IDatabaseDistributedLock, SqlServerDistributedLock>();
 
 builder.Services.Scan(scan => scan
-    .FromAssembliesOf(typeof(IDomainEventHandler<>))
+    .FromAssemblies(
+        typeof(IDomainEventHandler<>).Assembly,
+        typeof(SubscriptionActivatedHandler).Assembly)
     .AddClasses(classes => classes.AssignableTo(typeof(IDomainEventHandler<>)))
     .AsImplementedInterfaces()
     .WithScopedLifetime());
