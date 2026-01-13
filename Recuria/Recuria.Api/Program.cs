@@ -1,18 +1,19 @@
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Recuria.Application.Interface;
+using Recuria.Application.Observability;
 using Recuria.Application.Subscriptions;
 using Recuria.Domain.Abstractions;
 using Recuria.Domain.Events;
 using Recuria.Infrastructure;
+using Recuria.Infrastructure.Observability;
 using Recuria.Infrastructure.Outbox;
 using Recuria.Infrastructure.Persistence;
 using Recuria.Infrastructure.Persistence.Locking;
 using Recuria.Infrastructure.Repositories;
 using Scrutor;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
-using Recuria.Infrastructure.Observability;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +35,8 @@ builder.Services.AddHostedService<OutboxProcessorHostedService>();
 builder.Services.AddScoped<IDatabaseDistributedLock, SqlServerDistributedLock>();
 builder.Services.AddLogging();
 builder.Services.AddMetrics();
+builder.Services.AddScoped<ISubscriptionTelemetry, SubscriptionTelemetry>();
+
 
 builder.Services.Scan(scan => scan
     .FromAssemblies(
