@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Recuria.Domain.Abstractions;
 using Recuria.Infrastructure.Persistence;
 using System;
@@ -15,16 +16,19 @@ namespace Recuria.Infrastructure.Outbox
         private readonly RecuriaDbContext _db;
         private readonly IDomainEventDispatcher _dispatcher;
         private readonly IDatabaseDistributedLock _lock;
+        private readonly ILogger<OutboxProcessor> _logger;
         private const string LockName = "OutboxProcessorLock";
 
         public OutboxProcessor(
             RecuriaDbContext db,
             IDomainEventDispatcher dispatcher,
-            IDatabaseDistributedLock distributedLock)
+            IDatabaseDistributedLock distributedLock,
+            ILogger<OutboxProcessor> logger)
         {
             _db = db;
             _dispatcher = dispatcher;
             _lock = distributedLock;
+            _logger = logger;
         }
             
         public async Task ProcessAsync(CancellationToken ct)
@@ -51,6 +55,11 @@ namespace Recuria.Infrastructure.Outbox
                         await _dispatcher.DispatchAsync(domainEvent, ct);
 
                         message.ProcessedOnUtc = DateTime.UtcNow;
+
+                        _logger.LogDebug(
+                            "Dispatching outbox message {MessageId} of type {Type}",
+                            message.Id,
+                            message.Type);
                     }
                     catch (Exception ex)
                     {
@@ -58,7 +67,14 @@ namespace Recuria.Infrastructure.Outbox
                         message.RetryCount++;
                         message.NextRetryOnUtc =
                             DateTime.UtcNow.AddMinutes(Math.Pow(2, message.RetryCount));
+
+                        _logger.LogError(ex,
+                            "Failed to process outbox message {MessageId}",
+                            message.Id);
                     }
+                    _logger.LogInformation(
+                        "Outbox message {MessageId} processed successfully",
+                        message.Id);
                 }
 
                 await _db.SaveChangesAsync(ct);
