@@ -126,6 +126,9 @@ namespace Recuria.Application
 
         private void HandlePastDue(Subscription subscription, DateTime now)
         {
+            _logger.LogWarning(
+               "Handling overdue subscription {SubscriptionId}",
+               subscription.Id);
             _billingService.HandleOverdueSubscription(subscription, now);
         }
     }
