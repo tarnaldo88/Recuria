@@ -1,4 +1,5 @@
-﻿using Recuria.Application.Interface.Idempotency;
+﻿using Recuria.Application.Interface;
+using Recuria.Application.Interface.Idempotency;
 using Recuria.Domain.Abstractions;
 using Recuria.Domain.Events;
 using Recuria.Domain.Events.Subscription;
