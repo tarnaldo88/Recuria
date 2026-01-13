@@ -13,26 +13,28 @@ namespace Recuria.Application.Subscriptions
 {
     public sealed class SubscriptionActivatedHandler : IDomainEventHandler<SubscriptionActivatedDomainEvent>
     {
-        private readonly IProcessedEventStore _processedEvents;
+        private readonly IProcessedEventStore _store;
 
-        public SubscriptionActivatedHandler(IProcessedEventStore processedEvents)
+        public SubscriptionActivatedHandler(IProcessedEventStore store)
         {
-            _processedEvents = processedEvents;
+            _store = store;
         }
 
         public async Task HandleAsync(
             SubscriptionActivatedDomainEvent evt,
             CancellationToken ct)
         {
-            if (await _processedEvents.ExistsAsync(evt.EventId, ct))
+            var handlerName = nameof(SubscriptionActivatedHandler);
+
+            if (await _store.ExistsAsync(evt.EventId, handlerName, ct))
                 return;
 
-            // Application-level side effects
-            // - enqueue integration event
+            // Side effects here
+            // - send email
+            // - publish integration event
             // - provision tenant
-            // - notify external systems
 
-            await _processedEvents.MarkProcessedAsync(evt.EventId, ct);
+            await _store.MarkProcessedAsync(evt.EventId, handlerName, ct);
         }
     }
 }

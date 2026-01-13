@@ -12,13 +12,12 @@ namespace Recuria.Domain.Events.Subscription
         public Guid SubscriptionId { get; }
         public Guid OrganizationId { get; }
         public DateTime OccurredOn { get; } = DateTime.UtcNow;
-        public Guid EventId;
+        public Guid EventId { get; } = Guid.NewGuid();
 
-        public SubscriptionActivatedDomainEvent(Guid subscriptionId, Guid organizationId, Guid eventId  )
+        public SubscriptionActivatedDomainEvent(Guid subscriptionId, Guid organizationId)
         {
             SubscriptionId = subscriptionId;
             OrganizationId = organizationId;
-            EventId = eventId;
         }
     }
 }

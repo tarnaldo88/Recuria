@@ -8,7 +8,7 @@ namespace Recuria.Application.Interface.Idempotency
 {
     public interface IProcessedEventStore
     {
-        Task<bool> ExistsAsync(Guid eventId, CancellationToken ct);
-        Task MarkProcessedAsync(Guid eventId, CancellationToken ct);
+        Task<bool> ExistsAsync(Guid eventId, string handler, CancellationToken ct);
+        Task MarkProcessedAsync(Guid eventId, string handler, CancellationToken ct);
     }
 }
