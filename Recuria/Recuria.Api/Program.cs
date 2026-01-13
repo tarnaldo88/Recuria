@@ -9,6 +9,11 @@ using Recuria.Infrastructure.Persistence;
 using Recuria.Infrastructure.Persistence.Locking;
 using Recuria.Infrastructure.Repositories;
 using Scrutor;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using Recuria.Infrastructure.Observability;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +43,29 @@ builder.Services.Scan(scan => scan
     .AsImplementedInterfaces()
     .WithScopedLifetime());
 
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource =>
+        resource.AddService(Telemetry.ServiceName))
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddSource(Telemetry.ServiceName)
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddEntityFrameworkCoreInstrumentation()
+            .AddOtlpExporter();
+    })
+    .WithMetrics(metrics =>
+    {
+        metrics
+            .AddMeter(Telemetry.ServiceName)
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddProcessInstrumentation()
+            .AddPrometheusExporter();
+    });
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -47,5 +75,8 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
+
 
 app.Run();

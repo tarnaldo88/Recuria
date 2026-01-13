@@ -2,6 +2,8 @@
 using Recuria.Application.Interface;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
+//using Recuria.Infrastructure.Observability;
+using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
