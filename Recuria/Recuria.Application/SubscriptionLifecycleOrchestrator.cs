@@ -1,11 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 using Recuria.Application.Interface;
+using Recuria.Application.Observability;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
-//using Recuria.Infrastructure.Observability;
-using System.Diagnostics;
 using System;
 using System.Collections.Generic;
+//using Recuria.Infrastructure.Observability;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,19 +18,26 @@ namespace Recuria.Application
         private readonly IBillingService _billingService;
         private readonly IBillingRetryPolicy _retryPolicy;
         private readonly ILogger<SubscriptionLifecycleOrchestrator> _logger;
+        private readonly ISubscriptionTelemetry _telemetry;
 
         public SubscriptionLifecycleOrchestrator(
             IBillingService billingService,
             IBillingRetryPolicy retryPolicy,
-            ILogger<SubscriptionLifecycleOrchestrator> logger)
+            ILogger<SubscriptionLifecycleOrchestrator> logger,
+            ISubscriptionTelemetry telemetry)
         {
             _billingService = billingService;
             _retryPolicy = retryPolicy;
             _logger = logger;
+            _telemetry = telemetry;
         }
 
         public void Process(Subscription subscription, DateTime now)
         {
+            using var _ = _telemetry.BeginProcessing(
+                    subscription.Id,
+                    subscription.Status.ToString());
+
             _logger.LogInformation(
             "Processing subscription {SubscriptionId} with status {Status}",
             subscription.Id,
