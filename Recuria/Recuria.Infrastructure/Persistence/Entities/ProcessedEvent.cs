@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Recuria.Infrastructure.Idempotency
+namespace Recuria.Infrastructure.Persistence.Entities
 {
     public sealed class ProcessedEvent
     {
