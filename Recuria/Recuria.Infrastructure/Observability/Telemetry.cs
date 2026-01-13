@@ -12,11 +12,9 @@ namespace Recuria.Infrastructure.Observability
     {
         public const string ServiceName = "Recuria";
 
-        public static readonly ActivitySource ActivitySource =
-            new(ServiceName);
+        public static readonly ActivitySource ActivitySource = new(ServiceName);
 
-        public static readonly Meter Meter =
-            new(ServiceName);
+        public static readonly Meter Meter = new(ServiceName);
 
         // Metrics
         public static readonly Counter<long> BillingAttempts = Meter.CreateCounter<long>("billing_attempts_total");
