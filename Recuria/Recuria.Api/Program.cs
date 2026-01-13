@@ -27,6 +27,8 @@ builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 builder.Services.AddScoped<OutboxProcessor>();
 builder.Services.AddHostedService<OutboxProcessorHostedService>();
 builder.Services.AddScoped<IDatabaseDistributedLock, SqlServerDistributedLock>();
+builder.Services.AddLogging();
+builder.Services.AddMetrics();
 
 builder.Services.Scan(scan => scan
     .FromAssemblies(
