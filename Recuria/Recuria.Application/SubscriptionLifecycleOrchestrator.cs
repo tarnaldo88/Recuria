@@ -28,6 +28,11 @@ namespace Recuria.Application
 
         public void Process(Subscription subscription, DateTime now)
         {
+            _logger.LogInformation(
+            "Processing subscription {SubscriptionId} with status {Status}",
+            subscription.Id,
+            subscription.Status);
+
             switch (subscription.Status)
             { 
                 case SubscriptionStatus.Trial:
@@ -48,14 +53,14 @@ namespace Recuria.Application
 
                 default:
                     throw new InvalidOperationException($"Unhandled subscription status: {subscription.Status}");
-            }
-
+            }            
         }
 
         private void HandleTrial(Subscription subscription, DateTime now)
         {
             if( now >= subscription.PeriodEnd)
             {
+                _logger.LogInformation("Trial expired for subscription {SubscriptionId}", subscription.Id);
                 subscription.Expire(now);
             }
         }
@@ -63,7 +68,12 @@ namespace Recuria.Application
         private void HandleActive(Subscription subscription, DateTime now)
         {
             if (now < subscription.PeriodEnd)
+            {
+                _logger.LogDebug(
+                    "Subscription {SubscriptionId} still within billing period",
+                    subscription.Id);
                 return;
+            }             
 
             var attempt = 0;
 
@@ -71,24 +81,45 @@ namespace Recuria.Application
             {
                 try
                 {
+                    attempt++;
+
+                    _logger.LogInformation(
+                        "Running billing cycle for subscription {SubscriptionId}, attempt {Attempt}",
+                        subscription.Id,
+                        attempt);
+
                     _billingService.RunBillingCycle(subscription, now);
+
                     subscription.RecordBillingAttempt(BillingAttempt.Success(subscription.Id));
                     subscription.AdvancePeriod(now);
+
+                    _logger.LogInformation(
+                        "Billing succeeded for subscription {SubscriptionId}",
+                        subscription.Id);
+
                     return;
                 }
                 catch (Exception ex)
                 {
-                    subscription.RecordBillingAttempt(BillingAttempt.Failure(subscription.Id, ex.Message));
-                    attempt++;
+                    subscription.RecordBillingAttempt(
+                        BillingAttempt.Failure(subscription.Id, ex.Message));
+
+                    _logger.LogWarning(ex,
+                        "Billing attempt {Attempt} failed for subscription {SubscriptionId}",
+                        attempt,
+                        subscription.Id);
 
                     if (!_retryPolicy.ShouldRetry(attempt, ex))
                     {
                         subscription.MarkPastDue();
+
+                        _logger.LogWarning(
+                            "Subscription {SubscriptionId} marked PastDue after {Attempts} failed billing attempts",
+                            subscription.Id,
+                            attempt);
+
                         return;
                     }
-
-                    // In real systems, this would schedule a retry
-                    // Here we simply allow the loop to continue
                 }
             }
         }
