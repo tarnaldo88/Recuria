@@ -16,6 +16,10 @@ namespace Recuria.Infrastructure.Idempotency
             builder.ToTable("ProcessedEvents");
             builder.HasKey(x => x.EventId);
 
+            builder.Property(x => x.Handler)
+                .HasMaxLength(200)
+                .IsRequired();
+
             builder.Property(x => x.ProcessedOnUtc).IsRequired();
         }
     }
