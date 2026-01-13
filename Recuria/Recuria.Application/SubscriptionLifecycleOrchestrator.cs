@@ -1,4 +1,5 @@
-﻿using Recuria.Application.Interface;
+﻿using Microsoft.Extensions.Logging;
+using Recuria.Application.Interface;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
 using System;
@@ -13,13 +14,16 @@ namespace Recuria.Application
     {
         private readonly IBillingService _billingService;
         private readonly IBillingRetryPolicy _retryPolicy;
+        private readonly ILogger<SubscriptionLifecycleOrchestrator> _logger;
 
         public SubscriptionLifecycleOrchestrator(
             IBillingService billingService,
-            IBillingRetryPolicy retryPolicy)
+            IBillingRetryPolicy retryPolicy,
+            ILogger<SubscriptionLifecycleOrchestrator> logger)
         {
             _billingService = billingService;
             _retryPolicy = retryPolicy;
+            _logger = logger;
         }
 
         public void Process(Subscription subscription, DateTime now)
