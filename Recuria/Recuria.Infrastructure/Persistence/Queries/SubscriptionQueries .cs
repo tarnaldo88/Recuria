@@ -1,4 +1,5 @@
-﻿using Recuria.Application.Contracts.Subscription;
+﻿using Microsoft.EntityFrameworkCore;
+using Recuria.Application.Contracts.Subscription;
 using Recuria.Domain.Entities;
 using Recuria.Infrastructure.Persistence.Queries.Interface;
 using System;
@@ -23,11 +24,11 @@ namespace Recuria.Infrastructure.Persistence.Queries
             return await _db.Subscriptions
             .Where(s => s.OrganizationId == organizationId)
             .Where(s => s.Status != SubscriptionStatus.Canceled)
-            .OrderByDescending(s => s.CreatedOnUtc)
+            .OrderByDescending(s => s.PeriodEnd)
             .Select(s => new SubscriptionDetailsDto(
                 new SubscriptionDto(
                     s.Id,
-                    s.PlanCode,
+                    s.Plan,
                     s.Status.ToString(),
                     s.PeriodStart,
                     s.PeriodEnd,
@@ -35,10 +36,10 @@ namespace Recuria.Infrastructure.Persistence.Queries
                     s.Status == SubscriptionStatus.PastDue
                 ),
                 new SubscriptionActionAvailabilityDto(
-                    CanActivate: s.Status == SubscriptionStatus.Trial,
-                    CanCancel: s.Status == SubscriptionStatus.Active
-                                 || s.Status == SubscriptionStatus.PastDue,
-                    CanUpgrade: s.Status == SubscriptionStatus.Active
+                    s.Status == SubscriptionStatus.Trial,
+                    s.Status == SubscriptionStatus.Active
+                        || s.Status == SubscriptionStatus.PastDue,
+                    s.Status == SubscriptionStatus.Active
                 )
             ))
             .FirstOrDefaultAsync(ct);

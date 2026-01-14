@@ -36,5 +36,24 @@ namespace Recuria.Infrastructure.Persistence.Queries
                 ))
                 .ToListAsync(ct);
         }
+
+        public async Task<InvoiceDetailsDto?> GetDetailsAsync(
+            Guid invoiceId,
+            CancellationToken ct)
+        {
+            return await _db.Invoices
+                .Where(i => i.Id == invoiceId)
+                .Select(i => new InvoiceDetailsDto(
+                    i.Id,
+                    i.InvoiceNumber,
+                    i.IssuedOnUtc,
+                    i.PaidOnUtc,
+                    new MoneyDto(i.Subtotal.Amount, i.Subtotal.Currency),
+                    new MoneyDto(i.Tax.Amount, i.Tax.Currency),
+                    new MoneyDto(i.Total.Amount, i.Total.Currency),
+                    i.Status.ToString()
+                ))
+                .FirstOrDefaultAsync(ct);
+        }
     }
 }
