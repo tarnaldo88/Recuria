@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Recuria.Application.Contracts
+namespace Recuria.Application.Contracts.Subscription
 {
     public sealed record SubscriptionDetailsDto(
         SubscriptionDto Subscription,

@@ -1,4 +1,4 @@
-﻿using Recuria.Application.Contracts;
+﻿using Recuria.Application.Contracts.Subscription;
 using System;
 using System.Collections.Generic;
 using System.Linq;
