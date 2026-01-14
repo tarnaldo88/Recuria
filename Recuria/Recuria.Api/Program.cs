@@ -44,10 +44,7 @@ builder.Services.AddScoped<IDatabaseDistributedLock, SqlServerDistributedLock>()
 builder.Services.AddLogging();
 builder.Services.AddMetrics();
 builder.Services.AddScoped<ISubscriptionTelemetry, SubscriptionTelemetry>();
-builder.Services.AddScoped<Recuria.Infrastructure.Persistence.Queries.Interface.ISubscriptionQueries, SubscriptionQueries>();
-builder.Services.AddScoped<IOrganizationQueries, OrganizationQueries>();
-builder.Services.AddScoped<IInvoiceQueries, InvoiceQueries>();
-
+builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.Scan(scan => scan
     .FromAssemblies(
