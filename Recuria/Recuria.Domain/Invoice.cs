@@ -16,12 +16,14 @@ namespace Recuria.Domain
         public DateTime InvoiceDate { get; private set; } = DateTime.UtcNow;
         public decimal Amount { get; private set; }
         public bool Paid { get; private set; }
+        public string InvoiceNumber { get; private set; }
 
         public Invoice(Guid subscriptionId, decimal amount)
         {
             SubscriptionId = subscriptionId;
             Amount = amount;
             Paid = false;
+            InvoiceNumber = string.Empty;
         }
 
         public void MarkAsPaid()
