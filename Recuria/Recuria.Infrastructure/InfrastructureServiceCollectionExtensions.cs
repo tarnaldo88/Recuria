@@ -1,14 +1,16 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Recuria.Application.Interface;
 using Recuria.Infrastructure.Persistence;
+using Recuria.Infrastructure.Persistence.Queries;
+using Scrutor;
+using Scrutor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Scrutor;
-using Recuria.Infrastructure.Persistence.Queries;
-using Recuria.Application.Interface;
 
 namespace Recuria.Infrastructure
 {
@@ -18,7 +20,9 @@ namespace Recuria.Infrastructure
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            services.AddDbContext<RecuriaDbContext>(...);
+            services.AddDbContext<RecuriaDbContext>(options =>
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
+            );
 
             services.Scan(scan => scan
                 .FromAssemblyOf<SubscriptionQueries>()

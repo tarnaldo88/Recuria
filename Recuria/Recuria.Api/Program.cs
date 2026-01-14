@@ -19,7 +19,6 @@ using Recuria.Infrastructure.Observability;
 using Recuria.Infrastructure.Outbox;
 using Recuria.Infrastructure.Persistence;
 using Recuria.Infrastructure.Persistence.Locking;
-using Recuria.Infrastructure.Persistence.Queries.Interface;
 using Recuria.Infrastructure.Repositories;
 using Scrutor;
 
