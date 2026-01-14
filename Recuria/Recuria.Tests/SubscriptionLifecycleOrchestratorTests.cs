@@ -1,7 +1,10 @@
-﻿using FluentAssertions;
+﻿using Castle.Core.Logging;
+using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Recuria.Application;
 using Recuria.Application.Interface;
+using Recuria.Application.Observability;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
 using System;
@@ -18,6 +21,8 @@ namespace Recuria.Tests
     {
         private readonly Mock<IBillingService> _billingService;
         private readonly Mock<IBillingRetryPolicy> _retryPolicy;
+        private readonly Mock<ILogger<SubscriptionLifecycleOrchestrator>> _logger;
+        private readonly Mock<ISubscriptionTelemetry> _telemetry;
         private readonly SubscriptionLifecycleOrchestrator _orchestrator;
         private readonly Organization _org;
 
@@ -25,10 +30,14 @@ namespace Recuria.Tests
         {
             _billingService = new Mock<IBillingService>();
             _retryPolicy = new Mock<IBillingRetryPolicy>();
+            _logger = new Mock<ILogger<SubscriptionLifecycleOrchestrator>>();
+            _telemetry = new Mock<ISubscriptionTelemetry>();
 
             _orchestrator = new SubscriptionLifecycleOrchestrator(
                 _billingService.Object,
-                _retryPolicy.Object
+                _retryPolicy.Object,
+                _logger.Object,
+                _telemetry.Object
             );
 
             _org = new Organization("Test Org");
