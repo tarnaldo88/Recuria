@@ -1,6 +1,7 @@
 ﻿using Recuria.Application.Observability;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,10 +15,13 @@ namespace Recuria.Infrastructure.Observability
             var activity = Telemetry.ActivitySource.StartActivity(
                 "SubscriptionLifecycle.Process");
 
-            activity?.SetTag("subscription.id", subscriptionId);
-            activity?.SetTag("subscription.status", status);
+            if (activity != null)
+            {
+                activity.SetTag("subscription.id", subscriptionId);
+                activity.SetTag("subscription.status", status);
+            }
 
-            return activity ?? NullScope.Instance;
+            return new ActivityScope(activity);
         }
 
         public void BillingAttempted()
@@ -28,5 +32,17 @@ namespace Recuria.Infrastructure.Observability
 
         public void SubscriptionActivated()
             => Telemetry.SubscriptionsActivated.Add(1);
+
+        private class ActivityScope : IDisposable
+        {
+            private readonly Activity? _activity;
+
+            public ActivityScope(Activity? activity) => _activity = activity;
+
+            public void Dispose()
+            {
+                _activity?.Stop();
+            }
+        }
     }
 }
