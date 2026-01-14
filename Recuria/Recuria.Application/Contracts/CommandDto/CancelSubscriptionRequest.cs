@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Recuria.Application.Contracts
+namespace Recuria.Application.Contracts.CommandDto
 {
-    public sealed record ActivateSubscriptionRequest(string PlanceCode);
+    public sealed record CancelSubscriptionRequest(string Reason);
 }
