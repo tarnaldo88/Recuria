@@ -1,9 +1,11 @@
 ﻿using Recuria.Application.Contracts.Subscription;
+using Recuria.Application.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Recuria.Application.Subscriptions
 {
@@ -19,7 +21,7 @@ namespace Recuria.Application.Subscriptions
         [HttpGet("current")]
         public async Task<ActionResult<SubscriptionDto>> GetCurrent()
         {
-            var orgId = /* resolve from auth later */;
+            var orgId = new Guid(); /* resolve from auth later */
             var subscription = await _queries.GetCurrentAsync(orgId);
 
             if (subscription is null)
