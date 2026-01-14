@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
+using OpenTelemetry.Exporter.Prometheus;
+using OpenTelemetry.Instrumentation.AspNetCore;
+using OpenTelemetry.Instrumentation.EntityFrameworkCore;
+using OpenTelemetry.Instrumentation.Http;
+using OpenTelemetry.Instrumentation.Process;
+using OpenTelemetry.Instrumentation.Runtime;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using OpenTelemetry.Instrumentation.AspNetCore;
-using OpenTelemetry.Instrumentation.Http;
-using OpenTelemetry.Instrumentation.EntityFrameworkCore;
-using OpenTelemetry.Instrumentation.Runtime;
-using OpenTelemetry.Instrumentation.Process;
-using OpenTelemetry.Exporter.Prometheus;
 using Recuria.Application.Interface;
 using Recuria.Application.Observability;
 using Recuria.Application.Subscriptions;
@@ -19,6 +19,7 @@ using Recuria.Infrastructure.Observability;
 using Recuria.Infrastructure.Outbox;
 using Recuria.Infrastructure.Persistence;
 using Recuria.Infrastructure.Persistence.Locking;
+using Recuria.Infrastructure.Persistence.Queries.Interface;
 using Recuria.Infrastructure.Repositories;
 using Scrutor;
 
@@ -43,6 +44,9 @@ builder.Services.AddScoped<IDatabaseDistributedLock, SqlServerDistributedLock>()
 builder.Services.AddLogging();
 builder.Services.AddMetrics();
 builder.Services.AddScoped<ISubscriptionTelemetry, SubscriptionTelemetry>();
+builder.Services.AddScoped<Recuria.Infrastructure.Persistence.Queries.Interface.ISubscriptionQueries, SubscriptionQueries>();
+builder.Services.AddScoped<IOrganizationQueries, OrganizationQueries>();
+builder.Services.AddScoped<IInvoiceQueries, InvoiceQueries>();
 
 
 builder.Services.Scan(scan => scan

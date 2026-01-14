@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Recuria.Application.Contracts.Subscription;
+using Recuria.Application.Interface;
 using Recuria.Domain.Entities;
 using Recuria.Infrastructure.Persistence.Queries.Interface;
 using System;
@@ -43,6 +44,11 @@ namespace Recuria.Infrastructure.Persistence.Queries
                 )
             ))
             .FirstOrDefaultAsync(ct);
+        }
+
+        Task<SubscriptionDto?> ISubscriptionQueries.GetCurrentAsync(Guid organizationId, CancellationToken ct)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Recuria.Application.Contracts.Subscription;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,6 @@ namespace Recuria.Application.Interface
 {
     public interface ISubscriptionQueries
     {
-        Task<SubscriptionDto?> GetCurrentAsync(Guid organizationId);
+        Task<SubscriptionDto?> GetCurrentAsync(Guid organizationId, CancellationToken ct);
     }
 }
