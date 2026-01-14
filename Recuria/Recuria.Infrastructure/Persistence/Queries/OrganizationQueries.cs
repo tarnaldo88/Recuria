@@ -1,4 +1,5 @@
-﻿using Recuria.Application.Contracts.Organizations;
+﻿using Microsoft.EntityFrameworkCore;
+using Recuria.Application.Contracts.Organizations;
 using Recuria.Infrastructure.Persistence.Queries.Interface;
 using System;
 using System.Collections.Generic;
@@ -28,7 +29,7 @@ namespace Recuria.Infrastructure.Persistence.Queries
                     o.Name,
                     o.Users.Count,
                     o.Subscriptions
-                        .OrderByDescending(s => s.CreatedOnUtc)
+                        .OrderByDescending(s => s.PeriodEnd)
                         .Select(s => s.Status.ToString())
                         .FirstOrDefault() ?? "None"
                 ))
