@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Recuria.Application.Contracts.Organizations;
 using Recuria.Application.Interface;
 using Recuria.Domain;
 using Recuria.Infrastructure.Persistence.Queries.Interface;
