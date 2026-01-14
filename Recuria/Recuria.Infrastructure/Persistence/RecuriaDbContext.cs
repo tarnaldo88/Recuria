@@ -30,6 +30,10 @@ namespace Recuria.Infrastructure.Persistence
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(RecuriaDbContext).Assembly);
+            modelBuilder.Entity<Invoice>()
+                .HasOne(i => i.Subscription)
+                .WithMany()
+                .HasForeignKey(i => i.SubscriptionId);
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

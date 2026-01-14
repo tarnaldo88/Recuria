@@ -1,4 +1,5 @@
-﻿using Recuria.Application.Contracts.Common;
+﻿using Microsoft.EntityFrameworkCore;
+using Recuria.Application.Contracts.Common;
 using Recuria.Application.Contracts.Invoice;
 using Recuria.Infrastructure.Persistence.Queries.Interface;
 using System;
@@ -19,20 +20,20 @@ namespace Recuria.Infrastructure.Persistence.Queries
         }
 
         public async Task<IReadOnlyList<InvoiceListItemDto>> GetForOrganizationAsync(
-            Guid organizationId,
-            CancellationToken ct)
+        Guid organizationId,
+        CancellationToken ct)
         {
             return await _db.Invoices
-                .Where(i => i.OrganizationId == organizationId)
-                .OrderByDescending(i => i.IssuedOnUtc)
+                .Where(i => i.Subscription.OrganizationId == organizationId)
+                .OrderByDescending(i => i.InvoiceDate)
                 .Select(i => new InvoiceListItemDto(
                     i.Id,
-                    i.IssuedOnUtc,
+                    i.InvoiceDate,
                     new MoneyDto(
-                        i.Total.Amount,
-                        i.Total.Currency
+                        i.Amount,
+                        "USD"          // temporary until currency is modeled
                     ),
-                    i.Status.ToString()
+                    i.Paid ? "Paid" : "Unpaid"
                 ))
                 .ToListAsync(ct);
         }
@@ -41,19 +42,30 @@ namespace Recuria.Infrastructure.Persistence.Queries
             Guid invoiceId,
             CancellationToken ct)
         {
-            return await _db.Invoices
+            var result = await _db.Invoices
                 .Where(i => i.Id == invoiceId)
-                .Select(i => new InvoiceDetailsDto(
+                .Select(i => new
+                {
                     i.Id,
-                    i.InvoiceNumber,
-                    i.IssuedOnUtc,
-                    i.PaidOnUtc,
-                    new MoneyDto(i.Subtotal.Amount, i.Subtotal.Currency),
-                    new MoneyDto(i.Tax.Amount, i.Tax.Currency),
-                    new MoneyDto(i.Total.Amount, i.Total.Currency),
-                    i.Status.ToString()
-                ))
+                    i.InvoiceDate,
+                    i.Paid,
+                    i.Amount
+                })
                 .FirstOrDefaultAsync(ct);
+
+            if (result is null)
+                return null;
+
+            return new InvoiceDetailsDto(
+                result.Id,
+                result.Id.ToString()[..8],   // now safe – in memory
+                result.InvoiceDate,
+                result.Paid ? result.InvoiceDate : null,
+                new MoneyDto(result.Amount, "USD"),
+                new MoneyDto(0, "USD"),
+                new MoneyDto(result.Amount, "USD"),
+                result.Paid ? "Paid" : "Unpaid"
+            );
         }
     }
 }
