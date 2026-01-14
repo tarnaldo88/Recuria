@@ -1,4 +1,5 @@
 ﻿using Recuria.Domain;
+using Recuria.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace Recuria.Application.Contracts.Subscription
 {
     public sealed record SubscriptionDto(Guid Id,
         PlanType PlanCode,
-        string Status,
+        SubscriptionStatus Status,
         DateTime PeriodStart,
         DateTime PeriodEnd,
         bool IsTrial,
