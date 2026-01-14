@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 namespace Recuria.Application.Contracts
 {
     public sealed record SubscriptionDto(Guid Id,
-    string Plan,
-    string Status,
-    DateTime PeriodStart,
-    DateTime PeriodEnd);
+        string PlanCode,
+        string Status,
+        DateTime PeriodStart,
+        DateTime PeriodEnd,
+        bool IsTrial,
+        bool IsPastDue
+    );
 }
