@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Recuria.Application.Contracts.Invoice
+namespace Recuria.Application.Contracts.Users
 {
     public sealed record CurrentUserDto(
         Guid Id,
