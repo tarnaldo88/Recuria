@@ -40,20 +40,17 @@ namespace Recuria.Infrastructure.Persistence.Queries
         {
             return await _db.Organizations
                 .Where(o => o.Id == id)
-                .Select(o => new OrganizationDto
-                {
-                    Id = o.Id,
-                    Name = o.Name,
-
-                    OwnerEmail = o.Users
+                .Select(o => new OrganizationDto(
+                    o.Id,
+                    o.Name,
+                    o.CreatedAt, // make sure you have a DateTime field for CreatedAt
+                    o.Users
                         .Where(u => u.Role == UserRole.Owner)
                         .Select(u => u.Email)
                         .FirstOrDefault() ?? string.Empty,
-
-                    UserCount = o.Users.Count,
-
-                    ActiveSubscription = o.Subscriptions
-                        .Where(s => s.Status == SubscriptionStatus.Active)
+                    o.Users.Count,
+                    o.Subscriptions
+                        .Where(s => s.Status == SubscriptionStatus.Active || s.Status == SubscriptionStatus.Trial)
                         .Select(s => new SubscriptionDto(
                             s.Id,
                             s.Plan,
@@ -63,8 +60,9 @@ namespace Recuria.Infrastructure.Persistence.Queries
                             s.Status == SubscriptionStatus.Trial,
                             s.Status == SubscriptionStatus.PastDue))
                         .FirstOrDefault()
-                })
+                ))
                 .FirstOrDefaultAsync(cancellationToken);
+
         }
 
         public async Task<OrganizationDto?> GetByUserIdAsync(
@@ -72,21 +70,18 @@ namespace Recuria.Infrastructure.Persistence.Queries
             CancellationToken cancellationToken)
         {
             return await _db.Organizations
-                .Where(o => o.Users.Any(u => u.Id == userId))
-                .Select(o => new OrganizationDto
-                {
-                    Id = o.Id,
-                    Name = o.Name,
-
-                    OwnerEmail = o.Users
+                .Where(o => o.Id == userId)
+                .Select(o => new OrganizationDto(
+                    o.Id,
+                    o.Name,
+                    o.CreatedAt, // make sure you have a DateTime field for CreatedAt
+                    o.Users
                         .Where(u => u.Role == UserRole.Owner)
                         .Select(u => u.Email)
                         .FirstOrDefault() ?? string.Empty,
-
-                    UserCount = o.Users.Count,
-
-                    ActiveSubscription = o.Subscriptions
-                        .Where(s => s.Status == SubscriptionStatus.Active)
+                    o.Users.Count,
+                    o.Subscriptions
+                        .Where(s => s.Status == SubscriptionStatus.Active || s.Status == SubscriptionStatus.Trial)
                         .Select(s => new SubscriptionDto(
                             s.Id,
                             s.Plan,
@@ -96,7 +91,7 @@ namespace Recuria.Infrastructure.Persistence.Queries
                             s.Status == SubscriptionStatus.Trial,
                             s.Status == SubscriptionStatus.PastDue))
                         .FirstOrDefault()
-                })
+                ))
                 .FirstOrDefaultAsync(cancellationToken);
         }
     }
