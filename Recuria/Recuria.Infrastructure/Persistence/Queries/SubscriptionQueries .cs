@@ -30,7 +30,7 @@ namespace Recuria.Infrastructure.Persistence.Queries
                 new SubscriptionDto(
                     s.Id,
                     s.Plan,
-                    s.Status.ToString(),
+                    s.Status,
                     s.PeriodStart,
                     s.PeriodEnd,
                     s.Status == SubscriptionStatus.Trial,

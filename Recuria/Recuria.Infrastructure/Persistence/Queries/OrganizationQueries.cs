@@ -60,7 +60,7 @@ namespace Recuria.Infrastructure.Persistence.Queries
                             s.Status,
                             s.PeriodStart,
                             s.PeriodEnd,
-                            s.IsTrial,
+                            s.Status == SubscriptionStatus.Trial,
                             s.Status == SubscriptionStatus.PastDue))
                         .FirstOrDefault()
                 })
@@ -93,7 +93,7 @@ namespace Recuria.Infrastructure.Persistence.Queries
                             s.Status,
                             s.PeriodStart,
                             s.PeriodEnd,
-                            s.IsTrial,
+                            s.Status == SubscriptionStatus.Trial,
                             s.Status == SubscriptionStatus.PastDue))
                         .FirstOrDefault()
                 })
