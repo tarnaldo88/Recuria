@@ -10,7 +10,7 @@ namespace Recuria.Application.Interface
 {
     public interface ISubscriptionQueries
     {
-        Task<SubscriptionDto?> GetCurrentAsync(Guid organizationId, CancellationToken ct);
+        Task<SubscriptionDetailsDto?> GetCurrentAsync(Guid organizationId, CancellationToken ct);
         Task<Organization> GetDomainAsync(Guid organizationId);
         Task<Subscription> GetDomainByIdAsync(Guid subscriptionId);
     }

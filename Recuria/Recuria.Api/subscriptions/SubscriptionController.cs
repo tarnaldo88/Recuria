@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Recuria.Application.Contracts.Subscription;
 using Recuria.Application.Interface;
+using Recuria.Application.Requests;
 
 namespace Recuria.Api.subscriptions
 {

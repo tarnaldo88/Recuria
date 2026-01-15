@@ -46,9 +46,29 @@ namespace Recuria.Infrastructure.Persistence.Queries
             .FirstOrDefaultAsync(ct);
         }
 
-        Task<SubscriptionDto?> ISubscriptionQueries.GetCurrentAsync(Guid organizationId, CancellationToken ct)
+        public async Task<Organization> GetDomainAsync(Guid organizationId)
         {
-            throw new NotImplementedException();
+            var org = await _db.Organizations
+                .Include(o => o.Users)
+                .Include(o => o.Subscriptions)
+                .FirstOrDefaultAsync(o => o.Id == organizationId);
+
+            if (org == null)
+                throw new InvalidOperationException("Organization not found.");
+
+            return org;
+        }
+
+        public async Task<Subscription> GetDomainByIdAsync(Guid subscriptionId)
+        {
+            var subscription = await _db.Subscriptions
+                .Include(s => s.Organization)
+                .FirstOrDefaultAsync(s => s.Id == subscriptionId);
+
+            if (subscription == null)
+                throw new InvalidOperationException("Subscription not found.");
+
+            return subscription;
         }
     }
 }
