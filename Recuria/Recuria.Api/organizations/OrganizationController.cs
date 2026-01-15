@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Recuria.Api.organizations.requests;
 using Recuria.Application.Contracts.Organizations;
 using Recuria.Application.Interface;
+using Recuria.Application.Requests;
 using Recuria.Domain;
 using Recuria.Infrastructure.Persistence.Queries.Interface;
 
@@ -32,7 +32,7 @@ namespace Recuria.Api.organizations
         {
             _logger.LogInformation("Creating organization {Name}", request.Name);
 
-            var orgId = await _ser bvice.CreateOrganizationAsync(request, cancellationToken);
+            var orgId = await _service.CreateOrganizationAsync(request, cancellationToken);
 
             var org = await _queries.GetByIdAsync(orgId, cancellationToken);
 
