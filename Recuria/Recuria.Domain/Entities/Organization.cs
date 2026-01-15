@@ -48,6 +48,40 @@ namespace Recuria.Domain.Entities
 
             return activeSubscriptions.SingleOrDefault();
         }
+
+        public void AddUser(User user, UserRole role)
+        {
+            if (Users.Any(u => u.Id == user.Id))
+                throw new InvalidOperationException("User already exists in organization.");
+
+            user.AssignToOrganization(this, role);
+            Users.Add(user);
+        }
+
+        public void ChangeUserRole(Guid userId, UserRole newRole)
+        {
+            var user = Users.FirstOrDefault(u => u.Id == userId)
+                ?? throw new InvalidOperationException("User not found.");
+
+            if (newRole == UserRole.Owner)
+                throw new InvalidOperationException("Cannot assign owner role.");
+
+            if (user.Role == UserRole.Owner)
+                throw new InvalidOperationException("Cannot change owner role.");
+
+            user.ChangeRole(newRole);
+        }
+
+        public void RemoveUser(Guid userId)
+        {
+            var user = Users.FirstOrDefault(u => u.Id == userId)
+                ?? throw new InvalidOperationException("User not found.");
+
+            if (user.Role == UserRole.Owner)
+                throw new InvalidOperationException("Cannot remove owner.");
+
+            Users.Remove(user);
+        }
     }
 
 

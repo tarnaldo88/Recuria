@@ -1,4 +1,5 @@
 ﻿using Recuria.Application.Interface;
+using Recuria.Application.Requests;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
 using System;
@@ -57,6 +58,16 @@ namespace Recuria.Application
             }
 
             organization.Users.Remove(user);
+        }
+
+        public Task<Guid> CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task AddUserAsync(Guid id, AddUserRequest request, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }
