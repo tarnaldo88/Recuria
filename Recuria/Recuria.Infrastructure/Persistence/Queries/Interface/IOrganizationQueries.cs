@@ -10,5 +10,6 @@ namespace Recuria.Infrastructure.Persistence.Queries.Interface
     public interface IOrganizationQueries
     {
         Task<OrganizationSummaryDto?> GetAsync( Guid organizationId, CancellationToken ct);
+        Orga GetByIdAsync
     }
 }

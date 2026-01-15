@@ -17,5 +17,7 @@ namespace Recuria.Application.Interface
         void ChangeUserRole(Organization organization, Guid userId, UserRole role);
 
         void RemoveUser(Organization organization, Guid userId);
+
+        Task<Guid> CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken cancellationToken);
     }
 }

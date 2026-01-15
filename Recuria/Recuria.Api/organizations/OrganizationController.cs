@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Recuria.Api.organizations.requests;
 using Recuria.Application.Contracts.Organizations;
 using Recuria.Application.Interface;
 using Recuria.Domain;
@@ -6,41 +7,85 @@ using Recuria.Infrastructure.Persistence.Queries.Interface;
 
 namespace Recuria.Api.organizations
 {
-    public class OrganizationController : Controller
+    [ApiController]
+    [Route("api/organizations")]
+    public class OrganizationController : ControllerBase
     {
-        private readonly IOrganizationService _organizationService;
-        private readonly IOrganizationQueries _organizationQueries;
+        private readonly IOrganizationQueries _queries;
+        private readonly IOrganizationService _service;
+        private readonly ILogger<OrganizationController> _logger;
 
-        public OrganizationController(IOrganizationService orgService, IOrganizationQueries orgQueries)
+        public OrganizationController(
+            IOrganizationQueries queries,
+            IOrganizationService service,
+            ILogger<OrganizationController> logger)
         {
-            _organizationService = orgService;
-            _organizationQueries = orgQueries;
+            _queries = queries;
+            _service = service;
+            _logger = logger;
         }
 
         [HttpPost]
-        public async Task<ActionResult<OrganizationDto>> CreateOrganization([FromBody] CreateOrganizationRequest request)
+        public async Task<ActionResult<OrganizationDto>> Create(
+            [FromBody] CreateOrganizationRequest request,
+            CancellationToken cancellationToken)
         {
-            var owner = new User(request.OwnerName, request.OwnerEmail);
-            var org = _organizationService.CreateOrganization(request.Name, owner);
+            _logger.LogInformation("Creating organization {Name}", request.Name);
 
-            var dto = new OrganizationDto(org.Id, org.Name, org.CreatedAt);
-            return CreatedAtAction(nameof(GetOrganization), new { id = org.Id }, dto);
+            var orgId = await _service.CreateOrganizationAsync(request, cancellationToken);
+
+            var org = await _queries.GetByIdAsync(orgId, cancellationToken);
+
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = orgId },
+                org);
         }
 
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<OrganizationDto>> GetOrganization(Guid id)
+        public async Task<ActionResult<OrganizationDto>> GetById(
+            Guid id,
+            CancellationToken cancellationToken)
         {
-            var org = await _organizationQueries.GetAsync(id);
-            if (org is null) return NotFound();
+            var org = await _queries.GetByIdAsync(id, cancellationToken);
+
+            if (org is null)
+                return NotFound();
+
             return Ok(org);
         }
 
-        [HttpPost("{id:guid}/users")]
-        public async Task<IActionResult> AddUser(Guid id, [FromBody] AddUserRequest request)
+        [HttpGet("me")]
+        public async Task<ActionResult<OrganizationDto>> GetMyOrganization(
+            CancellationToken cancellationToken)
         {
-            var user = new User(request.Name, request.Email);
-            _organizationService.AddUser(await _organizationQueries.GetDomainAsync(id), user, request.Role);
+            var organizationId = GetOrganizationIdFromContext();
+
+            var org = await _queries.GetByIdAsync(organizationId, cancellationToken);
+
+            return org is null
+                ? NotFound()
+                : Ok(org);
+        }
+
+        [HttpPost("{id:guid}/users")]
+        public async Task<IActionResult> AddUser(
+            Guid id,
+            [FromBody] AddUserRequest request,
+            CancellationToken cancellationToken)
+        {
+            await _service.AddUserAsync(id, request, cancellationToken);
+
             return NoContent();
+        }
+
+        // Temporary until auth exists
+        private Guid GetOrganizationIdFromContext()
+        {
+            // In next step replaced by auth claims
+            return Guid.Parse(
+                User.FindFirst("org_id")?.Value
+                ?? throw new InvalidOperationException("No organization in context"));
         }
     }
 }
