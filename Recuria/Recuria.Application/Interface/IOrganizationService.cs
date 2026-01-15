@@ -1,4 +1,5 @@
-﻿using Recuria.Domain;
+﻿using Recuria.Application.Requests;
+using Recuria.Domain;
 using Recuria.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -19,7 +20,5 @@ namespace Recuria.Application.Interface
         void RemoveUser(Organization organization, Guid userId);
 
         Task<Guid> CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken cancellationToken);
-
-
     }
 }
