@@ -1,4 +1,5 @@
-﻿using Recuria.Domain;
+﻿using Recuria.Application.Contracts.Subscription;
+using Recuria.Domain;
 using Recuria.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -17,5 +18,19 @@ namespace Recuria.Application.Interface
         void CancelSubscription(Subscription subscription);
         
         Invoice GenerateInvoice(Subscription subscription, decimal amount);
+
+        Task<SubscriptionDetailsDto> CreateTrialAsync(
+            Guid organizationId,
+            CancellationToken ct);
+
+        Task UpgradeAsync(
+            Guid subscriptionId,
+            PlanType newPlan,
+            CancellationToken ct);
+
+        Task CancelAsync(
+            Guid subscriptionId,
+            CancellationToken ct);
+
     }
 }
