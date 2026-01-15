@@ -19,7 +19,7 @@ namespace Recuria.Api.subscriptions
         }
 
         [HttpGet("current/{organizationId:guid}")]
-        public async Task<ActionResult<SubscriptionDto>> GetCurrent(Guid organizationId, CancellationToken ct)
+        public async Task<ActionResult<SubscriptionDetailsDto>> GetCurrent(Guid organizationId, CancellationToken ct)
         {
             var subscription = await _subscriptionQueries.GetCurrentAsync(organizationId, ct);
             if (subscription is null) return NotFound();
