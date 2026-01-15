@@ -20,5 +20,6 @@ namespace Recuria.Application.Interface
         void RemoveUser(Organization organization, Guid userId);
 
         Task<Guid> CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken cancellationToken);
+        Task AddUserAsync(Guid id, AddUserRequest request, CancellationToken cancellationToken);
     }
 }
