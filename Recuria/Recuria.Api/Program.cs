@@ -10,6 +10,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Recuria.Application.Interface;
+using Recuria.Application.Interface.Abstractions;
 using Recuria.Application.Observability;
 using Recuria.Application.Subscriptions;
 using Recuria.Domain.Abstractions;
@@ -19,6 +20,7 @@ using Recuria.Infrastructure.Observability;
 using Recuria.Infrastructure.Outbox;
 using Recuria.Infrastructure.Persistence;
 using Recuria.Infrastructure.Persistence.Locking;
+using Recuria.Infrastructure.Persistence.Queries.Interface;
 using Recuria.Infrastructure.Repositories;
 using Scrutor;
 
@@ -35,6 +37,7 @@ builder.Services.AddDbContext<RecuriaDbContext>(options =>
 
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+builder.Services.AddScoped<IOrganizationQueries, OrganizationQueries>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 builder.Services.AddScoped<OutboxProcessor>();

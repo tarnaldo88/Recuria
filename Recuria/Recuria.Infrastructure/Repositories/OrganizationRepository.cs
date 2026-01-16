@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Recuria.Application.Interface;
+using Recuria.Application.Interface.Abstractions;
 using Recuria.Domain.Entities;
 using Recuria.Infrastructure.Persistence;
 using System;
@@ -38,5 +39,16 @@ namespace Recuria.Infrastructure.Repositories
             _context.Organizations.Update(organization);
             await _context.SaveChangesAsync();
         }
+
+        public async Task AddAsync(
+        Organization organization,
+        CancellationToken ct)
+        {
+            _context.Organizations.Add(organization);
+            await _context.SaveChangesAsync(ct);
+        }
+
+        public Task SaveChangesAsync(CancellationToken ct) =>
+            _context.SaveChangesAsync(ct);
     }
 }
