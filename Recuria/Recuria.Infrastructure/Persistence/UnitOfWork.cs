@@ -1,4 +1,5 @@
 ﻿using Recuria.Application.Interface.Abstractions;
+using Recuria.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +11,12 @@ namespace Recuria.Infrastructure.Persistence
     public sealed class UnitOfWork : IUnitOfWork
     {
         private readonly RecuriaDbContext _db;
+        private readonly IDomainEventDispatcher _dispatcher;
 
-        public UnitOfWork(RecuriaDbContext db)
+        public UnitOfWork(RecuriaDbContext db, IDomainEventDispatcher dispatcher)
         {
             _db = db;
+            _dispatcher = dispatcher;
         }
 
         public async Task<int> CommitAsync(CancellationToken ct = default)
@@ -25,6 +28,17 @@ namespace Recuria.Infrastructure.Persistence
                 var result = await _db.SaveChangesAsync(ct);
 
                 await tx.CommitAsync(ct);
+                var events = _db.ChangeTracker
+                    .Entries<Entity>()
+                    .SelectMany(e => e.Entity.DomainEvents)
+                    .ToList();
+
+                foreach (var entity in _db.ChangeTracker.Entries<Entity>())
+                {
+                    entity.Entity.ClearDomainEvents();
+                }
+
+                await _dispatcher.DispatchAsync(events, ct);
 
                 return result;
             }
