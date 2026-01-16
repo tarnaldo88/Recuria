@@ -1,4 +1,5 @@
-﻿using Recuria.Application.Interface;
+﻿using Recuria.Application.Contracts.Subscription;
+using Recuria.Application.Interface;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
 using System;
@@ -48,6 +49,21 @@ namespace Recuria.Application
             organization.AssignSubscription(subscription);
 
             return subscription;
+        }
+
+        public Task<SubscriptionDetailsDto> CreateTrialAsync(Guid organizationId, CancellationToken ct)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpgradeAsync(Guid subscriptionId, PlanType newPlan, CancellationToken ct)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task CancelAsync(Guid subscriptionId, CancellationToken ct)
+        {
+            throw new NotImplementedException();
         }
     }
 }
