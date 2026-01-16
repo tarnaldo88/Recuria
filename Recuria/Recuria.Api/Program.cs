@@ -1,11 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using OpenTelemetry.Exporter.Prometheus;
-using OpenTelemetry.Instrumentation.AspNetCore;
-using OpenTelemetry.Instrumentation.EntityFrameworkCore;
-using OpenTelemetry.Instrumentation.Http;
-using OpenTelemetry.Instrumentation.Process;
-using OpenTelemetry.Instrumentation.Runtime;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -16,16 +11,15 @@ using Recuria.Application.Interface.Abstractions;
 using Recuria.Application.Observability;
 using Recuria.Application.Subscriptions;
 using Recuria.Domain.Abstractions;
-using Recuria.Domain.Events;
 using Recuria.Infrastructure;
 using Recuria.Infrastructure.Observability;
 using Recuria.Infrastructure.Outbox;
 using Recuria.Infrastructure.Persistence;
 using Recuria.Infrastructure.Persistence.Locking;
 using Recuria.Infrastructure.Persistence.Queries;
-using Recuria.Infrastructure.Persistence.Queries.Interface;
 using Recuria.Infrastructure.Repositories;
-using Scrutor;
+using FluentValidation;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
