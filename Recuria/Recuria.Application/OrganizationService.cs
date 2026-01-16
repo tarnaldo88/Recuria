@@ -123,7 +123,6 @@ namespace Recuria.Application
 
             //await _organizations.SaveChangesAsync(ct);
             await _uow.CommitAsync(ct);
-
         }
     }
 }
