@@ -42,5 +42,27 @@ namespace Recuria.Infrastructure.Repositories
             _context.Subscriptions.Add(subscription);
             await _context.SaveChangesAsync();
         }
+
+        public void Update(Subscription subscription)
+        {
+            if(subscription == null)
+            {
+                throw new ArgumentNullException(nameof(subscription));
+            }
+
+            var entry = _context.Entry(subscription);
+            
+            if(entry.State == EntityState.Detached)
+            {
+                _context.Subscriptions.Attach(subscription);
+            }
+
+            entry.State = EntityState.Modified;
+        }
+
+        public void Remove(Subscription subscription)
+        {
+            _context.Subscriptions.Remove(subscription);
+        }
     }
 }
