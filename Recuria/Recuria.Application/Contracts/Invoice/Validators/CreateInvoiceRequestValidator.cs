@@ -23,7 +23,5 @@ namespace Recuria.Application.Contracts.Invoice.Validators
                 .NotEmpty()
                 .MaximumLength(200);
         }
-    }
-    {
-    }
+    } 
 }
