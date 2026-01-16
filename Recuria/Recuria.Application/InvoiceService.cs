@@ -59,10 +59,19 @@ namespace Recuria.Application
             if (subscription == null)
                 throw new ArgumentNullException(nameof(subscription));
 
-            var invoice = new Invoice(
-                subscription.Id,
-                subscription.Plan.GetPrice() // Assuming PlanType can provide price
-            );
+            decimal amount = default;
+
+            if(subscription.Plan == PlanType.Pro)
+            {
+                amount = 25.0m;
+            } else if(subscription.Plan == PlanType.Pro)
+            {
+                amount = 100m;
+            }
+                var invoice = new Invoice(
+                    subscription.Id,
+                    amount
+                );
 
             await _invoices.AddAsync(invoice, ct);
             await _uow.CommitAsync(ct);
