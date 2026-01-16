@@ -13,5 +13,6 @@ namespace Recuria.Application.Interface.Abstractions
         Task<Subscription> GetByIdAsync(Guid id, CancellationToken ct);
         Task AddAsync(Subscription subscription, CancellationToken ct);
         Task UpdateAsync(Subscription subscription);
+        void Update(Subscription subscription);
     }
 }

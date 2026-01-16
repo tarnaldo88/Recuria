@@ -31,6 +31,6 @@ namespace Recuria.Application.Interface
         Task CancelAsync(
             Guid subscriptionId,
             CancellationToken ct);
-
+        void ActivateAsync(Subscription subscription, CancellationToken ct);
     }
 }

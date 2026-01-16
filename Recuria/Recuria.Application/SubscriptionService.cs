@@ -19,13 +19,15 @@ namespace Recuria.Application
         private readonly IOrganizationRepository _organizations;
         private readonly ISubscriptionQueries _queries;
         private readonly ValidationBehavior _validator;
+        private readonly IUnitOfWork _uow;
 
-        public SubscriptionService( ISubscriptionRepository subscriptions, IOrganizationRepository organizations, ISubscriptionQueries queries, ValidationBehavior validator)
+        public SubscriptionService( ISubscriptionRepository subscriptions, IOrganizationRepository organizations, ISubscriptionQueries queries, ValidationBehavior validator, IUnitOfWork uow)
         {
             _subscriptions = subscriptions;
             _organizations = organizations;
             _queries = queries;
             _validator = validator;
+            _uow = uow;
         }
 
         public void ActivateSubscription(Subscription subscription)
@@ -107,6 +109,19 @@ namespace Recuria.Application
                 throw new InvalidOperationException("Not found");
 
             subscription.Cancel();
+        }
+
+        public async void ActivateAsync(Subscription subscription, CancellationToken ct = default)
+        {
+            if (subscription == null)
+                throw new ArgumentNullException(nameof(subscription));
+
+            // Call domain method
+            subscription.Activate(DateTime.UtcNow);
+
+            // Persist changes via repository/unit of work
+            _subscriptions.Update(subscription);
+            await _uow.CommitAsync(ct);
         }
     }
 }
