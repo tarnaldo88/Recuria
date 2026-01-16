@@ -54,6 +54,7 @@ builder.Services.AddValidatorsFromAssembly(typeof(UpgradeSubscriptionRequestVali
 builder.Services.AddValidatorsFromAssembly(typeof(CreateInvoiceRequestValidator).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(AddUserRequestValidator).Assembly);
 builder.Services.AddScoped<ValidationBehavior>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.Scan(scan => scan
     .FromAssemblies(
