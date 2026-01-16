@@ -1,14 +1,16 @@
-﻿using System;
+﻿using FluentAssertions;
+//using Recuria.Services;
+using Recuria.Application;
+using Recuria.Application.Interface;
+using Recuria.Application.Interface.Abstractions;
+using Recuria.Domain;
+using Recuria.Domain.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using FluentAssertions;
-using Recuria.Domain;
-//using Recuria.Services;
-using Recuria.Application;
-using Recuria.Domain.Entities;
 
 namespace Recuria.Tests
 {
@@ -16,10 +18,13 @@ namespace Recuria.Tests
     {
         private readonly SubscriptionService _service;
         private readonly Organization _org;
+        private readonly ISubscriptionRepository _subscriptions;
+        private readonly IOrganizationRepository _organizations;
+        private readonly ISubscriptionQueries _queries;
 
         public SubscriptionServiceTests()
         {
-            _service = new SubscriptionService();
+            _service = new SubscriptionService(_subscriptions, _organizations, _queries);
             _org = new Organization("Test Org");
         }
 

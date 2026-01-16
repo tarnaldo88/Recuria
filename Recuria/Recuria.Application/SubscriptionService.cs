@@ -18,10 +18,7 @@ namespace Recuria.Application
         private readonly IOrganizationRepository _organizations;
         private readonly ISubscriptionQueries _queries;
 
-        public SubscriptionService(
-        ISubscriptionRepository subscriptions,
-        IOrganizationRepository organizations,
-        ISubscriptionQueries queries)
+        public SubscriptionService( ISubscriptionRepository subscriptions, IOrganizationRepository organizations, ISubscriptionQueries queries)
         {
             _subscriptions = subscriptions;
             _organizations = organizations;
