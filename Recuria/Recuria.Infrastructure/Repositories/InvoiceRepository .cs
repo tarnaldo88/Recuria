@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Recuria.Application.Interface;
+using Recuria.Application.Interface.Abstractions;
 using Recuria.Domain;
 using Recuria.Infrastructure.Persistence;
 using System;
