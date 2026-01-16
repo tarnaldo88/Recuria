@@ -9,12 +9,8 @@ namespace Recuria.Infrastructure.Persistence.Queries.Interface
 {
     public interface IInvoiceQueries
     {
-        Task<IReadOnlyList<InvoiceListItemDto>> GetForOrganizationAsync(
-            Guid organizationId,
-            CancellationToken ct);
+        Task<IReadOnlyList<InvoiceListItemDto>> GetForOrganizationAsync( Guid organizationId, CancellationToken ct);
 
-        Task<InvoiceDetailsDto?> GetDetailsAsync(
-            Guid invoiceId,
-            CancellationToken ct);
+        Task<InvoiceDetailsDto?> GetDetailsAsync(Guid invoiceId, CancellationToken ct);
     }
 }
