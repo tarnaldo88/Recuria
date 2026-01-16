@@ -18,7 +18,21 @@ namespace Recuria.Infrastructure.Persistence
 
         public async Task<int> CommitAsync(CancellationToken ct = default)
         {
-            return await _db.SaveChangesAsync(ct);
+            using var tx = await _db.Database.BeginTransactionAsync(ct);
+
+            try
+            {
+                var result = await _db.SaveChangesAsync(ct);
+
+                await tx.CommitAsync(ct);
+
+                return result;
+            }
+            catch
+            {
+                await tx.RollbackAsync(ct);
+                throw;
+            }
         }
     }
 }

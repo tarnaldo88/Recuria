@@ -100,6 +100,7 @@ namespace Recuria.Application
             AddUser(organization, owner, UserRole.Owner);
 
             await _organizations.AddAsync(organization, ct);
+            await _uow.CommitAsync(ct);
 
             return organization.Id;
         }
@@ -120,7 +121,9 @@ namespace Recuria.Application
 
             AddUser(org, user, request.Role);
 
-            await _organizations.SaveChangesAsync(ct);
+            //await _organizations.SaveChangesAsync(ct);
+            await _uow.CommitAsync(ct);
+
         }
     }
 }
