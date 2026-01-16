@@ -4,7 +4,6 @@ using Recuria.Application.Contracts.Subscription;
 using Recuria.Application.Interface;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
-using Recuria.Infrastructure.Persistence.Queries.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;

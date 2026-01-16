@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Recuria.Application.Contracts.Invoice;
-using Recuria.Infrastructure.Persistence.Queries.Interface;
+using Recuria.Application.Interface;
 
 namespace Recuria.Api.invoices
 {

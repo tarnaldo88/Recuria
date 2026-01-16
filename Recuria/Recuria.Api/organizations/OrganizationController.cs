@@ -3,7 +3,6 @@ using Recuria.Application.Contracts.Organizations;
 using Recuria.Application.Interface;
 using Recuria.Application.Requests;
 using Recuria.Domain;
-using Recuria.Infrastructure.Persistence.Queries.Interface;
 
 namespace Recuria.Api.organizations
 {
