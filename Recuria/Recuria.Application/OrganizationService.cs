@@ -1,4 +1,5 @@
 ﻿using Recuria.Application.Interface;
+using Recuria.Application.Interface.Abstractions;
 using Recuria.Application.Requests;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
@@ -12,6 +13,20 @@ namespace Recuria.Application
 {
     public class OrganizationService : IOrganizationService
     {
+        private readonly IOrganizationRepository _organizations;
+        private readonly IUserRepository _users;
+        private readonly IOrganizationQueries _queries;
+
+        public OrganizationService(
+            IOrganizationRepository organizations,
+            IUserRepository users,
+            IOrganizationQueries queries)
+        {
+            _organizations = organizations;
+            _users = users;
+            _queries = queries;
+        }
+
         public Organization CreateOrganization(string name, User owner)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -60,14 +75,42 @@ namespace Recuria.Application
             organization.Users.Remove(user);
         }
 
-        public Task<Guid> CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken cancellationToken)
+        public async Task<Guid> CreateOrganizationAsync(
+            CreateOrganizationRequest request,
+            CancellationToken ct)
         {
-            throw new NotImplementedException();
+            var owner = await _users.GetByIdAsync(request.OwnerId, ct);
+
+            if (owner == null)
+                throw new InvalidOperationException("Owner not found.");
+
+            var organization = new Organization(request.Name);
+
+            // Domain behavior
+            AddUser(organization, owner, UserRole.Owner);
+
+            await _organizations.AddAsync(organization, ct);
+
+            return organization.Id;
         }
 
-        public Task AddUserAsync(Guid id, AddUserRequest request, CancellationToken cancellationToken)
+        public async Task AddUserAsync(Guid id, AddUserRequest request, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var org =
+           await _organizations.GetByIdAsync(organizationId, ct);
+
+            if (org == null)
+                throw new InvalidOperationException("Organization not found.");
+
+            var user =
+                await _users.GetByIdAsync(request.UserId, ct);
+
+            if (user == null)
+                throw new InvalidOperationException("User not found.");
+
+            AddUser(org, user, request.Role);
+
+            await _organizations.SaveChangesAsync(ct);
         }
     }
 }
