@@ -14,11 +14,21 @@ namespace Recuria.Application.Contracts.Organizations.Validators
         public CreateOrganizationRequestValidator()
         {
             RuleFor(x => x.Name)
-                .NotEmpty()
-                .MaximumLength(100);
+                .NotEmpty().WithMessage("Organization name is required.")
+                .MinimumLength(2)
+                .MaximumLength(120);
 
-            RuleFor(x => x.OwnerId)
-                .NotEmpty();
+            //RuleFor(x => x.OwnerEmail)
+            //    .NotEmpty()
+            //    .EmailAddress();
+
+            //RuleFor(x => x.OwnerFirstName)
+            //    .NotEmpty()
+            //    .MaximumLength(60);
+
+            //RuleFor(x => x.OwnerLastName)
+            //    .NotEmpty()
+            //    .MaximumLength(60);
         }
     }
 }

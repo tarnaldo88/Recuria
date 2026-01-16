@@ -12,11 +12,13 @@ namespace Recuria.Application.Contracts.Organizations.Validators
     {
         public AddUserRequestValidator()
         {
-            RuleFor(x => x.UserId)
-                .NotEmpty();
+            RuleFor(x => x.UserId).NotEmpty();
 
-            RuleFor(x => x.Role)
-                .IsInEnum();
+            RuleFor(x => x.Role).IsInEnum();
+
+            RuleFor(x => x.Email).NotEmpty();
+
+            RuleFor(x => x.Name).NotEmpty();
         }
     }
 }
