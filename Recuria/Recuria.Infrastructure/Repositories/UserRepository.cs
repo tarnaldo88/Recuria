@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Recuria.Infrastructure.Repositories
 {
-    internal class UserRepository : IUserRepository
+    public class UserRepository : IUserRepository
     {
         private readonly RecuriaDbContext _db;
 
