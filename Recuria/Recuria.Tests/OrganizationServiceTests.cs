@@ -1,24 +1,29 @@
-﻿using System;
+﻿using FluentAssertions;
+//using Recuria.Services;
+using Recuria.Application;
+using Recuria.Application.Interface;
+using Recuria.Application.Interface.Abstractions;
+using Recuria.Domain;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using FluentAssertions;
-using Recuria.Domain;
-//using Recuria.Services;
-using Recuria.Application;
 
 namespace Recuria.Tests
 {
     public class OrganizationServiceTests
     {
         private readonly OrganizationService _service;
+        private readonly IOrganizationRepository _organizations;
+        private readonly IUserRepository _users;
+        private readonly IOrganizationQueries _queries;
         //private readonly Organization _org;
 
         public OrganizationServiceTests()
         {
-            _service = new OrganizationService();
+            _service = new OrganizationService(_organizations, _users, _queries);
         }
 
         private static User CreateUser(string email = "user@test.com")
