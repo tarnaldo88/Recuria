@@ -9,6 +9,7 @@ namespace Recuria.Application.Interface.Abstractions
 {
     public interface IUserRepository
     {
+        Task AddAsync(User owner, CancellationToken none);
         Task<User?> GetByIdAsync(Guid id, CancellationToken ct);
     }
 }
