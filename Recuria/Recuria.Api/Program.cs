@@ -7,7 +7,9 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Recuria.Api.Middleware;
+using Recuria.Application.Contracts.Invoice.Validators;
 using Recuria.Application.Contracts.Organizations.Validators;
+using Recuria.Application.Contracts.Subscription.Validators;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
 using Recuria.Application.Observability;
@@ -47,6 +49,9 @@ builder.Services.AddScoped<ISubscriptionTelemetry, SubscriptionTelemetry>();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddFluentValidationAutoValidation().AddFluentValidationClientsideAdapters();
 builder.Services.AddValidatorsFromAssembly(typeof(CreateOrganizationRequestValidator).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(UpgradeSubscriptionRequestValidator).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(CreateInvoiceRequestValidator).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(AddUserRequestValidator).Assembly);
 
 builder.Services.Scan(scan => scan
     .FromAssemblies(
