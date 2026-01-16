@@ -13,6 +13,20 @@ namespace Recuria.Application
 {
     public class SubscriptionService : ISubscriptionService
     {
+        private readonly ISubscriptionRepository _subscriptions;
+        private readonly IOrganizationRepository _organizations;
+        private readonly ISubscriptionQueries _queries;
+
+        public SubscriptionService(
+        ISubscriptionRepository subscriptions,
+        IOrganizationRepository organizations,
+        ISubscriptionQueries queries)
+        {
+            _subscriptions = subscriptions;
+            _organizations = organizations;
+            _queries = queries;
+        }
+
         public void ActivateSubscription(Subscription subscription)
         {
             subscription.Activate(DateTime.UtcNow);
