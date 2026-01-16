@@ -19,7 +19,7 @@ namespace Recuria.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<Organization?> GetByIdAsync(Guid id)
+        public async Task<Organization?> GetByIdAsync(Guid id, CancellationToken ct)
         {
             return await _context.Organizations
                 .Include(o => o.Users)

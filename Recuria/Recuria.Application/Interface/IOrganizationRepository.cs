@@ -9,7 +9,7 @@ namespace Recuria.Application.Interface
 {
     public interface IOrganizationRepository
     {
-        Task<Organization> GetByIdAsync(Guid id);
+        Task<Organization> GetByIdAsync(Guid id, CancellationToken ct);
         Task AddAsync(Organization organization);
         Task UpdateAsync(Organization organization);
     }

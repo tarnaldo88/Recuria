@@ -10,9 +10,8 @@ namespace Recuria.Application.Interface
     public interface ISubscriptionRepository
     {
         Task<Subscription> GetByOrganizationIdAsync(Guid organizationId);
-
-        Task<Subscription> GetByIdAsync(Guid id);
-        Task AddAsync(Subscription subscription);
+        Task<Subscription> GetByIdAsync(Guid id, CancellationToken ct);
+        Task AddAsync(Subscription subscription, CancellationToken ct);
         Task UpdateAsync(Subscription subscription);
     }
 }

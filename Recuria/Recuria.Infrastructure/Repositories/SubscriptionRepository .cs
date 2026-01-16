@@ -25,20 +25,20 @@ namespace Recuria.Infrastructure.Repositories
                 .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
         }
 
-        public async Task<Subscription?> GetByIdAsync(Guid id)
+        public async Task UpdateAsync(Subscription subscription)
+        {
+            _context.Subscriptions.Update(subscription);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<Subscription> GetByIdAsync(Guid id, CancellationToken ct)
         {
             return await _context.Subscriptions.FindAsync(id);
         }
 
-        public async Task AddAsync(Subscription subscription)
+        public async Task AddAsync(Subscription subscription, CancellationToken ct)
         {
             _context.Subscriptions.Add(subscription);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task UpdateAsync(Subscription subscription)
-        {
-            _context.Subscriptions.Update(subscription);
             await _context.SaveChangesAsync();
         }
     }

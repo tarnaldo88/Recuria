@@ -65,19 +65,46 @@ namespace Recuria.Application
             return subscription;
         }
 
-        public Task<SubscriptionDetailsDto> CreateTrialAsync(Guid organizationId, CancellationToken ct)
+        public async Task<SubscriptionDetailsDto> CreateTrialAsync(Guid organizationId, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            var org = await _organizations.GetByIdAsync(organizationId, ct);
+
+            if (org == null)
+                throw new InvalidOperationException("Organization not found.");
+
+            var subscription =
+                Subscription.CreateTrial(org, DateTime.UtcNow);
+
+            await _subscriptions.AddAsync(subscription, ct);
+
+            return (await _queries.GetCurrentAsync(organizationId, ct))!;
         }
 
-        public Task UpgradeAsync(Guid subscriptionId, PlanType newPlan, CancellationToken ct)
+        public async Task UpgradeAsync(
+            Guid subscriptionId,
+            PlanType newPlan,
+            CancellationToken ct)
         {
-            throw new NotImplementedException();
+            var subscription =
+                await _subscriptions.GetByIdAsync(subscriptionId, ct);
+
+            if (subscription == null)
+                throw new InvalidOperationException("Not found");
+
+            subscription.UpgradePlan(newPlan);
         }
 
-        public Task CancelAsync(Guid subscriptionId, CancellationToken ct)
+        public async Task CancelAsync(
+            Guid subscriptionId,
+            CancellationToken ct)
         {
-            throw new NotImplementedException();
+            var subscription =
+                await _subscriptions.GetByIdAsync(subscriptionId, ct);
+
+            if (subscription == null)
+                throw new InvalidOperationException("Not found");
+
+            subscription.Cancel();
         }
     }
 }
