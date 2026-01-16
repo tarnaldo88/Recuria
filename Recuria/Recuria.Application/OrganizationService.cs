@@ -19,17 +19,20 @@ namespace Recuria.Application
         private readonly IUserRepository _users;
         private readonly IOrganizationQueries _queries;
         private readonly ValidationBehavior _validator;
+        private readonly IUnitOfWork _uow;
 
         public OrganizationService(
             IOrganizationRepository organizations,
             IUserRepository users,
             IOrganizationQueries queries,
-            ValidationBehavior validator)
+            ValidationBehavior validator,
+            IUnitOfWork uow)
         {
             _organizations = organizations;
             _users = users;
             _queries = queries;
             _validator = validator;
+            _uow = uow;
         }
 
         public Organization CreateOrganization(string name, User owner)
