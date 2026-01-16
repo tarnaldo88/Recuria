@@ -3,7 +3,9 @@
 using Recuria.Application;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
+using Recuria.Application.Validation;
 using Recuria.Domain;
+using Recuria.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,11 +21,13 @@ namespace Recuria.Tests
         private readonly IOrganizationRepository _organizations;
         private readonly IUserRepository _users;
         private readonly IOrganizationQueries _queries;
+        private readonly ValidationBehavior _validator;
+        private readonly UnitOfWork unitOfWork;
         //private readonly Organization _org;
 
         public OrganizationServiceTests()
         {
-            _service = new OrganizationService(_organizations, _users, _queries);
+            _service = new OrganizationService(_organizations, _users, _queries, _validator, unitOfWork);
         }
 
         private static User CreateUser(string email = "user@test.com")

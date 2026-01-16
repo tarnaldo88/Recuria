@@ -18,17 +18,20 @@ namespace Recuria.Application
     {
         private readonly IInvoiceRepository _invoices;
         private readonly ISubscriptionRepository _subscriptions;
+        private readonly IUnitOfWork _uow;
         private readonly ValidationBehavior _validator;
 
         public InvoiceService(
             IInvoiceRepository invoices,
             ISubscriptionRepository subscriptions,
-            ValidationBehavior validator
+            ValidationBehavior validator,
+            IUnitOfWork unitOfWork
             )
         {
             _invoices = invoices;
             _subscriptions = subscriptions;
             _validator = validator;
+            _uow = unitOfWork;
         }
 
         public async Task<Guid> CreateInvoiceAsync(
@@ -51,9 +54,20 @@ namespace Recuria.Application
             return invoice.Id;
         }
 
-        public Task<Invoice> GenerateFirstInvoice(Subscription subscription, CancellationToken ct = default)
+        public async Task<Invoice> GenerateFirstInvoice(Subscription subscription, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            if (subscription == null)
+                throw new ArgumentNullException(nameof(subscription));
+
+            var invoice = new Invoice(
+                subscription.Id,
+                subscription.Plan.GetPrice() // Assuming PlanType can provide price
+            );
+
+            await _invoices.AddAsync(invoice, ct);
+            await _uow.CommitAsync(ct);
+
+            return invoice;
         }
 
         public async Task MarkPaidAsync(

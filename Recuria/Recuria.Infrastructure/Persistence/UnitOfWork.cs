@@ -1,5 +1,6 @@
 ﻿using Recuria.Application.Interface.Abstractions;
 using Recuria.Domain;
+using Recuria.Domain.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
