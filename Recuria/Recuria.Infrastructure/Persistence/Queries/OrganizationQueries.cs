@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Recuria.Application.Contracts.Organizations;
 using Recuria.Application.Contracts.Subscription;
+using Recuria.Application.Interface;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
 using Recuria.Infrastructure.Persistence.Queries.Interface;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Recuria.Infrastructure.Persistence.Queries
 {
-    internal sealed class OrganizationQueries : IOrganizationQueries
+    public sealed class OrganizationQueries : IOrganizationQueries
     {
         private readonly RecuriaDbContext _db;
 

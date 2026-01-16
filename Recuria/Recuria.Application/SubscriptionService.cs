@@ -1,5 +1,6 @@
 ﻿using Recuria.Application.Contracts.Subscription;
 using Recuria.Application.Interface;
+using Recuria.Application.Interface.Abstractions;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
 using System;

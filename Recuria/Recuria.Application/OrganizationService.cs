@@ -94,7 +94,7 @@ namespace Recuria.Application
             return organization.Id;
         }
 
-        public async Task AddUserAsync(Guid id, AddUserRequest request, CancellationToken cancellationToken)
+        public async Task AddUserAsync(Guid id, AddUserRequest request, CancellationToken ct)
         {
             var org =
            await _organizations.GetByIdAsync(organizationId, ct);

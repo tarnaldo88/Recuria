@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Recuria.Infrastructure.Persistence.Queries.Interface
+namespace Recuria.Application.Interface
 {
     public interface IOrganizationQueries
     {
