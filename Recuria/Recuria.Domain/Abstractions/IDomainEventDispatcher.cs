@@ -8,6 +8,6 @@ namespace Recuria.Domain.Abstractions
 {
     public interface IDomainEventDispatcher
     {
-        Task DispatchAsync(IDomainEvent domainEvent, CancellationToken cancellationToken);
+        Task DispatchAsync(IEnumerable<IDomainEvent> domainEvent, CancellationToken cancellationToken);
     }
 }
