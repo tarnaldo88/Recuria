@@ -1,3 +1,5 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using OpenTelemetry.Exporter.Prometheus;
@@ -18,7 +20,6 @@ using Recuria.Infrastructure.Persistence;
 using Recuria.Infrastructure.Persistence.Locking;
 using Recuria.Infrastructure.Persistence.Queries;
 using Recuria.Infrastructure.Repositories;
-using FluentValidation;
 
 
 
@@ -44,6 +45,7 @@ builder.Services.AddLogging();
 builder.Services.AddMetrics();
 builder.Services.AddScoped<ISubscriptionTelemetry, SubscriptionTelemetry>();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddFluentValidationAutoValidation().AddFluentValidationClientsideAdapters();
 builder.Services.AddValidatorsFromAssembly(typeof(CreateOrganizationRequestValidator).Assembly);
 
 builder.Services.Scan(scan => scan
