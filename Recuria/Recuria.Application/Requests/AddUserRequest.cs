@@ -12,5 +12,6 @@ namespace Recuria.Application.Requests
         public string Name { get; init; } = null!;
         public string Email { get; init; } = null!;
         public UserRole Role { get; init; }
+        public Guid UserId { get; init; }
     }
 }

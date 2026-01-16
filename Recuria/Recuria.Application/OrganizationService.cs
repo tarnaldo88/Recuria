@@ -96,14 +96,12 @@ namespace Recuria.Application
 
         public async Task AddUserAsync(Guid id, AddUserRequest request, CancellationToken ct)
         {
-            var org =
-           await _organizations.GetByIdAsync(organizationId, ct);
+            var org = await _organizations.GetByIdAsync(id, ct);
 
             if (org == null)
                 throw new InvalidOperationException("Organization not found.");
 
-            var user =
-                await _users.GetByIdAsync(request.UserId, ct);
+            var user = await _users.GetByIdAsync(request.UserId, ct);
 
             if (user == null)
                 throw new InvalidOperationException("User not found.");
