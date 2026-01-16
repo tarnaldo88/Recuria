@@ -1,6 +1,7 @@
 ﻿using Recuria.Application.Contracts.Subscription;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
+using Recuria.Application.Validation;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
 using System;
@@ -17,12 +18,14 @@ namespace Recuria.Application
         private readonly ISubscriptionRepository _subscriptions;
         private readonly IOrganizationRepository _organizations;
         private readonly ISubscriptionQueries _queries;
+        private readonly ValidationBehavior _validator;
 
-        public SubscriptionService( ISubscriptionRepository subscriptions, IOrganizationRepository organizations, ISubscriptionQueries queries)
+        public SubscriptionService( ISubscriptionRepository subscriptions, IOrganizationRepository organizations, ISubscriptionQueries queries, ValidationBehavior validator)
         {
             _subscriptions = subscriptions;
             _organizations = organizations;
             _queries = queries;
+            _validator = validator;
         }
 
         public void ActivateSubscription(Subscription subscription)
@@ -66,6 +69,7 @@ namespace Recuria.Application
         public async Task<SubscriptionDetailsDto> CreateTrialAsync(Guid organizationId, CancellationToken ct)
         {
             var org = await _organizations.GetByIdAsync(organizationId, ct);
+            await _validator.ValidateAsync(org);
 
             if (org == null)
                 throw new InvalidOperationException("Organization not found.");
@@ -83,8 +87,8 @@ namespace Recuria.Application
             PlanType newPlan,
             CancellationToken ct)
         {
-            var subscription =
-                await _subscriptions.GetByIdAsync(subscriptionId, ct);
+            var subscription = await _subscriptions.GetByIdAsync(subscriptionId, ct);
+            await _validator.ValidateAsync(subscription);
 
             if (subscription == null)
                 throw new InvalidOperationException("Not found");
@@ -96,8 +100,8 @@ namespace Recuria.Application
             Guid subscriptionId,
             CancellationToken ct)
         {
-            var subscription =
-                await _subscriptions.GetByIdAsync(subscriptionId, ct);
+            var subscription = await _subscriptions.GetByIdAsync(subscriptionId, ct);
+            await _validator.ValidateAsync(subscription);
 
             if (subscription == null)
                 throw new InvalidOperationException("Not found");

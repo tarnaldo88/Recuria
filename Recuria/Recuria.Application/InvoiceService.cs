@@ -1,9 +1,12 @@
-﻿using Recuria.Application.Contracts.Common;
+﻿using FluentValidation;
+using Recuria.Application.Contracts.Common;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
+using Recuria.Application.Validation;
 using Recuria.Domain;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,13 +17,17 @@ namespace Recuria.Application
     {
         private readonly IInvoiceRepository _invoices;
         private readonly ISubscriptionRepository _subscriptions;
+        private readonly ValidationBehavior _validator;
 
         public InvoiceService(
             IInvoiceRepository invoices,
-            ISubscriptionRepository subscriptions)
+            ISubscriptionRepository subscriptions,
+            ValidationBehavior validator
+            )
         {
             _invoices = invoices;
             _subscriptions = subscriptions;
+            _validator = validator;
         }
 
         public async Task<Guid> CreateInvoiceAsync(
@@ -28,8 +35,8 @@ namespace Recuria.Application
             MoneyDto amount,
             CancellationToken ct)
         {
-            var subscription =
-                await _subscriptions.GetByIdAsync(subscriptionId, ct);
+            var subscription = await _subscriptions.GetByIdAsync(subscriptionId, ct);
+            await _validator.ValidateAsync(subscription);
 
             if (subscription == null)
                 throw new InvalidOperationException("Subscription not found");
@@ -46,8 +53,9 @@ namespace Recuria.Application
         public async Task MarkPaidAsync(
             Guid invoiceId,
             CancellationToken ct)
-        {
+        {      
             var invoice = await _invoices.GetByIdAsync(invoiceId, ct);
+            await _validator.ValidateAsync(invoice);
 
             if (invoice == null)
                 throw new InvalidOperationException("Invoice not found");

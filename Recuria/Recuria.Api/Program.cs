@@ -14,6 +14,7 @@ using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
 using Recuria.Application.Observability;
 using Recuria.Application.Subscriptions;
+using Recuria.Application.Validation;
 using Recuria.Domain.Abstractions;
 using Recuria.Infrastructure;
 using Recuria.Infrastructure.Observability;
@@ -52,6 +53,7 @@ builder.Services.AddValidatorsFromAssembly(typeof(CreateOrganizationRequestValid
 builder.Services.AddValidatorsFromAssembly(typeof(UpgradeSubscriptionRequestValidator).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(CreateInvoiceRequestValidator).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(AddUserRequestValidator).Assembly);
+builder.Services.AddScoped<ValidationBehavior>();
 
 builder.Services.Scan(scan => scan
     .FromAssemblies(

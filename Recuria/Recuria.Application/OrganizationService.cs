@@ -1,10 +1,12 @@
 ﻿using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
 using Recuria.Application.Requests;
+using Recuria.Application.Validation;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,15 +18,18 @@ namespace Recuria.Application
         private readonly IOrganizationRepository _organizations;
         private readonly IUserRepository _users;
         private readonly IOrganizationQueries _queries;
+        private readonly ValidationBehavior _validator;
 
         public OrganizationService(
             IOrganizationRepository organizations,
             IUserRepository users,
-            IOrganizationQueries queries)
+            IOrganizationQueries queries,
+            ValidationBehavior validator)
         {
             _organizations = organizations;
             _users = users;
             _queries = queries;
+            _validator = validator;
         }
 
         public Organization CreateOrganization(string name, User owner)
@@ -79,6 +84,8 @@ namespace Recuria.Application
             CreateOrganizationRequest request,
             CancellationToken ct)
         {
+            await _validator.ValidateAsync(request);
+
             var owner = await _users.GetByIdAsync(request.OwnerId, ct);
 
             if (owner == null)
@@ -96,6 +103,8 @@ namespace Recuria.Application
 
         public async Task AddUserAsync(Guid id, AddUserRequest request, CancellationToken ct)
         {
+            await _validator.ValidateAsync(request);
+
             var org = await _organizations.GetByIdAsync(id, ct);
 
             if (org == null)
