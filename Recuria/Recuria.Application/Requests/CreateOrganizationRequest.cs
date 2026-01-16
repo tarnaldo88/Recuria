@@ -9,11 +9,6 @@ namespace Recuria.Application.Requests
     public class CreateOrganizationRequest
     {
         public string Name { get; init; } = string.Empty;
-
-        public string OwnerEmail { get; init; } = string.Empty;
-
-        public string OwnerFirstName { get; init; } = string.Empty;
-
-        public string OwnerLastName { get; init; } = string.Empty;
+        public Guid OwnerId { get; init; }
     }
 }
