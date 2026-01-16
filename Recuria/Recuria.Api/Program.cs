@@ -9,6 +9,7 @@ using OpenTelemetry.Instrumentation.Runtime;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Recuria.Api.Middleware;
 using Recuria.Application.Contracts.Organizations.Validators;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
@@ -93,6 +94,8 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.UseOpenTelemetryPrometheusScrapingEndpoint();
+
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 
 app.Run();
