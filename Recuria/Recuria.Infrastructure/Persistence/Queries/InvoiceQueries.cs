@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Recuria.Application.Contracts.Common;
 using Recuria.Application.Contracts.Invoice;
-using Recuria.Infrastructure.Persistence.Queries.Interface;
+using Recuria.Application.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
