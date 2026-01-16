@@ -19,6 +19,11 @@ namespace Recuria.Infrastructure.Repositories
             _db = db;
         }
 
+        public Task AddAsync(User owner, CancellationToken none)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<User?> GetByIdAsync(
             Guid id,
             CancellationToken ct)
