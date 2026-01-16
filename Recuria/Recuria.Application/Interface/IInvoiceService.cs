@@ -1,4 +1,6 @@
 ﻿using Recuria.Application.Contracts.Common;
+using Recuria.Domain;
+using Recuria.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,5 +17,7 @@ namespace Recuria.Application.Interface
         CancellationToken ct);
 
         Task MarkPaidAsync(Guid invoiceId, CancellationToken ct);
+
+        Task<Invoice> GenerateFirstInvoice(Subscription subscription, CancellationToken ct = default);
     }
 }

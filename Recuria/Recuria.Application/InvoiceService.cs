@@ -4,6 +4,7 @@ using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
 using Recuria.Application.Validation;
 using Recuria.Domain;
+using Recuria.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -48,6 +49,11 @@ namespace Recuria.Application
             await _invoices.AddAsync(invoice, ct);
 
             return invoice.Id;
+        }
+
+        public Task<Invoice> GenerateFirstInvoice(Subscription subscription, CancellationToken ct = default)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task MarkPaidAsync(
