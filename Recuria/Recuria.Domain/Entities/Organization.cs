@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Recuria.Domain.Abstractions;
+using Recuria.Domain.Events.Organization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,8 +15,10 @@ namespace Recuria.Domain.Entities
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
 
         public List<User> Users { get; private set; } = new();
-        public ICollection<Subscription> Subscriptions { get; private set; }
-            = new List<Subscription>();
+        public ICollection<Subscription> Subscriptions { get; private set; } = new List<Subscription>();
+
+        private readonly List<IDomainEvent> _domainEvents = new();
+        public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents;
 
         protected Organization() { } // EF Core
 
@@ -22,6 +26,17 @@ namespace Recuria.Domain.Entities
         {
             Id = Guid.NewGuid();
             Name = name;
+
+            AddDomainEvent(new OrganizationCreatedDomainEvent(Id));
+        }
+        protected void AddDomainEvent(IDomainEvent domainEvent)
+        {
+            _domainEvents.Add(domainEvent);
+        }
+
+        public void ClearDomainEvents()
+        {
+            _domainEvents.Clear();
         }
 
         public void AssignSubscription(Subscription subscription)
