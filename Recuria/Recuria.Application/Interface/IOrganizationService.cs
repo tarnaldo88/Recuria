@@ -13,7 +13,7 @@ namespace Recuria.Application.Interface
     {
         Organization CreateOrganization(string name, User owner);
 
-        void AddUser(Organization organization, User user, UserRole role, CancellationToken ct);
+        //void AddUser(Organization organization, User user, UserRole role, CancellationToken ct);
 
         void ChangeUserRole(Organization organization, Guid userId, UserRole role);
 

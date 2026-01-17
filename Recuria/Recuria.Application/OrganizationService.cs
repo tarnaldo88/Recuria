@@ -39,30 +39,29 @@ namespace Recuria.Application
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Organization name is required.");
-            if (owner == null) throw new ArgumentNullException(nameof(owner));
-
+            if (owner == null) 
+                throw new ArgumentNullException(nameof(owner));
 
             Organization newOrg = new(name);   
-            CancellationToken cancellationToken = new CancellationToken();
-            AddUser(newOrg, owner, UserRole.Owner, cancellationToken);
+            AddUserToOrganization(newOrg, owner, UserRole.Owner);
             return newOrg;
         }
 
-        public async void AddUser(Organization organization, User user, UserRole role, CancellationToken ct)
-        {
-            if (organization == null) throw new ArgumentNullException(nameof(organization));
+        //public async void AddUser(Organization organization, User user, UserRole role, CancellationToken ct)
+        //{
+        //    if (organization == null) throw new ArgumentNullException(nameof(organization));
 
-            if (user == null) throw new ArgumentNullException(nameof(user));
+        //    if (user == null) throw new ArgumentNullException(nameof(user));
 
-            if (organization.Users.Any(u => u.Id == user.Id))
-                throw new InvalidOperationException("User already exists in organization.");
+        //    if (organization.Users.Any(u => u.Id == user.Id))
+        //        throw new InvalidOperationException("User already exists in organization.");
 
-            user.AssignToOrganization(organization, role);
-            organization.Users.Add(user);
-            _organizations.Update(organization);
+        //    user.AssignToOrganization(organization, role);
+        //    organization.Users.Add(user);
+        //    _organizations.Update(organization);
 
-            await _uow.CommitAsync(ct);
-        }
+        //    await _uow.CommitAsync(ct);
+        //}
 
         public void ChangeUserRole(Organization organization, Guid userId, UserRole newRole)
         {
@@ -125,11 +124,32 @@ namespace Recuria.Application
             if (user == null)
                 throw new InvalidOperationException("User not found.");
 
-            AddUser(org, user, request.Role, ct);
+            //AddUser(org, user, request.Role, ct);
+            AddUserToOrganization(org, user, request.Role);
+
 
             _organizations.Update(org);
 
             await _uow.CommitAsync(ct);
+        }
+
+        private void AddUserToOrganization(
+        Organization organization,
+        User user,
+        UserRole role)
+        {
+            if (organization == null)
+                throw new ArgumentNullException(nameof(organization));
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            if (organization.Users.Any(u => u.Id == user.Id))
+                throw new InvalidOperationException("User already exists in organization.");
+
+            // Domain behavior
+            user.AssignToOrganization(organization, role);
+            organization.Users.Add(user);
         }
     }
 }
