@@ -40,9 +40,12 @@ namespace Recuria.Application
             subscription.UpgradePlan(newPlan);
         }
 
-        public void CancelSubscription(Subscription subscription)
+        public async void CancelSubscription(Subscription subscription, CancellationToken ct)
         {
             subscription.Cancel();
+            _subscriptions.Update(subscription);
+            
+            await _uow.CommitAsync(ct);
         }
 
         public Invoice GenerateInvoice(Subscription subscription, decimal amount)
