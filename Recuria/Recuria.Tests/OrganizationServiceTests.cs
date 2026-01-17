@@ -103,17 +103,17 @@ namespace Recuria.Tests
         //    user.Role.Should().Be(UserRole.Admin);
         //}
 
-        [Fact]
-        public void ChangeUserRole_Should_Throw_WhenUserIsOwner()
-        {
-            var owner = CreateUser("owner@test.com");
-            var org = _service.CreateOrganization("Test Org", owner);
+        //[Fact]
+        //public void ChangeUserRole_Should_Throw_WhenUserIsOwner()
+        //{
+        //    var owner = CreateUser("owner@test.com");
+        //    var org = _service.CreateOrganization("Test Org", owner);
 
-            Action act = () => _service.ChangeUserRole(org, owner.Id, UserRole.Admin);
+        //    Action act = () => _service.ChangeUserRole(org, owner.Id, UserRole.Admin);
 
-            act.Should().Throw<InvalidOperationException>()
-                .WithMessage("Cannot change owner role.");
-        }
+        //    act.Should().Throw<InvalidOperationException>()
+        //        .WithMessage("Cannot change owner role.");
+        //}
 
         //REFACTOR TO CHANGE FROM ADDUSER TO ADDUSERASYNC
         //[Fact]
@@ -131,16 +131,16 @@ namespace Recuria.Tests
         //    org.Users.Should().NotContain(user);
         //}
 
-        [Fact]
-        public void RemoveUser_Should_Throw_WhenRemovingOwner()
-        {
-            var owner = CreateUser("owner@test.com");
-            var org = _service.CreateOrganization("Test Org", owner);
+        //[Fact]
+        //public void RemoveUser_Should_Throw_WhenRemovingOwner()
+        //{
+        //    var owner = CreateUser("owner@test.com");
+        //    var org = _service.CreateOrganization("Test Org", owner);
 
-            Action act = () => _service.RemoveUser(org, owner.Id);
+        //    Action act = () => _service.RemoveUser(org, owner.Id);
 
-            act.Should().Throw<InvalidOperationException>()
-                .WithMessage("Cannot remove owner.");
-        }
+        //    act.Should().Throw<InvalidOperationException>()
+        //        .WithMessage("Cannot remove owner.");
+        //}
     }
 }

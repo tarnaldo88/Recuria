@@ -48,22 +48,6 @@ namespace Recuria.Application
             return newOrg;
         }
 
-        //public async void AddUser(Organization organization, User user, UserRole role, CancellationToken ct)
-        //{
-        //    if (organization == null) throw new ArgumentNullException(nameof(organization));
-
-        //    if (user == null) throw new ArgumentNullException(nameof(user));
-
-        //    if (organization.Users.Any(u => u.Id == user.Id))
-        //        throw new InvalidOperationException("User already exists in organization.");
-
-        //    user.AssignToOrganization(organization, role);
-        //    organization.Users.Add(user);
-        //    _organizations.Update(organization);
-
-        //    await _uow.CommitAsync(ct);
-        //}
-
         public async Task<Guid> CreateOrganizationAsync(
             CreateOrganizationRequest request,
             CancellationToken ct)
@@ -107,24 +91,5 @@ namespace Recuria.Application
 
             await _uow.CommitAsync(ct);
         }
-        //NO LONGER NEEDED
-        //private void AddUserToOrganization(
-        //Organization organization,
-        //User user,
-        //UserRole role)
-        //{
-        //    if (organization == null)
-        //        throw new ArgumentNullException(nameof(organization));
-
-        //    if (user == null)
-        //        throw new ArgumentNullException(nameof(user));
-
-        //    if (organization.Users.Any(u => u.Id == user.Id))
-        //        throw new InvalidOperationException("User already exists in organization.");
-
-        //    // Domain behavior
-        //    user.AssignToOrganization(organization, role);
-        //    organization.Users.Add(user);
-        //}
     }
 }
