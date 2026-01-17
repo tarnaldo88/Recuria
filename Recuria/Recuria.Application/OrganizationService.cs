@@ -42,20 +42,26 @@ namespace Recuria.Application
             if (owner == null) throw new ArgumentNullException(nameof(owner));
 
 
-            Organization newOrg = new(name);            
-            AddUser(newOrg, owner, UserRole.Owner);
+            Organization newOrg = new(name);   
+            CancellationToken cancellationToken = new CancellationToken();
+            AddUser(newOrg, owner, UserRole.Owner, cancellationToken);
             return newOrg;
         }
 
-        public void AddUser(Organization organization, User user, UserRole role)
+        public async void AddUser(Organization organization, User user, UserRole role, CancellationToken ct)
         {
+            if (organization == null) throw new ArgumentNullException(nameof(organization));
+
+            if (user == null) throw new ArgumentNullException(nameof(user));
+
             if (organization.Users.Any(u => u.Id == user.Id))
                 throw new InvalidOperationException("User already exists in organization.");
-            if (organization == null) throw new ArgumentNullException(nameof(organization));
-            if (user == null) throw new ArgumentNullException(nameof(user));
 
             user.AssignToOrganization(organization, role);
             organization.Users.Add(user);
+            _organizations.Update(organization);
+
+            await _uow.CommitAsync(ct);
         }
 
         public void ChangeUserRole(Organization organization, Guid userId, UserRole newRole)
@@ -97,7 +103,7 @@ namespace Recuria.Application
             var organization = new Organization(request.Name);
 
             // Domain behavior
-            AddUser(organization, owner, UserRole.Owner);
+            AddUser(organization, owner, UserRole.Owner, ct);
 
             await _organizations.AddAsync(organization, ct);
             await _uow.CommitAsync(ct);
@@ -119,9 +125,10 @@ namespace Recuria.Application
             if (user == null)
                 throw new InvalidOperationException("User not found.");
 
-            AddUser(org, user, request.Role);
+            AddUser(org, user, request.Role, ct);
 
-            //await _organizations.SaveChangesAsync(ct);
+            _organizations.Update(org);
+
             await _uow.CommitAsync(ct);
         }
     }
