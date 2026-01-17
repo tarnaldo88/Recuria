@@ -31,6 +31,11 @@ namespace Recuria.Infrastructure.Repositories
             return await _db.Users
                 .FirstOrDefaultAsync(u => u.Id == id, ct);
         }
+
+        public void Update(User user)
+        {
+            _db.Update(user);
+        }
     }
 
 }
