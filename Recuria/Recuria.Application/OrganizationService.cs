@@ -64,31 +64,6 @@ namespace Recuria.Application
         //    await _uow.CommitAsync(ct);
         //}
 
-        public void ChangeUserRole(Organization organization, Guid userId, UserRole newRole)
-        {
-            var user = organization.Users.FirstOrDefault(u => u.Id == userId) ?? throw new InvalidOperationException("User not found.");
-            if (newRole == UserRole.Owner)
-                throw new InvalidOperationException("Cannot assign owner role.");
-
-            if (user.Role == UserRole.Owner)
-            {
-                throw new InvalidOperationException("Cannot change owner role.");
-            }
-            user.ChangeRole(newRole);
-
-        }
-
-        public void RemoveUser(Organization organization, Guid userId)
-        {
-            var user = organization.Users.FirstOrDefault(u => u.Id == userId) ?? throw new InvalidOperationException("User not found.");
-            if (user.Role == UserRole.Owner)
-            {
-                throw new InvalidOperationException("Cannot remove owner.");
-            }
-
-            organization.Users.Remove(user);
-        }
-
         public async Task<Guid> CreateOrganizationAsync(
             CreateOrganizationRequest request,
             CancellationToken ct)
@@ -101,6 +76,7 @@ namespace Recuria.Application
                 throw new InvalidOperationException("Owner not found.");
 
             var organization = new Organization(request.Name); //uses domain factory
+            organization.AddUser(owner, UserRole.Owner);
 
             await _organizations.AddAsync(organization, ct);
             await _uow.CommitAsync(ct);

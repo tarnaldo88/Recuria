@@ -13,12 +13,6 @@ namespace Recuria.Application.Interface
     {
         Organization CreateOrganization(string name, User owner);
 
-        //void AddUser(Organization organization, User user, UserRole role, CancellationToken ct);
-
-        void ChangeUserRole(Organization organization, Guid userId, UserRole role);
-
-        void RemoveUser(Organization organization, Guid userId);
-
         Task<Guid> CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken cancellationToken);
         Task AddUserAsync(Guid id, AddUserRequest request, CancellationToken cancellationToken);
     }
