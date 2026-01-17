@@ -71,6 +71,8 @@ namespace Recuria.Domain.Entities
 
             user.AssignToOrganization(this, role);
             Users.Add(user);
+
+            AddDomainEvent(new UserAddedToOrganizationDomainEvent(Id, user.Id, role));
         }
 
         public void ChangeUserRole(Guid userId, UserRole newRole)

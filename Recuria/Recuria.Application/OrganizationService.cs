@@ -43,7 +43,8 @@ namespace Recuria.Application
                 throw new ArgumentNullException(nameof(owner));
 
             Organization newOrg = new(name);   
-            AddUserToOrganization(newOrg, owner, UserRole.Owner);
+            //AddUserToOrganization(newOrg, owner, UserRole.Owner);
+            newOrg.AddUser(owner, UserRole.Owner);
             return newOrg;
         }
 
@@ -122,31 +123,32 @@ namespace Recuria.Application
                 throw new InvalidOperationException("User not found.");
 
             //AddUser(org, user, request.Role, ct);
-            AddUserToOrganization(org, user, request.Role);
+            //AddUserToOrganization(org, user, request.Role);
+            org.AddUser(user, role: request.Role);
 
 
             _organizations.Update(org);
 
             await _uow.CommitAsync(ct);
         }
+        //NO LONGER NEEDED
+        //private void AddUserToOrganization(
+        //Organization organization,
+        //User user,
+        //UserRole role)
+        //{
+        //    if (organization == null)
+        //        throw new ArgumentNullException(nameof(organization));
 
-        private void AddUserToOrganization(
-        Organization organization,
-        User user,
-        UserRole role)
-        {
-            if (organization == null)
-                throw new ArgumentNullException(nameof(organization));
+        //    if (user == null)
+        //        throw new ArgumentNullException(nameof(user));
 
-            if (user == null)
-                throw new ArgumentNullException(nameof(user));
+        //    if (organization.Users.Any(u => u.Id == user.Id))
+        //        throw new InvalidOperationException("User already exists in organization.");
 
-            if (organization.Users.Any(u => u.Id == user.Id))
-                throw new InvalidOperationException("User already exists in organization.");
-
-            // Domain behavior
-            user.AssignToOrganization(organization, role);
-            organization.Users.Add(user);
-        }
+        //    // Domain behavior
+        //    user.AssignToOrganization(organization, role);
+        //    organization.Users.Add(user);
+        //}
     }
 }
