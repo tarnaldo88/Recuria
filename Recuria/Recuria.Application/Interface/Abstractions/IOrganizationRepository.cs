@@ -12,5 +12,6 @@ namespace Recuria.Application.Interface.Abstractions
         Task<Organization?> GetByIdAsync(Guid id, CancellationToken ct);
         Task AddAsync(Organization organization, CancellationToken ct);
         Task SaveChangesAsync(CancellationToken ct);
+        void Update(Organization organization);
     }
 }

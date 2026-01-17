@@ -50,5 +50,10 @@ namespace Recuria.Infrastructure.Repositories
 
         public Task SaveChangesAsync(CancellationToken ct) =>
             _context.SaveChangesAsync(ct);
+
+        public void Update(Organization organization)
+        {
+            _context.Organizations.Update(organization);
+        }
     }
 }
