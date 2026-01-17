@@ -15,7 +15,7 @@ namespace Recuria.Application.Interface
         
         void UpgradePlan(Subscription subscription, PlanType newPlan);
         
-        void CancelSubscription(Subscription subscription);
+        void CancelSubscription(Subscription subscription, CancellationToken ct);
         
         Invoice GenerateInvoice(Subscription subscription, decimal amount);
 

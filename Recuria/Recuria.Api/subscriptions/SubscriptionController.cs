@@ -47,7 +47,8 @@ namespace Recuria.Api.subscriptions
         public async Task<IActionResult> Cancel(Guid subscriptionId)
         {
             var subscription = await _subscriptionQueries.GetDomainByIdAsync(subscriptionId);
-            _subscriptionService.CancelSubscription(subscription);
+            CancellationToken ct = new CancellationToken();
+            _subscriptionService.CancelSubscription(subscription, ct);
             return NoContent();
         }
     }

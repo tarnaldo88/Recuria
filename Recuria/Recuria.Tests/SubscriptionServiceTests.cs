@@ -69,9 +69,10 @@ namespace Recuria.Tests
         [Fact]
         public void UpgradePlan_Should_Throw_When_Canceled()
         {
+            var ct = new CancellationToken();
             var sub = _service.CreateTrial(_org);
             _service.ActivateSubscription(sub);
-            _service.CancelSubscription(sub);
+            _service.CancelSubscription(sub, ct);
 
             Action act = () => _service.UpgradePlan(sub, PlanType.Enterprise);
 
@@ -82,9 +83,11 @@ namespace Recuria.Tests
         public void CancelSubscription_Should_SetStatusToCanceled()
         {
             var sub = _service.CreateTrial(_org);
+            var ct = new CancellationToken();
+
             _service.ActivateSubscription(sub);
 
-            _service.CancelSubscription(sub);
+            _service.CancelSubscription(sub, ct);
             sub.Status.Should().Be(SubscriptionStatus.Canceled);
         }
 
@@ -127,7 +130,9 @@ namespace Recuria.Tests
         public void AdvancePeriod_When_NotActive_Should_Throw()
         {
             var sub = _service.CreateTrial(_org);
-            _service.CancelSubscription(sub);
+            var ct = new CancellationToken();
+
+            _service.CancelSubscription(sub, ct);
 
             Action act = () => sub.AdvancePeriod(DateTime.UtcNow);
 
