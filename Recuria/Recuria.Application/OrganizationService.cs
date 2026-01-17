@@ -91,5 +91,42 @@ namespace Recuria.Application
 
             await _uow.CommitAsync(ct);
         }
+
+        public async Task ChangeUserRoleAsync(
+            Guid organizationId,
+            Guid userId,
+            UserRole newRole,
+            CancellationToken ct)
+        {
+            var org = await _organizations.GetByIdAsync(organizationId, ct);
+
+            if (org == null)
+                throw new InvalidOperationException("Organization not found.");
+
+            // DOMAIN BEHAVIOR
+            org.ChangeUserRole(userId, newRole);
+
+            _organizations.Update(org);
+
+            await _uow.CommitAsync(ct);
+        }
+
+        public async Task RemoveUserAsync(
+            Guid organizationId,
+            Guid userId,
+            CancellationToken ct)
+        {
+            var org = await _organizations.GetByIdAsync(organizationId, ct);
+
+            if (org == null)
+                throw new InvalidOperationException("Organization not found.");
+
+            // DOMAIN BEHAVIOR
+            org.RemoveUser(userId);
+
+            _organizations.Update(org);
+
+            await _uow.CommitAsync(ct);
+        }
     }
 }
