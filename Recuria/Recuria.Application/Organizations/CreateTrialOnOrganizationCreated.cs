@@ -9,8 +9,7 @@ using System.Threading.Tasks;
 
 namespace Recuria.Application.Organizations
 {
-    public sealed class CreateTrialOnOrganizationCreated
-    : IDomainEventHandler<OrganizationCreatedDomainEvent>
+    public sealed class CreateTrialOnOrganizationCreated: IDomainEventHandler<OrganizationCreatedDomainEvent>
     {
         private readonly ISubscriptionService _subscriptions;
         private readonly IOrganizationRepository _orgs;
@@ -32,7 +31,9 @@ namespace Recuria.Application.Organizations
         {
             var org = await _orgs.GetByIdAsync(@event.OrganizationId, ct);
 
-            var trial = _subscriptions.CreateTrial(org);
+            if (org == null) { return; }
+
+            _subscriptions.CreateTrial(org);
 
             await _uow.CommitAsync(ct);
         }

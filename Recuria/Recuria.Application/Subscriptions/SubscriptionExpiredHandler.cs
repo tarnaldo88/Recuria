@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Recuria.Application.Billing
+namespace Recuria.Application.Subscriptions
 {
     public class SubscriptionExpiredHandler : IDomainEventHandler<SubscriptionExpired>
     {
