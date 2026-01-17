@@ -26,20 +26,26 @@ namespace Recuria.Infrastructure.Persistence
 
             try
             {
-                var result = await _db.SaveChangesAsync(ct);
-
-                await tx.CommitAsync(ct);
-                var events = _db.ChangeTracker
+                // 1. COLLECT EVENTS BEFORE SAVING
+                var domainEvents = _db.ChangeTracker
                     .Entries<Entity>()
                     .SelectMany(e => e.Entity.DomainEvents)
                     .ToList();
 
-                foreach (var entity in _db.ChangeTracker.Entries<Entity>())
+                // 2. SAVE CHANGES
+                var result = await _db.SaveChangesAsync(ct);
+
+                // 3. COMMIT DB TRANSACTION
+                await tx.CommitAsync(ct);
+
+                // 4. CLEAR EVENTS ONLY AFTER COMMIT
+                foreach (var entry in _db.ChangeTracker.Entries<Entity>())
                 {
-                    entity.Entity.ClearDomainEvents();
+                    entry.Entity.ClearDomainEvents();
                 }
 
-                await _dispatcher.DispatchAsync(events, ct);
+                // 5. DISPATCH EVENTS
+                await _dispatcher.DispatchAsync(domainEvents, ct);
 
                 return result;
             }
