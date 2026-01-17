@@ -99,10 +99,7 @@ namespace Recuria.Application
             if (owner == null)
                 throw new InvalidOperationException("Owner not found.");
 
-            var organization = new Organization(request.Name);
-
-            // Domain behavior
-            AddUser(organization, owner, UserRole.Owner, ct);
+            var organization = new Organization(request.Name); //uses domain factory
 
             await _organizations.AddAsync(organization, ct);
             await _uow.CommitAsync(ct);
