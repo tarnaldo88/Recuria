@@ -6,6 +6,7 @@ using Recuria.Application.Interface.Abstractions;
 using Recuria.Application.Validation;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
+using Recuria.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,10 +24,11 @@ namespace Recuria.Tests
         private readonly IOrganizationRepository _organizations;
         private readonly ISubscriptionQueries _queries;
         private readonly ValidationBehavior _validator;
+        private readonly UnitOfWork _unitOfWork;
 
         public SubscriptionServiceTests()
         {
-            _service = new SubscriptionService(_subscriptions, _organizations, _queries, _validator);
+            _service = new SubscriptionService(_subscriptions, _organizations, _queries, _validator, _unitOfWork);
             _org = new Organization("Test Org");
         }
 
