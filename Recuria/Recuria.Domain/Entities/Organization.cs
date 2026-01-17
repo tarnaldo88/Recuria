@@ -1,5 +1,6 @@
 ﻿using Recuria.Domain.Abstractions;
 using Recuria.Domain.Events.Organization;
+using Recuria.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Recuria.Domain.Entities
 {
-    public class Organization
+    public class Organization : Entity
     {
         public Guid Id { get; private set; }   // make setter private
         public string Name { get; private set; } = null!;
@@ -17,8 +18,7 @@ namespace Recuria.Domain.Entities
         public List<User> Users { get; private set; } = new();
         public ICollection<Subscription> Subscriptions { get; private set; } = new List<Subscription>();
 
-        private readonly List<IDomainEvent> _domainEvents = new();
-        public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents;
+        
 
         protected Organization() { } // EF Core
 
@@ -27,17 +27,8 @@ namespace Recuria.Domain.Entities
             Id = Guid.NewGuid();
             Name = name;
 
-            AddDomainEvent(new OrganizationCreatedDomainEvent(Id));
-        }
-        protected void AddDomainEvent(IDomainEvent domainEvent)
-        {
-            _domainEvents.Add(domainEvent);
-        }
-
-        public void ClearDomainEvents()
-        {
-            _domainEvents.Clear();
-        }
+            RaiseDomainEvent(new OrganizationCreatedDomainEvent(Id));
+        }        
 
         public void AssignSubscription(Subscription subscription)
         {
@@ -72,7 +63,7 @@ namespace Recuria.Domain.Entities
             user.AssignToOrganization(this, role);
             Users.Add(user);
 
-            AddDomainEvent(new UserAddedToOrganizationDomainEvent(Id, user.Id, role));
+            RaiseDomainEvent(new UserAddedToOrganizationDomainEvent(Id, user.Id, role));
         }
 
         public void ChangeUserRole(Guid userId, UserRole newRole)
