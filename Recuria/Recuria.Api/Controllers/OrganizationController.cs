@@ -86,5 +86,26 @@ namespace Recuria.Api.Controllers
                 User.FindFirst("org_id")?.Value
                 ?? throw new InvalidOperationException("No organization in context"));
         }
+
+        [HttpPut("{orgId:guid}/users/{userId:guid}/role")]
+        public async Task<IActionResult> ChangeUserRole(
+            Guid orgId,
+            Guid userId,
+            [FromBody] ChangeUserRoleRequest request,
+            CancellationToken ct)
+        {
+            await _service.ChangeUserRoleAsync(orgId, userId, request.NewRole, ct);
+            return NoContent();
+        }
+
+        [HttpDelete("{orgId:guid}/users/{userId:guid}")]
+        public async Task<IActionResult> RemoveUser(
+            Guid orgId,
+            Guid userId,
+            CancellationToken ct)
+        {
+            await _service.RemoveUserAsync(orgId, userId, ct);
+            return NoContent();
+        }
     }
 }
