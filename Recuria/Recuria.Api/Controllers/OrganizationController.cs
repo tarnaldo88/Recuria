@@ -4,7 +4,7 @@ using Recuria.Application.Interface;
 using Recuria.Application.Requests;
 using Recuria.Domain;
 
-namespace Recuria.Api.organizations
+namespace Recuria.Api.Controllers
 {
     [ApiController]
     [Route("api/organizations")]

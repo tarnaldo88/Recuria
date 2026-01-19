@@ -3,7 +3,7 @@ using Recuria.Application.Contracts.Subscription;
 using Recuria.Application.Interface;
 using Recuria.Application.Requests;
 
-namespace Recuria.Api.subscriptions
+namespace Recuria.Api.Controllers
 {
     public class SubscriptionController : Controller
     {
