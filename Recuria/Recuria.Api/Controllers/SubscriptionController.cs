@@ -5,7 +5,9 @@ using Recuria.Application.Requests;
 
 namespace Recuria.Api.Controllers
 {
-    public class SubscriptionController : Controller
+    [ApiController]
+    [Route("api/subscriptions")]
+    public class SubscriptionController : ControllerBase
     {
         private readonly ISubscriptionService _subscriptionService;
         private readonly ISubscriptionQueries _subscriptionQueries;
