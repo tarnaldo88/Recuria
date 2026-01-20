@@ -13,18 +13,14 @@ namespace Recuria.Application.Interface
     {        
         Invoice GenerateInvoice(Subscription subscription, decimal amount);
 
-        Task<SubscriptionDetailsDto> CreateTrialAsync(
-            Guid organizationId,
-            CancellationToken ct);
+        Task<SubscriptionDetailsDto> CreateTrialAsync(Guid organizationId, CancellationToken ct);
 
         Task UpgradeAsync(
             Guid subscriptionId,
             PlanType newPlan,
             CancellationToken ct);
 
-        Task CancelAsync(
-            Guid subscriptionId,
-            CancellationToken ct);
+        Task CancelAsync(Guid subscriptionId, CancellationToken ct);
         void ActivateAsync(Guid subscriptionId, CancellationToken ct);
     }
 }
