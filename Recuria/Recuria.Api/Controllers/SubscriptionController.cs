@@ -24,8 +24,7 @@ namespace Recuria.Api.Controllers
         public async Task<ActionResult<SubscriptionDetailsDto>> GetCurrent(Guid organizationId, CancellationToken ct)
         {
             var subscription = await _subscriptionQueries.GetCurrentAsync(organizationId, ct);
-            if (subscription is null) return NotFound();
-            return Ok(subscription);
+            return subscription is null ? NotFound() : Ok(subscription);
         }
 
         [HttpPost("trial/{organizationId:guid}")]
