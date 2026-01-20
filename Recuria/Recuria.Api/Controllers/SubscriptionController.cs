@@ -37,17 +37,14 @@ namespace Recuria.Api.Controllers
 
         [HttpPost("{subscriptionId:guid}/upgrade")]
         public async Task<IActionResult> Upgrade(Guid subscriptionId, [FromBody] UpgradeSubscriptionRequest request, CancellationToken ct)
-        {
-            var subscription = await _subscriptionQueries.GetDomainByIdAsync(subscriptionId);
+        {            
             await _subscriptionService.UpgradeAsync(subscriptionId, request.NewPlan, ct);
             return NoContent();
         }
 
         [HttpPost("{subscriptionId:guid}/cancel")]
-        public async Task<IActionResult> Cancel(Guid subscriptionId)
-        {
-            var subscription = await _subscriptionQueries.GetDomainByIdAsync(subscriptionId);
-            CancellationToken ct = new CancellationToken();
+        public async Task<IActionResult> Cancel(Guid subscriptionId, CancellationToken ct)
+        {            
             await _subscriptionService.CancelAsync(subscriptionId, ct);
             return NoContent();
         }
