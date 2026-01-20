@@ -50,7 +50,7 @@ namespace Recuria.Api.Controllers
         {
             var subscription = await _subscriptionQueries.GetDomainByIdAsync(subscriptionId);
             CancellationToken ct = new CancellationToken();
-            _subscriptionService.CancelSubscription(subscription, ct);
+            await _subscriptionService.CancelAsync(subscriptionId, ct);
             return NoContent();
         }
     }
