@@ -21,5 +21,20 @@ namespace Recuria.Application.Organizations
             _users = users;
             _uow = uow;
         }
+        public async Task HandleAsync(
+           UserAddedToOrganizationDomainEvent @event,
+           CancellationToken ct)
+        {
+            var user = await _users.GetByIdAsync(@event.UserId, ct);
+            if (user == null)
+                return;
+
+            // Placeholder for future side effects:
+            // - Send invite email
+            // - Provision permissions
+            // - Audit log
+
+            await _uow.CommitAsync(ct);
+        }
     }
 }
