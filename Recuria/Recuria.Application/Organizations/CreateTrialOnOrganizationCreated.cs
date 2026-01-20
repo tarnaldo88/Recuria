@@ -12,12 +12,12 @@ namespace Recuria.Application.Organizations
 {
     public sealed class CreateTrialOnOrganizationCreated: IDomainEventHandler<OrganizationCreatedDomainEvent>
     {
-        private readonly ISubscriptionService _subscriptions;
+        private readonly ISubscriptionRepository _subscriptions;
         private readonly IOrganizationRepository _orgs;
         private readonly IUnitOfWork _uow;
 
         public CreateTrialOnOrganizationCreated(
-            ISubscriptionService subscriptions,
+            ISubscriptionRepository subscriptions,
             IOrganizationRepository orgs,
             IUnitOfWork uow)
         {
