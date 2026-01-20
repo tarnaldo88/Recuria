@@ -1,5 +1,6 @@
 ﻿using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
+using Recuria.Domain.Entities;
 using Recuria.Domain.Events.Organization;
 using System;
 using System.Collections.Generic;
@@ -32,8 +33,13 @@ namespace Recuria.Application.Organizations
             var org = await _orgs.GetByIdAsync(@event.OrganizationId, ct);
 
             if (org == null) { return; }
+            if (org.GetCurrentSubscription(DateTime.UtcNow) != null)
+                return;
 
-            await _subscriptions.CreateTrialAsync(org.Id, ct);
+            var subscription = Subscription.CreateTrial(org, DateTime.UtcNow);
+
+            //await _subscriptions.CreateTrialAsync(org.Id, ct);
+            await _subscriptions.AddAsync(subscription, ct);
 
             await _uow.CommitAsync(ct);
         }
