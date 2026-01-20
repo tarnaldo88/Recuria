@@ -29,19 +29,18 @@ namespace Recuria.Api.Controllers
         }
 
         [HttpPost("trial/{organizationId:guid}")]
-        public async Task<ActionResult<SubscriptionDto>> CreateTrial(Guid organizationId)
+        public async Task<ActionResult<SubscriptionDto>> CreateTrial(Guid organizationId, CancellationToken ct)
         {
-            var org = await _subscriptionQueries.GetDomainAsync(organizationId);
-            var subscription = _subscriptionService.CreateTrial(org);
+            var dto = await _subscriptionService.CreateTrialAsync(organizationId, ct);
 
-            return CreatedAtAction(nameof(GetCurrent), new { organizationId }, subscription);
+            return CreatedAtAction(nameof(GetCurrent), new { organizationId }, dto);
         }
 
         [HttpPost("{subscriptionId:guid}/upgrade")]
-        public async Task<IActionResult> Upgrade(Guid subscriptionId, [FromBody] UpgradeSubscriptionRequest request)
+        public async Task<IActionResult> Upgrade(Guid subscriptionId, [FromBody] UpgradeSubscriptionRequest request, CancellationToken ct)
         {
             var subscription = await _subscriptionQueries.GetDomainByIdAsync(subscriptionId);
-            _subscriptionService.UpgradePlan(subscription, request.NewPlan);
+            await _subscriptionService.UpgradeAsync(subscriptionId, request.NewPlan, ct);
             return NoContent();
         }
 
