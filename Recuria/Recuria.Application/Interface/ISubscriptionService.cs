@@ -10,13 +10,7 @@ using System.Threading.Tasks;
 namespace Recuria.Application.Interface
 {
     public interface ISubscriptionService
-    {
-        Subscription CreateTrial(Organization org);
-        
-        void UpgradePlan(Subscription subscription, PlanType newPlan);
-        
-        void CancelSubscription(Subscription subscription, CancellationToken ct);
-        
+    {        
         Invoice GenerateInvoice(Subscription subscription, decimal amount);
 
         Task<SubscriptionDetailsDto> CreateTrialAsync(
