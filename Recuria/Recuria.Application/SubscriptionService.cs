@@ -79,10 +79,15 @@ namespace Recuria.Application
             if (org == null)
                 throw new InvalidOperationException("Organization not found.");
 
-            var subscription =
-                Subscription.CreateTrial(org, DateTime.UtcNow);
+            if (org.GetCurrentSubscription(DateTime.UtcNow) != null)
+                throw new InvalidOperationException("Organization already has an active subscription.");
+
+            var subscription = Subscription.CreateTrial(org, DateTime.UtcNow);
+
+            org.AssignSubscription(subscription);
 
             await _subscriptions.AddAsync(subscription, ct);
+            await _uow.CommitAsync(ct);
 
             return (await _queries.GetCurrentAsync(organizationId, ct))!;
         }
