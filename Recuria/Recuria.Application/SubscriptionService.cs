@@ -120,6 +120,9 @@ namespace Recuria.Application
                 throw new InvalidOperationException("Not found");
 
             subscription.Cancel();
+
+            _subscriptions.Update(subscription);
+            await _uow.CommitAsync(ct);
         }
 
         public async void ActivateAsync(Subscription subscription, CancellationToken ct = default)
