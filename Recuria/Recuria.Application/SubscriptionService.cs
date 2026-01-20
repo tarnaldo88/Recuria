@@ -104,6 +104,9 @@ namespace Recuria.Application
                 throw new InvalidOperationException("Not found");
 
             subscription.UpgradePlan(newPlan);
+
+            _subscriptions.Update(subscription);
+            await _uow.CommitAsync(ct);
         }
 
         public async Task CancelAsync(
