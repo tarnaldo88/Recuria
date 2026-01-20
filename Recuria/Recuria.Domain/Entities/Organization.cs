@@ -81,7 +81,12 @@ namespace Recuria.Domain.Entities
 
             user.ChangeRole(newRole);
 
-            RaiseDomainEvent(Id, userId, oldRole, newRole);
+            RaiseDomainEvent(
+                new UserRoleChangedDomainEvent(
+                    Id,
+                    userId,
+                    oldRole,
+                    newRole));
         }
 
         public void RemoveUser(Guid userId)
