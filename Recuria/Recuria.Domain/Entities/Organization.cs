@@ -77,7 +77,11 @@ namespace Recuria.Domain.Entities
             if (user.Role == UserRole.Owner)
                 throw new InvalidOperationException("Cannot change owner role.");
 
+            var oldRole = user.Role;
+
             user.ChangeRole(newRole);
+
+            RaiseDomainEvent(Id, userId, oldRole, newRole);
         }
 
         public void RemoveUser(Guid userId)
@@ -89,6 +93,10 @@ namespace Recuria.Domain.Entities
                 throw new InvalidOperationException("Cannot remove owner.");
 
             Users.Remove(user);
+            RaiseDomainEvent(
+                new UserRemovedFromOrganizationDomainEvent(
+                Id,
+                userId));
         }
     }
 
