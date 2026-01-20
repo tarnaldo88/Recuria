@@ -125,8 +125,11 @@ namespace Recuria.Application
             await _uow.CommitAsync(ct);
         }
 
-        public async void ActivateAsync(Subscription subscription, CancellationToken ct = default)
+        public async void ActivateAsync(Guid subscriptionId, CancellationToken ct = default)
         {
+            var subscription = await _subscriptions.GetByIdAsync(subscriptionId, ct);
+            await _validator.ValidateAsync(subscription);
+
             if (subscription == null)
                 throw new ArgumentNullException(nameof(subscription));
 
