@@ -17,7 +17,6 @@ namespace Recuria.Application
     {
         private readonly IOrganizationRepository _organizations;
         private readonly IUserRepository _users;
-        private readonly IOrganizationQueries _queries;
         private readonly ValidationBehavior _validator;
         private readonly IUnitOfWork _uow;
 
@@ -30,24 +29,11 @@ namespace Recuria.Application
         {
             _organizations = organizations;
             _users = users;
-            _queries = queries;
             _validator = validator;
             _uow = uow;
         }
 
-        public Organization CreateOrganization(string name, User owner)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Organization name is required.");
-            if (owner == null) 
-                throw new ArgumentNullException(nameof(owner));
-
-            Organization newOrg = new(name);   
-            //AddUserToOrganization(newOrg, owner, UserRole.Owner);
-            newOrg.AddUser(owner, UserRole.Owner);
-            return newOrg;
-        }
-
+        
         public async Task<Guid> CreateOrganizationAsync(
             CreateOrganizationRequest request,
             CancellationToken ct)
@@ -82,10 +68,7 @@ namespace Recuria.Application
             if (user == null)
                 throw new InvalidOperationException("User not found.");
 
-            //AddUser(org, user, request.Role, ct);
-            //AddUserToOrganization(org, user, request.Role);
             org.AddUser(user, role: request.Role);
-
 
             _organizations.Update(org);
 

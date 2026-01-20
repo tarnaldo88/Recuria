@@ -11,8 +11,6 @@ namespace Recuria.Application.Interface
 {
     public interface IOrganizationService
     {
-        Organization CreateOrganization(string name, User owner);
-
         Task<Guid> CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken cancellationToken);
         Task AddUserAsync(Guid id, AddUserRequest request, CancellationToken cancellationToken);
         Task ChangeUserRoleAsync(Guid organizationId,
