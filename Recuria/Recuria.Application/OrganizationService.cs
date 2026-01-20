@@ -40,11 +40,7 @@ namespace Recuria.Application
         {
             await _validator.ValidateAsync(request);
 
-            var owner = await _users.GetByIdAsync(request.OwnerId, ct);
-
-            if (owner == null)
-                throw new InvalidOperationException("Owner not found.");
-
+            var owner = await _users.GetByIdAsync(request.OwnerId, ct) ?? throw new InvalidOperationException("Owner not found.");
             var organization = new Organization(request.Name); //uses domain factory
             organization.AddUser(owner, UserRole.Owner);
 
@@ -58,18 +54,10 @@ namespace Recuria.Application
         {
             await _validator.ValidateAsync(request);
 
-            var org = await _organizations.GetByIdAsync(id, ct);
-
-            if (org == null)
-                throw new InvalidOperationException("Organization not found.");
-
-            var user = await _users.GetByIdAsync(request.UserId, ct);
-
-            if (user == null)
-                throw new InvalidOperationException("User not found.");
+            var org = await _organizations.GetByIdAsync(id, ct) ?? throw new InvalidOperationException("Organization not found.");
+            var user = await _users.GetByIdAsync(request.UserId, ct) ?? throw new InvalidOperationException("User not found.");
 
             org.AddUser(user, role: request.Role);
-
             _organizations.Update(org);
 
             await _uow.CommitAsync(ct);
@@ -81,16 +69,12 @@ namespace Recuria.Application
             UserRole newRole,
             CancellationToken ct)
         {
-            var org = await _organizations.GetByIdAsync(organizationId, ct);
-
-            if (org == null)
-                throw new InvalidOperationException("Organization not found.");
-
+            var org = await _organizations.GetByIdAsync(organizationId, ct) ?? throw new InvalidOperationException("Organization not found.");
+            
             // DOMAIN BEHAVIOR
             org.ChangeUserRole(userId, newRole);
 
             _organizations.Update(org);
-
             await _uow.CommitAsync(ct);
         }
 
@@ -99,10 +83,7 @@ namespace Recuria.Application
             Guid userId,
             CancellationToken ct)
         {
-            var org = await _organizations.GetByIdAsync(organizationId, ct);
-
-            if (org == null)
-                throw new InvalidOperationException("Organization not found.");
+            var org = await _organizations.GetByIdAsync(organizationId, ct) ?? throw new InvalidOperationException("Organization not found.");
 
             // DOMAIN BEHAVIOR
             org.RemoveUser(userId);
