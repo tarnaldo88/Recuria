@@ -33,7 +33,7 @@ namespace Recuria.Application.Organizations
 
             if (org == null) { return; }
 
-            _subscriptions.CreateTrial(org);
+            await _subscriptions.CreateTrialAsync(org.Id, ct);
 
             await _uow.CommitAsync(ct);
         }
