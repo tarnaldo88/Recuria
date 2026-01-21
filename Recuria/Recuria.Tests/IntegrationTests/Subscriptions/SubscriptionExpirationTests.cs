@@ -36,7 +36,7 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
 
         public SubscriptionExpirationTests(CustomWebApplicationFactory factory)
         {
-            factory = factory;
+            _factory = factory;
 
             _scope = factory.Services.CreateScope();
             var sp = _scope.ServiceProvider;
