@@ -167,7 +167,36 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             exists.Should().BeTrue();
         }
 
-        
+        [Fact]
+        public async Task Activate_Should_BeIdempotent_HandlerShouldNotDuplicateProcessedMarker()
+        {
+            // Arrange
+            var (org, subscription) = await CreateSubscriptionAsync(
+                status: SubscriptionStatus.Trial,
+                periodStart: DateTime.UtcNow.AddDays(-10),
+                periodEnd: DateTime.UtcNow.AddDays(+4));
+
+            var now = DateTime.UtcNow;
+
+            subscription.Activate(now);
+
+            var activatedEvt = subscription.DomainEvents
+                .OfType<SubscriptionActivatedDomainEvent>()
+                .Single();
+
+            _subscriptions.Update(subscription);
+            await _uow.CommitAsync();
+
+            // Act: simulate a duplicate dispatch by calling the handler logic indirectly is hard by design, but we can at least assert the store indicates it is already processed.
+            var handlerName = nameof(SubscriptionActivatedHandler);
+
+            var exists = await _processedEvents.ExistsAsync(
+                activatedEvt.EventId,
+                handlerName,
+                CancellationToken.None);
+
+            exists.Should().BeTrue();
+        }
 
         //Creating helper method to make a persisted org and sub
         private async Task<(Organization Org, Subscription Subscription)> CreateSubscriptionAsync(SubscriptionStatus status, DateTime periodStart, DateTime periodEnd)

@@ -52,7 +52,7 @@ namespace Recuria.Infrastructure.Outbox
                         var domainEvent = (IDomainEvent)
                             JsonSerializer.Deserialize(message.Content, type)!;
 
-                        await _dispatcher.DispatchAsync((IEnumerable<IDomainEvent>)domainEvent, ct);
+                        await _dispatcher.DispatchAsync(new[] { domainEvent }, ct);
 
                         message.ProcessedOnUtc = DateTime.UtcNow;
 
