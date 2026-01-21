@@ -19,11 +19,11 @@ namespace Recuria.Application.Subscriptions
             _store = store;
         }        
 
-        public Task HandleAsync(SubscriptionExpiredDomainEvent @evt, CancellationToken cancellationToken)
+        public async Task HandleAsync(SubscriptionExpiredDomainEvent @evt, CancellationToken cancellationToken)
         {
-            var handlerName = nameof(SubscriptionActivatedHandler);
+            var handlerName = nameof(SubscriptionExpiredHandler);
 
-            if (await _store.ExistsAsync(evt.EventId, handlerName, ct))
+            if (await _store.ExistsAsync(evt.EventId, handlerName, cancellationToken))
                 return;
 
             // Side effects here
@@ -31,7 +31,7 @@ namespace Recuria.Application.Subscriptions
             // - publish integration event
             // - provision tenant
 
-            await _store.MarkProcessedAsync(evt.EventId, handlerName, ct);
+            await _store.MarkProcessedAsync(evt.EventId, handlerName, cancellationToken);
             return;
         }
     }
