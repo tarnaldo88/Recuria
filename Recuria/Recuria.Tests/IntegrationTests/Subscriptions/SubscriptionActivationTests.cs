@@ -62,9 +62,9 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
         public async Task Activate_Should_Succeed_When_StatusIsPastDue()
         {
             var (org, subscription) = await CreateSubscriptionAsync(
-            status: SubscriptionStatus.PastDue,
-            periodStart: DateTime.UtcNow.AddMonths(-1),
-            periodEnd: DateTime.UtcNow.AddDays(-1));
+                status: SubscriptionStatus.PastDue,
+                periodStart: DateTime.UtcNow.AddMonths(-1),
+                periodEnd: DateTime.UtcNow.AddDays(-1));
 
             var now = DateTime.UtcNow;
 
@@ -76,6 +76,24 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             reloaded!.Status.Should().Be(SubscriptionStatus.Active);
             reloaded.PeriodStart.Should().BeCloseTo(now, precision: TimeSpan.FromSeconds(2));
             reloaded.PeriodEnd.Should().BeCloseTo(now.AddMonths(1), precision: TimeSpan.FromSeconds(2));
+        }
+
+        [Fact]
+        public async Task Activate_Should_Throw_When_StatusIsAlreadyActive_And_NotPersist()
+        {
+            var (org, subscription) = await CreateSubscriptionAsync(
+                status: SubscriptionStatus.Active,
+                periodStart: DateTime.UtcNow.AddDays(-5),
+                periodEnd: DateTime.UtcNow.AddDays(+25));
+
+            var originalStart = subscription.PeriodStart;
+            var originalEnd = subscription.PeriodEnd;
+
+            var now = DateTime.UtcNow;
+            var act = () => subscription.Activate(now);
+
+            // Assert exception is thrown
+            act.Should().Throw<InvalidOperationException>().WithMessage("Only trial or past-due subscriptions can be activated.");
         }
 
         //Creating helper method to make a persisted org and sub
