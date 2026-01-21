@@ -64,7 +64,7 @@ namespace Recuria.Tests.IntegrationTests.Organizations
 
             subscription.Should().NotBeNull();
             subscription!.Status.Should().Be(SubscriptionStatus.Active);
-            subscription.Plan.Should().Be(PlanType.Trial);
+            subscription.Plan.Should().Be(PlanType.Free);
         }
     }
 }

@@ -9,6 +9,7 @@ using Recuria.Application.Requests;
 using Recuria.Domain;
 using Recuria.Domain.Abstractions;
 using Recuria.Domain.Entities;
+using Recuria.Domain.Enums;
 using Recuria.Domain.Events.Organization;
 using Recuria.Domain.Events.Subscription;
 using Recuria.Infrastructure.Persistence;

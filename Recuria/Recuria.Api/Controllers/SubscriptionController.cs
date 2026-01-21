@@ -2,6 +2,7 @@
 using Recuria.Application.Contracts.Subscription;
 using Recuria.Application.Interface;
 using Recuria.Application.Requests;
+using Recuria.Domain.Enums;
 
 namespace Recuria.Api.Controllers
 {

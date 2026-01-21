@@ -2,6 +2,7 @@
 using Recuria.Application.Contracts.Subscription;
 using Recuria.Application.Interface;
 using Recuria.Domain.Entities;
+using Recuria.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -3,6 +3,7 @@
 using Recuria.Application;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
+using Recuria.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;

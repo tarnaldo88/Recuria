@@ -3,6 +3,7 @@ using Recuria.Application.Interface;
 using Recuria.Application.Observability;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
+using Recuria.Domain.Enums;
 using System;
 using System.Collections.Generic;
 //using Recuria.Infrastructure.Observability;
