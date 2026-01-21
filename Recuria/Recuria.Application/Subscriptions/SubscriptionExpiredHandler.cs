@@ -1,4 +1,5 @@
 ﻿using Recuria.Application.Interface;
+using Recuria.Application.Interface.Idempotency;
 using Recuria.Domain.Abstractions;
 using Recuria.Domain.Events.Subscription;
 using System;
@@ -9,14 +10,29 @@ using System.Threading.Tasks;
 
 namespace Recuria.Application.Subscriptions
 {
-    public class SubscriptionExpiredHandler : IDomainEventHandler<SubscriptionExpired>
+    public sealed class SubscriptionExpiredHandler : IDomainEventHandler<SubscriptionExpiredDomainEvent>
     {
-        public Task HandleAsync(SubscriptionExpired domainEvent, CancellationToken ct)
+        private readonly IProcessedEventStore _store;
+
+        public SubscriptionExpiredHandler(IProcessedEventStore store)
         {
-            // Send email
-            // Emit integration event
-            // Audit log
-            return Task.CompletedTask;
+            _store = store;
+        }        
+
+        public Task HandleAsync(SubscriptionExpiredDomainEvent @evt, CancellationToken cancellationToken)
+        {
+            var handlerName = nameof(SubscriptionActivatedHandler);
+
+            if (await _store.ExistsAsync(evt.EventId, handlerName, ct))
+                return;
+
+            // Side effects here
+            // - send email
+            // - publish integration event
+            // - provision tenant
+
+            await _store.MarkProcessedAsync(evt.EventId, handlerName, ct);
+            return;
         }
     }
 }
