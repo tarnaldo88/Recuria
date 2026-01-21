@@ -35,15 +35,16 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
         public SubscriptionActivationTests(CustomWebApplicationFactory factory)
         {
             _factory = factory;
-            _scope = factory.Services.CreateScope();
 
-            _subscriptions = _scope.ServiceProvider.GetRequiredService<ISubscriptionRepository>();
-            _queries = _factory.Services.GetRequiredService<ISubscriptionQueries>();
-            _organizations = _factory.Services.GetRequiredService<IOrganizationRepository>();
-            _users = _factory.Services.GetRequiredService<IUserRepository>();
-            _uow = _scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-            _processedEvents = factory.Services.GetRequiredService<IProcessedEventStore>();
-            
+            _scope = factory.Services.CreateScope();
+            var sp = _scope.ServiceProvider;
+
+            _subscriptions = sp.GetRequiredService<ISubscriptionRepository>();
+            _queries = sp.GetRequiredService<ISubscriptionQueries>();
+            _organizations = sp.GetRequiredService<IOrganizationRepository>();
+            _users = sp.GetRequiredService<IUserRepository>();
+            _uow = sp.GetRequiredService<IUnitOfWork>();
+            _processedEvents = sp.GetRequiredService<IProcessedEventStore>();
         }
 
         public void Dispose()
