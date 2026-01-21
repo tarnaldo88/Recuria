@@ -97,7 +97,7 @@ namespace Recuria.Tests.Unit.Domain
             // Activate subscription
             var subscriptionService = _provider.GetRequiredService<ISubscriptionService>();
             CancellationToken ct = default(CancellationToken);
-            subscriptionService.ActivateAsync(subscription, ct);
+            subscriptionService.ActivateAsync(subscription.Id, ct);
 
             // Commit UnitOfWork to trigger domain events
             await _provider.GetRequiredService<IUnitOfWork>().CommitAsync();
