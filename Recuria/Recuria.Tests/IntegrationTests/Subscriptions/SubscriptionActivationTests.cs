@@ -2,10 +2,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
+using Recuria.Application.Interface.Idempotency;
 using Recuria.Application.Requests;
+using Recuria.Application.Subscriptions;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
 using Recuria.Domain.Enums;
+using Recuria.Domain.Events.Subscription;
 using Recuria.Infrastructure.Persistence;
 using Recuria.Infrastructure.Repositories;
 using Recuria.Tests.IntegrationTests.Infrastructure;
@@ -24,16 +27,18 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
         private readonly IOrganizationRepository _organizations;
         private readonly IUserRepository _users;
         private readonly IUnitOfWork _uow;
+        private readonly CustomWebApplicationFactory _factory;
 
         public SubscriptionActivationTests(CustomWebApplicationFactory factory)
         {
-            var services = factory.Services;
+            _factory = factory;
 
-            _subscriptions = services.GetRequiredService<ISubscriptionRepository>();
-            _queries = services.GetRequiredService<ISubscriptionQueries>();
-            _organizations = services.GetRequiredService<IOrganizationRepository>();
-            _users = services.GetRequiredService<IUserRepository>();
-            _uow = services.GetRequiredService<IUnitOfWork>();
+            _subscriptions = _factory.Services.GetRequiredService<ISubscriptionRepository>();
+            _queries = _factory.Services.GetRequiredService<ISubscriptionQueries>();
+            _organizations = _factory.Services.GetRequiredService<IOrganizationRepository>();
+            _users = _factory.Services.GetRequiredService<IUserRepository>();
+            _uow = _factory.Services.GetRequiredService<IUnitOfWork>();
+            
         }
 
         [Fact]
@@ -107,7 +112,28 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
         [Fact]
         public async Task Activate_Should_DispatchSubscriptionActivatedEvent_And_MarkProcessedEventStore()
         {
+            var (org, subscription) = await CreateSubscriptionAsync(
+                status: SubscriptionStatus.Trial,
+                periodStart: DateTime.UtcNow.AddDays(-10),
+                periodEnd: DateTime.UtcNow.AddDays(+4));
 
+            var now = DateTime.UtcNow;
+                     
+            subscription.Activate(now);
+
+            var activatedEvent = subscription.DomainEvents
+                .OfType<SubscriptionActivatedDomainEvent>()
+                .Single();
+
+            _subscriptions.Update(subscription);
+            await _uow.CommitAsync();
+
+            // Assert: handler side effect was persisted
+            var store = _factory.Services.GetRequiredService<IProcessedEventStore>();
+            var handlerName = nameof(SubscriptionActivatedHandler);
+
+            var exists = await store.ExistsAsync(activatedEvent.EventId, handlerName, CancellationToken.None);
+            exists.Should().BeTrue();
         }
 
         //Creating helper method to make a persisted org and sub
