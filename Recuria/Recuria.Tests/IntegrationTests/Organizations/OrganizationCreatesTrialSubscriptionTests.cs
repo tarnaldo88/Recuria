@@ -13,6 +13,7 @@ using FluentAssertions;
 using Xunit;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Recuria.Domain.Enums;
 
 namespace Recuria.Tests.IntegrationTests.Organizations
 {
