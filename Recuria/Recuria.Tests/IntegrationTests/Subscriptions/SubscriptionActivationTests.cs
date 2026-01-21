@@ -104,6 +104,12 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             reloaded.PeriodEnd.Should().Be(originalEnd);
         }
 
+        [Fact]
+        public async Task Activate_Should_DispatchSubscriptionActivatedEvent_And_MarkProcessedEventStore()
+        {
+
+        }
+
         //Creating helper method to make a persisted org and sub
         private async Task<(Organization Org, Subscription Subscription)> CreateSubscriptionAsync(SubscriptionStatus status, DateTime periodStart, DateTime periodEnd)
         {
