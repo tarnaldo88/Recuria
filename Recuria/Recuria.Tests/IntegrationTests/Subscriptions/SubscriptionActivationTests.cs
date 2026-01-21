@@ -1,4 +1,6 @@
-﻿using Recuria.Application.Interface;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Recuria.Application.Interface;
+using Recuria.Application.Interface.Abstractions;
 using Recuria.Application.Requests;
 using Recuria.Domain.Enums;
 using Recuria.Infrastructure.Persistence;
@@ -14,11 +16,21 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
 {
     public class SubscriptionActivationTests : IClassFixture<CustomWebApplicationFactory>
     {
-        private readonly CustomWebApplicationFactory _factory;
+        private readonly ISubscriptionRepository _subscriptions;
+        private readonly ISubscriptionQueries _queries;
+        private readonly IOrganizationRepository _organizations;
+        private readonly IUserRepository _users;
+        private readonly IUnitOfWork _uow;
 
         public SubscriptionActivationTests(CustomWebApplicationFactory factory)
         {
-            _factory = factory;
+            var services = factory.Services;
+
+            _subscriptions = services.GetRequiredService<ISubscriptionRepository>();
+            _queries = services.GetRequiredService<ISubscriptionQueries>();
+            _organizations = services.GetRequiredService<IOrganizationRepository>();
+            _users = services.GetRequiredService<IUserRepository>();
+            _uow = services.GetRequiredService<IUnitOfWork>();
         }
     }
 }
