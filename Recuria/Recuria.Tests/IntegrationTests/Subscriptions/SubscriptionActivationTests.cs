@@ -94,6 +94,14 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
 
             // Assert exception is thrown
             act.Should().Throw<InvalidOperationException>().WithMessage("Only trial or past-due subscriptions can be activated.");
+
+            _subscriptions.Update(subscription);
+            await _uow.CommitAsync();
+
+            var reloaded = await _subscriptions.GetByIdAsync(subscription.Id, CancellationToken.None);
+            reloaded!.Status.Should().Be(SubscriptionStatus.Active);
+            reloaded.PeriodStart.Should().Be(originalStart);
+            reloaded.PeriodEnd.Should().Be(originalEnd);
         }
 
         //Creating helper method to make a persisted org and sub
