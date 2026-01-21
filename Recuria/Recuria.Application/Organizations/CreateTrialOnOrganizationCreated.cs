@@ -30,9 +30,8 @@ namespace Recuria.Application.Organizations
             OrganizationCreatedDomainEvent @event,
             CancellationToken ct)
         {
-            var org = await _orgs.GetByIdAsync(@event.OrganizationId, ct);
+            var org = await _orgs.GetByIdAsync(@event.OrganizationId, ct) ?? throw new InvalidOperationException("Organization not found."); 
 
-            if (org == null) { return; }
             if (org.GetCurrentSubscription(DateTime.UtcNow) != null)
                 return;
 
