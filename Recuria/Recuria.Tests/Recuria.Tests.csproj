@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Recuria.Api\Recuria.Api.csproj" />
     <ProjectReference Include="..\Recuria.Application\Recuria.Application.csproj" />
     <ProjectReference Include="..\Recuria.Domain\Recuria.Domain.csproj" />
     <ProjectReference Include="..\Recuria.Infrastructure\Recuria.Infrastructure.csproj" />
