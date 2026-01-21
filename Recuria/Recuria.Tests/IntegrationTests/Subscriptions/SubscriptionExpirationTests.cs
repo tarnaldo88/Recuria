@@ -1,5 +1,4 @@
-﻿using FluentAssertion;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
@@ -70,6 +69,22 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
 
             var reloaded = await _subscriptions.GetByIdAsync(subscription.Id, CancellationToken.None);
             reloaded!.Status.Should().Be(SubscriptionStatus.Expired);
+        }
+
+        [Fact]
+        public async Task Expire_Should_Throw_And_NotPersist_When_PeriodNotEnded()
+        {
+            var (org, subscription) = await CreateActiveSubscriptionAsync(
+                periodStart: DateTime.UtcNow.AddDays(-1),
+                periodEnd: DateTime.UtcNow.AddDays(+10));
+
+            var now = DateTime.UtcNow;
+
+            var act = () => subscription.Expire(now);
+
+            act.Should().Throw<InvalidOperationException>().WithMessage("Subscription period has not ended.");
+
+
         }
 
         //Noticing trend of having to make active subscriptions for tests. Making Helper method.
