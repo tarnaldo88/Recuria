@@ -58,6 +58,17 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             reloaded.PeriodEnd.Should().BeCloseTo(now.AddMonths(1), precision: TimeSpan.FromSeconds(2));
         }
 
+        [Fact]
+        public async Task Activate_Should_Succeed_When_StatusIsPastDue()
+        {
+            var (org, subscription) = await CreateSubscriptionAsync(
+            status: SubscriptionStatus.PastDue,
+            periodStart: DateTime.UtcNow.AddMonths(-1),
+            periodEnd: DateTime.UtcNow.AddDays(-1));
+
+            var now = DateTime.UtcNow;
+        }
+
         //Creating helper method to make a persisted org and sub
         private async Task<(Organization Org, Subscription Subscription)> CreateSubscriptionAsync(SubscriptionStatus status, DateTime periodStart, DateTime periodEnd)
         {
