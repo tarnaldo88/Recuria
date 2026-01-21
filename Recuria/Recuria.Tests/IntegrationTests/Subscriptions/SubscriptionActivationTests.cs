@@ -28,6 +28,8 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
         private readonly IUserRepository _users;
         private readonly IUnitOfWork _uow;
         private readonly CustomWebApplicationFactory _factory;
+        private readonly IProcessedEventStore _processedEvents;
+
 
         public SubscriptionActivationTests(CustomWebApplicationFactory factory)
         {
@@ -38,6 +40,7 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             _organizations = _factory.Services.GetRequiredService<IOrganizationRepository>();
             _users = _factory.Services.GetRequiredService<IUserRepository>();
             _uow = _factory.Services.GetRequiredService<IUnitOfWork>();
+            _processedEvents = factory.Services.GetRequiredService<IProcessedEventStore>();
             
         }
 

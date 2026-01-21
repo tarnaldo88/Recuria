@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
+using Recuria.Application.Interface.Idempotency;
 using Recuria.Application.Requests;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
@@ -26,16 +27,20 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
         private readonly IOrganizationRepository _organizations;
         private readonly IUserRepository _users;
         private readonly IUnitOfWork _uow;
+        private readonly CustomWebApplicationFactory _factory;
+        private readonly IProcessedEventStore _processedEvents;
+
 
         public SubscriptionExpirationTests(CustomWebApplicationFactory factory)
         {
-            var services = factory.Services;
+            _factory = factory;
 
-            _subscriptions = services.GetRequiredService<ISubscriptionRepository>();
-            _queries = services.GetRequiredService<ISubscriptionQueries>();
-            _organizations = services.GetRequiredService<IOrganizationRepository>();
-            _users = services.GetRequiredService<IUserRepository>();
-            _uow = services.GetRequiredService<IUnitOfWork>();
+            _subscriptions = _factory.Services.GetRequiredService<ISubscriptionRepository>();
+            _queries = _factory.Services.GetRequiredService<ISubscriptionQueries>();
+            _organizations = _factory.Services.GetRequiredService<IOrganizationRepository>();
+            _users = _factory.Services.GetRequiredService<IUserRepository>();
+            _uow = _factory.Services.GetRequiredService<IUnitOfWork>();
+            _processedEvents = factory.Services.GetRequiredService<IProcessedEventStore>();
         }
 
         [Fact]
