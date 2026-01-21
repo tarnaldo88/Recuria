@@ -51,8 +51,8 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
                     .ReadFromJsonAsync<SubscriptionDetailsDto>();
 
             Assert.NotNull(subscription);
-            Assert.Equal(PlanType.Trial, subscription.PlanCode);
-            Assert.Equal(SubscriptionStatus.Active, subscription.Status);
+            Assert.Equal(PlanType.Free, subscription.Subscription.PlanCode);
+            Assert.Equal(SubscriptionStatus.Active, subscription.Subscription.Status);
         }
 
         private async Task SeedUser(Guid userId)
