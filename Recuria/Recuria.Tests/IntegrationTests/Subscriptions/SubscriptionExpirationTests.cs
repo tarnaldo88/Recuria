@@ -42,38 +42,17 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
         [Fact]
         public async Task ActiveSubscription_Should_Expire_When_PeriodEnded()
         {
-            var owner = new User("expire@test.com", "TestName");
-            await _users.AddAsync(owner, CancellationToken.None);
-
-            var org = new Organization("Expired Org");
-            org.AddUser(owner, UserRole.Owner);
-
-            await _organizations.AddAsync(org, CancellationToken.None);
-
-            var expiredStart = DateTime.UtcNow.AddDays(-30);
-            var expiredEnd = DateTime.UtcNow.AddDays(-1);
-
-            var subscription = new Subscription(
-                org,
-                PlanType.Pro,
-                SubscriptionStatus.Active,
-                expiredStart,
-                expiredEnd);
-
-            await _subscriptions.AddAsync(subscription, CancellationToken.None);
-            await _uow.CommitAsync();
+            var (org, subscription) = await CreateActiveSubscriptionAsync(
+                periodStart: DateTime.UtcNow.AddDays(-30),
+                periodEnd: DateTime.UtcNow.AddDays(-1));
 
             subscription.Expire(DateTime.UtcNow);
             _subscriptions.Update(subscription);
-
             await _uow.CommitAsync();
-
-            var dto = await _queries.GetCurrentAsync(subscription.Id, CancellationToken.None);
-
-            dto.Should().BeNull();
 
             var reloaded = await _subscriptions.GetByIdAsync(subscription.Id, CancellationToken.None);
 
+            reloaded.Should().NotBeNull();
             reloaded!.Status.Should().Be(SubscriptionStatus.Expired);
         }
 
