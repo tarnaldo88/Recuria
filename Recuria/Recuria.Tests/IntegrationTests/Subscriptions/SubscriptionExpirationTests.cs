@@ -1,4 +1,5 @@
 ﻿using FluentAssertion;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
@@ -14,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using Xunit;
 
 namespace Recuria.Tests.IntegrationTests.Subscriptions
@@ -65,6 +67,14 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             _subscriptions.Update(subscription);
 
             await _uow.CommitAsync();
+
+            var dto = await _queries.GetCurrentAsync(subscription.Id, CancellationToken.None);
+
+            dto.Should().BeNull();
+
+            var reloaded = await _subscriptions.GetByIdAsync(subscription.Id, CancellationToken.None);
+
+            reloaded!.Status.Should().Be(SubscriptionStatus.Expired);
         }
     }
 }
