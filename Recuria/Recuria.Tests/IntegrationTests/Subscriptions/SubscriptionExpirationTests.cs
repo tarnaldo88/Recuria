@@ -76,5 +76,29 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
 
             reloaded!.Status.Should().Be(SubscriptionStatus.Expired);
         }
+
+        //Noticing trend of having to make active subscriptions for tests. Making Helper method.
+        //Helper method is going to create a persisted org and persisted active subscription.
+        private async Task<(Organization Org, Subscription Subscription)> CreateActiveSubscriptionAsync(DateTime periodStart, DateTime periodEnd)
+        {
+            var owner = new User($"{Guid.NewGuid()}@expiretest.com", "TestName");
+            await _users.AddAsync(owner, CancellationToken.None);
+
+            var org = new Organization($"Org-{Guid.NewGuid()}");
+            org.AddUser(owner, UserRole.Owner);
+            await _organizations.AddAsync(org, CancellationToken.None);
+
+            var subscription = new Subscription(
+                org,
+                PlanType.Pro,
+                SubscriptionStatus.Active,
+                periodStart,
+                periodEnd);
+
+            await _subscriptions.AddAsync(subscription, CancellationToken.None);
+            await _uow.CommitAsync();
+
+            return (org, subscription);
+        }
     }
 }
