@@ -8,16 +8,19 @@ namespace Recuria.Infrastructure.Persistence.Entities
 {
     public sealed class ProcessedEvent
     {
-        public Guid EventId { get; private set; }
-        public string Handler { get; private set; }
-        public DateTime ProcessedOnUtc { get; private set; }
+        public Guid Id { get; set; }
+        public Guid EventId { get;  set; }
+        public string Handler { get;  set; }
+        public DateTime ProcessedOnUtc { get;  set; }
 
         private ProcessedEvent() { } //EF Core
 
-        public ProcessedEvent(Guid eventId)
+        public ProcessedEvent(Guid eventId, string handler, DateTime processed)
         {
             EventId = eventId;
             ProcessedOnUtc = DateTime.UtcNow;
+            Handler = handler;
+            ProcessedOnUtc = processed;
         }
     }
 }

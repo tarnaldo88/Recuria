@@ -7,11 +7,13 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Recuria.Api.Middleware;
+using Recuria.Application;
 using Recuria.Application.Contracts.Invoice.Validators;
 using Recuria.Application.Contracts.Organizations.Validators;
 using Recuria.Application.Contracts.Subscription.Validators;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
+using Recuria.Application.Interface.Idempotency;
 using Recuria.Application.Observability;
 using Recuria.Application.Subscriptions;
 using Recuria.Application.Validation;
@@ -23,6 +25,7 @@ using Recuria.Infrastructure.Persistence;
 using Recuria.Infrastructure.Persistence.Locking;
 using Recuria.Infrastructure.Persistence.Queries;
 using Recuria.Infrastructure.Repositories;
+using Recuria.Infrastructure.Idempotency;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,7 +39,7 @@ builder.Services.AddDbContext<RecuriaDbContext>(options =>
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 builder.Services.AddScoped<IOrganizationQueries, OrganizationQueries>();
-//builder.Services.AddScoped<ISubscriptionQueries, SubscriptionQueries>();
+builder.Services.AddScoped<ISubscriptionQueries, SubscriptionQueries>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 builder.Services.AddScoped<OutboxProcessor>();
@@ -53,6 +56,13 @@ builder.Services.AddValidatorsFromAssembly(typeof(CreateInvoiceRequestValidator)
 builder.Services.AddValidatorsFromAssembly(typeof(AddUserRequestValidator).Assembly);
 builder.Services.AddScoped<ValidationBehavior>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IProcessedEventStore, EfProcessedEventStore>();
+
+
 
 builder.Services.Scan(scan => scan
     .FromAssemblies(

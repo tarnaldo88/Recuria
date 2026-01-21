@@ -34,6 +34,12 @@ namespace Recuria.Infrastructure.Persistence
                 .HasOne(i => i.Subscription)
                 .WithMany()
                 .HasForeignKey(i => i.SubscriptionId);
+
+            //base.OnModelCreating(modelBuilder);
+
+            //modelBuilder.Entity<ProcessedEvent>()
+            //    .HasIndex(x => new { x.EventId, x.Handler })
+            //    .IsUnique();
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
