@@ -4,9 +4,11 @@ using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
 using Recuria.Application.Interface.Idempotency;
 using Recuria.Application.Requests;
+using Recuria.Application.Subscriptions;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
 using Recuria.Domain.Enums;
+using Recuria.Domain.Events.Subscription;
 using Recuria.Infrastructure.Persistence;
 using Recuria.Infrastructure.Repositories;
 using Recuria.Tests.IntegrationTests.Infrastructure;
@@ -95,6 +97,33 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             var reloaded = await _subscriptions.GetByIdAsync(subscription.Id, CancellationToken.None);
 
             reloaded!.Status.Should().Be(SubscriptionStatus.Active);
+        }
+
+        [Fact]
+        public async Task Expire_Should_DispatchDomainEvent_And_MarkProcessedEventStore_When_PeriodEnded()
+        {
+            var (org, subscription) = await CreateActiveSubscriptionAsync(
+                periodStart: DateTime.UtcNow.AddDays(-30),
+                periodEnd: DateTime.UtcNow.AddDays(-1));
+
+            var now = DateTime.UtcNow;
+            subscription.Expire(now);
+
+            // Capture the domain event BEFORE commit (commit clears DomainEvents)
+            var expiredEvt = subscription.DomainEvents.OfType<SubscriptionExpiredDomainEvent>().Single();
+
+            _subscriptions.Update(subscription);
+            await _uow.CommitAsync();
+
+            // Assert: handler ran and marked processed
+            var handlerName = nameof(SubscriptionExpiredHandler);
+
+            var exists = await _processedEvents.ExistsAsync(
+                expiredEvt.EventId,
+                handlerName,
+                CancellationToken.None);
+
+            exists.Should().BeTrue();
         }
 
         //Noticing trend of having to make active subscriptions for tests. Making Helper method.
