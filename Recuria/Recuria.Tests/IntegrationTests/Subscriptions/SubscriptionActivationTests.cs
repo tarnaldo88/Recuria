@@ -139,6 +139,20 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             exists.Should().BeTrue();
         }
 
+        [Fact]
+        public async Task Activate_Should_DispatchDomainEvent_And_MarkProcessedEventStore()
+        {
+            var (org, subscription) = await CreateSubscriptionAsync(
+                status: SubscriptionStatus.Trial,
+                periodStart: DateTime.UtcNow.AddDays(-10),
+                periodEnd: DateTime.UtcNow.AddDays(+4));
+
+            var now = DateTime.UtcNow;
+
+            subscription.Activate(now);
+
+        }
+
         //Creating helper method to make a persisted org and sub
         private async Task<(Organization Org, Subscription Subscription)> CreateSubscriptionAsync(SubscriptionStatus status, DateTime periodStart, DateTime periodEnd)
         {
