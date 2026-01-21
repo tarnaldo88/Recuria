@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 using Xunit;
 using FluentAssertions;
 
-namespace Recuria.Tests
+namespace Recuria.Tests.Unit.Domain
 {
     public class OrganizationSubscriptionInvoiceTests
     {
