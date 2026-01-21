@@ -10,6 +10,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using Recuria.Domain.Enums;
 
 namespace Recuria.Tests.IntegrationTests.Organizations
 {
