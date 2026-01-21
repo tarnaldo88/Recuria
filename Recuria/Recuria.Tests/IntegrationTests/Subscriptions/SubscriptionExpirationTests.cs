@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
 using Recuria.Application.Requests;
+using Recuria.Domain;
+using Recuria.Domain.Entities;
 using Recuria.Domain.Enums;
 using Recuria.Infrastructure.Persistence;
 using Recuria.Infrastructure.Repositories;
@@ -35,6 +37,16 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             _uow = services.GetRequiredService<IUnitOfWork>();
         }
 
-        
+        [Fact]
+        public async Task ActiveSubscription_Should_Expire_When_PeriodEnded()
+        {
+            var owner = new User("expire@test.com", "TestName");
+            await _users.AddAsync(owner, CancellationToken.None);
+
+            var org = new Organization("Expired Org");
+            org.AddUser(owner, UserRole.Owner);
+
+            await _organizations.AddAsync(org, CancellationToken.None);
+        }
     }
 }
