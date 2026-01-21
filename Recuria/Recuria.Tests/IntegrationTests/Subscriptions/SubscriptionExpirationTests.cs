@@ -56,6 +56,15 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             reloaded!.Status.Should().Be(SubscriptionStatus.Expired);
         }
 
+        [Fact]
+        public async Task Expire_Should_Succeed_When_Now_Equals_PeriodEnd()
+        {
+            var boundaryEnd = DateTime.UtcNow;
+            var (org, subscription) = await CreateActiveSubscriptionAsync(
+                periodStart: boundaryEnd.AddMonths(-1),
+                periodEnd: boundaryEnd);
+        }
+
         //Noticing trend of having to make active subscriptions for tests. Making Helper method.
         //Helper method is going to create a persisted org and persisted active subscription.
         private async Task<(Organization Org, Subscription Subscription)> CreateActiveSubscriptionAsync(DateTime periodStart, DateTime periodEnd)
