@@ -47,6 +47,24 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             org.AddUser(owner, UserRole.Owner);
 
             await _organizations.AddAsync(org, CancellationToken.None);
+
+            var expiredStart = DateTime.UtcNow.AddDays(-30);
+            var expiredEnd = DateTime.UtcNow.AddDays(-1);
+
+            var subscription = new Subscription(
+                org,
+                PlanType.Pro,
+                SubscriptionStatus.Active,
+                expiredStart,
+                expiredEnd);
+
+            await _subscriptions.AddAsync(subscription, CancellationToken.None);
+            await _uow.CommitAsync();
+
+            subscription.Expire(DateTime.UtcNow);
+            _subscriptions.Update(subscription);
+
+            await _uow.CommitAsync();
         }
     }
 }
