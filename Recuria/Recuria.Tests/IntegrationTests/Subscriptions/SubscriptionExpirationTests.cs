@@ -31,18 +31,27 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
         private readonly IUnitOfWork _uow;
         private readonly CustomWebApplicationFactory _factory;
         private readonly IProcessedEventStore _processedEvents;
+        private readonly IServiceScope _scope;
 
 
         public SubscriptionExpirationTests(CustomWebApplicationFactory factory)
         {
-            _factory = factory;
+            factory = factory;
 
-            _subscriptions = _factory.Services.GetRequiredService<ISubscriptionRepository>();
-            _queries = _factory.Services.GetRequiredService<ISubscriptionQueries>();
-            _organizations = _factory.Services.GetRequiredService<IOrganizationRepository>();
-            _users = _factory.Services.GetRequiredService<IUserRepository>();
-            _uow = _factory.Services.GetRequiredService<IUnitOfWork>();
-            _processedEvents = factory.Services.GetRequiredService<IProcessedEventStore>();
+            _scope = factory.Services.CreateScope();
+            var sp = _scope.ServiceProvider;
+
+            _subscriptions = sp.GetRequiredService<ISubscriptionRepository>();
+            _queries = sp.GetRequiredService<ISubscriptionQueries>();
+            _organizations = sp.GetRequiredService<IOrganizationRepository>();
+            _users = sp.GetRequiredService<IUserRepository>();
+            _uow = sp.GetRequiredService<IUnitOfWork>();
+            _processedEvents = sp.GetRequiredService<IProcessedEventStore>();
+        }
+
+        public void Dispose()
+        {
+            _scope.Dispose();
         }
 
         [Fact]
