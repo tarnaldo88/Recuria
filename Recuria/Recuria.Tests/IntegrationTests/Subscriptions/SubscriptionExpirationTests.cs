@@ -87,8 +87,7 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             _subscriptions.Update(subscription);
             await _uow.CommitAsync();
 
-            var reloaded =
-                await _subscriptions.GetByIdAsync(subscription.Id, CancellationToken.None);
+            var reloaded = await _subscriptions.GetByIdAsync(subscription.Id, CancellationToken.None);
 
             reloaded!.Status.Should().Be(SubscriptionStatus.Active);
         }

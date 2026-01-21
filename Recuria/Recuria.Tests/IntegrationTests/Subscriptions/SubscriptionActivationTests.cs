@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
 using Recuria.Application.Requests;
@@ -44,6 +45,17 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
                 periodEnd: DateTime.UtcNow.AddDays(+4));
 
             var now = DateTime.UtcNow;
+
+            subscription.Activate(now);
+            _subscriptions.Update(subscription);
+            await _uow.CommitAsync();
+
+            var reloaded = await _subscriptions.GetByIdAsync(subscription.Id, CancellationToken.None);
+            reloaded.Should().NotBeNull();
+
+            reloaded!.Status.Should().Be(SubscriptionStatus.Active);
+            reloaded.PeriodStart.Should().BeCloseTo(now, precision: TimeSpan.FromSeconds(2));
+            reloaded.PeriodEnd.Should().BeCloseTo(now.AddMonths(1), precision: TimeSpan.FromSeconds(2));
         }
 
         //Creating helper method to make a persisted org and sub
