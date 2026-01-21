@@ -1,4 +1,5 @@
 ﻿using Recuria.Domain.Abstractions;
+using Recuria.Domain.Enums;
 using Recuria.Domain.Events;
 using Recuria.Domain.Events.Subscription;
 using System;
@@ -8,17 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Recuria.Domain.Entities
-{
-    public enum SubscriptionStatus
-    {
-        Trial,
-        Active,
-        PastDue,
-        Canceled,
-        Expired
-    }
-
-
+{    
     public class Subscription : Entity
     {
         public Guid Id { get; init; }
