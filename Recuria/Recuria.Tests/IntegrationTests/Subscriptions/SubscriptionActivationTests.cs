@@ -14,5 +14,11 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
 {
     public class SubscriptionActivationTests : IClassFixture<CustomWebApplicationFactory>
     {
+        private readonly CustomWebApplicationFactory _factory;
+
+        public SubscriptionActivationTests(CustomWebApplicationFactory factory)
+        {
+            _factory = factory;
+        }
     }
 }
