@@ -63,6 +63,13 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             var (org, subscription) = await CreateActiveSubscriptionAsync(
                 periodStart: boundaryEnd.AddMonths(-1),
                 periodEnd: boundaryEnd);
+
+            subscription.Expire(boundaryEnd);
+            _subscriptions.Update(subscription);
+            await _uow.CommitAsync();
+
+            var reloaded = await _subscriptions.GetByIdAsync(subscription.Id, CancellationToken.None);
+            reloaded!.Status.Should().Be(SubscriptionStatus.Expired);
         }
 
         //Noticing trend of having to make active subscriptions for tests. Making Helper method.
