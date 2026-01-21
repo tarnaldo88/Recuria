@@ -6,6 +6,7 @@ using Recuria.Application;
 using Recuria.Application.Interface;
 using Recuria.Application.Observability;
 using Recuria.Domain;
+using Recuria.Domain.Enums;
 using Recuria.Domain.Entities;
 using System;
 using System.Collections;

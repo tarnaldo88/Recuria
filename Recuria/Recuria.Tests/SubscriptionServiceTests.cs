@@ -6,6 +6,7 @@ using Recuria.Application.Interface.Abstractions;
 using Recuria.Application.Validation;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
+using Recuria.Domain.Enums;
 using Recuria.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;

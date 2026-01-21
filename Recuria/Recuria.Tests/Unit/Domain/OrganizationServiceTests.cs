@@ -8,6 +8,7 @@ using Recuria.Application.Requests;
 using Recuria.Application.Validation;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
+using Recuria.Domain.Enums;
 using Recuria.Domain.Events.Organization;
 using Recuria.Infrastructure.Persistence;
 using System;
