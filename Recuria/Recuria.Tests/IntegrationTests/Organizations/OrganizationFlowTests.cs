@@ -60,7 +60,7 @@ namespace Recuria.Tests.IntegrationTests.Organizations
             // Change role
             var changeRole = new ChangeUserRoleRequest
             {
-                Role = UserRole.Admin
+                NewRole = UserRole.Admin
             };
 
             var changeRoleResponse =
