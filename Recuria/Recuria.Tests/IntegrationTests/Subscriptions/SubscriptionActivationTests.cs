@@ -35,6 +35,17 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             _uow = services.GetRequiredService<IUnitOfWork>();
         }
 
+        [Fact]
+        public async Task Activate_Should_SetActive_And_SetNewBillingPeriod_When_Trial()
+        {
+            var (org, subscription) = await CreateSubscriptionAsync(
+                status: SubscriptionStatus.Trial,
+                periodStart: DateTime.UtcNow.AddDays(-10),
+                periodEnd: DateTime.UtcNow.AddDays(+4));
+
+            var now = DateTime.UtcNow;
+        }
+
         //Creating helper method to make a persisted org and sub
         private async Task<(Organization Org, Subscription Subscription)> CreateSubscriptionAsync(SubscriptionStatus status, DateTime periodStart, DateTime periodEnd)
         {
