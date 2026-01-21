@@ -24,8 +24,6 @@ using Recuria.Infrastructure.Persistence.Locking;
 using Recuria.Infrastructure.Persistence.Queries;
 using Recuria.Infrastructure.Repositories;
 
-
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -33,8 +31,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<RecuriaDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer( builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
@@ -104,3 +101,8 @@ app.UseMiddleware<ErrorHandlingMiddleware>();
 
 
 app.Run();
+
+namespace Recuria.Api
+{
+    public partial class Program { }
+}

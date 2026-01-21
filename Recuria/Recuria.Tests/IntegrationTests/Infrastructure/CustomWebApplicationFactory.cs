@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestPlatform.TestHost;
 using Recuria.Application.Interface;
 using Recuria.Domain.Events.Organization;
 using Recuria.Infrastructure.Persistence;
+using Recuria.Api;
 using Recuria.Tests.IntegrationTests.TestDoubles;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace Recuria.Tests.IntegrationTests.Infrastructure
 {
-    public class CustomWebApplicationFactory : WebApplicationFactory<Program>
+    public class CustomWebApplicationFactory : WebApplicationFactory<Recuria.Api.Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
