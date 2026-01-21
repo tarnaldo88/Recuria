@@ -151,6 +151,20 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
 
             subscription.Activate(now);
 
+            var activatedEvt = subscription.DomainEvents.OfType<SubscriptionActivatedDomainEvent>().Single();
+
+            _subscriptions.Update(subscription);
+            await _uow.CommitAsync();
+
+            // Assert: handler persisted the processed marker
+            var handlerName = nameof(SubscriptionActivatedHandler);
+
+            var exists = await _processedEvents.ExistsAsync(
+                activatedEvt.EventId,
+                handlerName,
+                CancellationToken.None);
+
+            exists.Should().BeTrue();
         }
 
         //Creating helper method to make a persisted org and sub
