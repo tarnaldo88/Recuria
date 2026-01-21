@@ -84,7 +84,13 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
 
             act.Should().Throw<InvalidOperationException>().WithMessage("Subscription period has not ended.");
 
+            _subscriptions.Update(subscription);
+            await _uow.CommitAsync();
 
+            var reloaded =
+                await _subscriptions.GetByIdAsync(subscription.Id, CancellationToken.None);
+
+            reloaded!.Status.Should().Be(SubscriptionStatus.Active);
         }
 
         //Noticing trend of having to make active subscriptions for tests. Making Helper method.
