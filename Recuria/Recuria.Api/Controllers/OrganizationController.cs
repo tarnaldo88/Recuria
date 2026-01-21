@@ -3,8 +3,6 @@ using Recuria.Application.Contracts.Organizations;
 using Recuria.Application.Interface;
 using Recuria.Application.Requests;
 using Recuria.Domain;
-using Recuria.Api.Organizations.Requests;
-//using Recuria.Domain.Enums;
 
 namespace Recuria.Api.Controllers
 {
