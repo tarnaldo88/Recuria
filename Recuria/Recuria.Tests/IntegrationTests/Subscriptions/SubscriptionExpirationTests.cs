@@ -152,6 +152,25 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             exists.Should().BeTrue();
         }
 
+        [Fact]
+        public async Task Expire_Should_NotRaiseDomainEvent_When_PeriodNotEnded()
+        {
+            var (org, subscription) = await CreateActiveSubscriptionAsync(
+                periodStart: DateTime.UtcNow.AddDays(-1),
+                periodEnd: DateTime.UtcNow.AddDays(+10));
+
+            var now = DateTime.UtcNow;
+                     
+            Action act = () => subscription.Expire(now);
+
+            // Assert
+            act.Should().Throw<InvalidOperationException>();
+
+            subscription.DomainEvents
+                .OfType<SubscriptionExpiredDomainEvent>()
+                .Should().BeEmpty();
+        }
+
         //Noticing trend of having to make active subscriptions for tests. Making Helper method.
         //Helper method is going to create a persisted org and persisted active subscription.
         private async Task<(Organization Org, Subscription Subscription)> CreateActiveSubscriptionAsync(DateTime periodStart, DateTime periodEnd)
