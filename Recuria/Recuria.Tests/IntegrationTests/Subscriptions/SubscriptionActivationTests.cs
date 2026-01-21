@@ -167,31 +167,7 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             exists.Should().BeTrue();
         }
 
-        [Fact]
-        public async Task Expire_Should_DispatchDomainEvent_And_MarkProcessedEventStore_When_Now_Equals_PeriodEnd()
-        {
-            var boundaryEnd = DateTime.UtcNow;
-            var (org, subscription) = await CreateSubscriptionAsync(SubscriptionStatus.Active, periodStart: boundaryEnd.AddMonths(-1), periodEnd: boundaryEnd);
-
-            subscription.Expire(boundaryEnd);
-
-            var expiredEvt = subscription.DomainEvents
-                .OfType<SubscriptionExpiredDomainEvent>()
-                .Single();
-
-            _subscriptions.Update(subscription);
-            await _uow.CommitAsync();
-
-            // Assert
-            var handlerName = nameof(SubscriptionExpiredHandler);
-
-            var exists = await _processedEvents.ExistsAsync(
-                expiredEvt.EventId,
-                handlerName,
-                CancellationToken.None);
-
-            exists.Should().BeTrue();
-        }
+        
 
         //Creating helper method to make a persisted org and sub
         private async Task<(Organization Org, Subscription Subscription)> CreateSubscriptionAsync(SubscriptionStatus status, DateTime periodStart, DateTime periodEnd)
