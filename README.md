@@ -39,6 +39,7 @@ Recuria
 ├── Recuria.Api             // ASP.NET Core Web API
 ├── Recuria.Blazor          // Blazor WebAssembly frontend (in progress)
 └── Recuria.Tests           // Unit & integration tests
+```
 ---
 
 ## Architectural Principles
