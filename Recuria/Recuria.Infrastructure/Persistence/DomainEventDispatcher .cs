@@ -19,23 +19,21 @@ namespace Recuria.Infrastructure.Persistence
             _serviceProvider = provider;
         }
 
-        public async Task DispatchAsync(IEnumerable<IDomainEvent> domainEvent, CancellationToken ct)
-        {            
-            foreach (var evt in domainEvent)
+        public async Task DispatchAsync(IEnumerable<IDomainEvent> domainEvents, CancellationToken ct)
+        {
+            foreach (var evt in domainEvents)
             {
-                // IMPORTANT: use the EVENT instance type, not domainEvents.GetType()
-                var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(evt.GetType());
+                var handlerInterface = typeof(IDomainEventHandler<>).MakeGenericType(evt.GetType());
+                var enumerableHandlerType = typeof(IEnumerable<>).MakeGenericType(handlerInterface);
 
-                // Resolve IEnumerable<IDomainEventHandler<TEvent>>
-                var enumerableHandlerType = typeof(IEnumerable<>).MakeGenericType(handlerType);
-                var handlers = (IEnumerable<object>)_serviceProvider.GetRequiredService(enumerableHandlerType);
+                // GetServices returns empty if none are registered (no exception)
+                var handlers = _serviceProvider.GetServices(enumerableHandlerType);
 
                 foreach (var handler in handlers)
                 {
-                    // Call HandleAsync(TEvent evt, CancellationToken ct)
-                    var method = handlerType.GetMethod("HandleAsync");
+                    var method = handlerInterface.GetMethod("HandleAsync");
                     if (method is null)
-                        throw new InvalidOperationException($"Handler {handlerType.Name} is missing HandleAsync.");
+                        throw new InvalidOperationException($"Handler {handlerInterface.Name} is missing HandleAsync.");
 
                     var task = (Task)method.Invoke(handler, new object[] { evt, ct })!;
                     await task.ConfigureAwait(false);

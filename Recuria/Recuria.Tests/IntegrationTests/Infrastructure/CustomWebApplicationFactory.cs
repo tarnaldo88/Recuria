@@ -7,7 +7,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestPlatform.TestHost;
 using Recuria.Api;
 using Recuria.Application.Interface;
+using Recuria.Application.Subscriptions;
 using Recuria.Domain.Events.Organization;
+using Recuria.Domain.Events.Subscription;
 using Recuria.Infrastructure.Outbox;
 using Recuria.Infrastructure.Persistence;
 using Recuria.Tests.IntegrationTests.TestDoubles;
@@ -44,6 +46,14 @@ namespace Recuria.Tests.IntegrationTests.Infrastructure
 
                 var db = scope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
                 db.Database.Migrate();
+
+                services.TryAddScoped<
+                IDomainEventHandler<SubscriptionActivatedDomainEvent>,
+                SubscriptionActivatedHandler>();
+
+                services.TryAddScoped<
+                    IDomainEventHandler<SubscriptionExpiredDomainEvent>,
+                    SubscriptionExpiredHandler>();
             });
         }
     }
