@@ -1,6 +1,7 @@
 ﻿# Recuria
 
-Recuria is a **SaaS subscription and billing platform** built with **ASP.NET Core (.NET 10)**.  
+Recuria is a **SaaS subscription and billing platform** built with **ASP.NET Core (.NET 10)**.
+
 It models real-world SaaS business rules including organization ownership, subscription lifecycles, role-based access, billing, invoicing, and observability.
 
 This project is designed as a **portfolio-quality, industry-aligned system** emphasizing domain modeling, correctness, and testability rather than simple CRUD operations.
@@ -13,40 +14,42 @@ Recuria simulates the backend architecture of a modern SaaS product that support
 
 - Organization-based accounts
 - Role-based user management
-- Subscription lifecycle management (trial → active → past-due → canceled → expired)
-- Plan upgrades and enforced business invariants
+- Subscription lifecycle management  
+  *(trial → active → past-due → canceled → expired)*
+- Plan upgrades with enforced business invariants
 - Automated billing cycles with retry and grace periods
 - Invoice generation
-- Event-driven workflows with domain events and outbox pattern
-- Observability with logging, metrics, and distributed tracing
+- Event-driven workflows using domain events and the outbox pattern
+- Built-in observability (logging, metrics, tracing)
 
-The goal is to demonstrate **professional backend engineering practices** suitable for full-stack or backend roles.
+The goal is to demonstrate **professional backend engineering practices** suitable for backend or full-stack roles.
 
 ---
 
 ## Architecture
 
-Recuria follows a **Clean Architecture / DDD-inspired structure**:
+Recuria follows a **Clean Architecture / DDD-inspired structure**, with strict separation of concerns.
 
+```text
 Recuria
 │
-├── Recuria.Domain // Core domain entities & business rules
-├── Recuria.Application // Services & interfaces
-├── Recuria.Infrastructure // EF Core persistence & configurations
-├── Recuria.Api // ASP.NET Core Web API
-├── Recuria.Blazor // Blazor WebAssembly frontend (in progress)
-└── Recuria.Tests // Unit tests
+├── Recuria.Domain          // Core domain entities & business rules
+├── Recuria.Application     // Use cases, services, interfaces
+├── Recuria.Infrastructure  // EF Core, persistence, background services
+├── Recuria.Api             // ASP.NET Core Web API
+├── Recuria.Blazor          // Blazor WebAssembly frontend (in progress)
+└── Recuria.Tests           // Unit & integration tests
+---
 
-
-### Architectural Principles
+## Architectural Principles
 
 - Domain logic is isolated from frameworks and persistence
 - Business rules are enforced in domain entities and services
 - EF Core is configured explicitly (no convention-only modeling)
-- Outbox pattern ensures reliable, eventually consistent event dispatch
-- Background services handle billing, retries, and outbox processing
-- Code is validated through **unit tests**, not just manual testing
-- Observability built-in via OpenTelemetry metrics and tracing
+- Domain events drive side effects and workflows
+- Outbox pattern ensures reliable, eventually consistent processing
+- Background services handle billing, retries, and outbox dispatch
+- Observability is treated as a first-class concern
 
 ---
 
@@ -54,100 +57,123 @@ Recuria
 
 ### Core Entities
 
-- **Organization**
-  - Owns users and subscriptions
-  - Enforces ownership and subscription rules
-  - Determines the currently active subscription
+#### Organization
+- Owns users and subscriptions
+- Enforces ownership rules
+- Determines the currently active subscription
 
-- **User**
-  - Belongs to a single organization
-  - Has a role: `Owner`, `Admin`, or `Member`
+#### User
+- Belongs to exactly one organization
+- Has a role: `Owner`, `Admin`, or `Member`
 
-- **Subscription**
-  - Belongs to an organization
-  - Tracks billing period and plan
-  - Has lifecycle states: `Trial`, `Active`, `PastDue`, `Canceled`, `Expired`
-  - Emits domain events (e.g., `SubscriptionActivatedDomainEvent`) on state changes
+#### Subscription
+- Belongs to an organization
+- Tracks plan and billing period
+- Lifecycle states:
+  - `Trial`
+  - `Active`
+  - `PastDue`
+  - `Canceled`
+  - `Expired`
+- Emits domain events on state transitions  
+  *(e.g., `SubscriptionActivatedDomainEvent`)*
 
-- **Invoice**
-  - Generated from subscriptions
-  - Represents billable charges
+#### Invoice
+- Generated from subscriptions
+- Represents billable charges
 
-- **BillingAttempt & OutboxMessage**
-  - Persist billing attempts and events in the same transactional context
-  - Supports retries with exponential backoff and idempotency
+#### BillingAttempt & OutboxMessage
+- Persist billing attempts and domain events
+- Enable retries, idempotency, and resilience
 
 ---
 
 ## Business Rules & Invariants
 
-Recuria enforces realistic SaaS constraints:
+Recuria enforces realistic SaaS constraints **in code**, not just the database:
 
-- An organization must always have an **Owner**
+- An organization must always have **one Owner**
 - Owners cannot be removed or demoted
 - Users cannot belong to multiple organizations
 - Only one active subscription per organization
 - Subscriptions cannot be upgraded once canceled or expired
 - Trial subscriptions have a fixed duration
-- Billing only occurs on active subscriptions and respects grace periods
-- Domain events are persisted reliably via outbox pattern
-
-All rules are enforced **in code**, not just in the database.
+- Billing only occurs for active subscriptions
+- Grace periods apply before cancellation
+- Domain events are persisted reliably via the outbox pattern
 
 ---
 
 ## Billing & Subscription Lifecycle
 
-- Automated billing cycles for each subscription
+- Automated billing cycles per subscription
 - Grace periods before cancellation for past-due subscriptions
-- Retry policy for failed billing attempts
-- Subscription lifecycle orchestrator centralizes trial, active, and past-due processing
-- Domain events emitted for subscription activations, cancellations, and expirations
+- Retry policies for failed billing attempts
+- Centralized lifecycle orchestration:
+  - Trial expiration
+  - Active billing and renewal
+  - Past-due handling
+  - Cancellation after grace period
+- Domain events emitted for activation, expiration, and cancellation
 
 ---
 
 ## Observability
 
-- **Logging:** Structured logging throughout subscription lifecycle, billing, and domain events
-- **Metrics:** Prometheus-compatible metrics for subscription counts, billing success/failure, and retries
-- **Tracing:** OpenTelemetry tracing for HTTP requests, EF Core queries, and background services
-- **Runtime & Process Instrumentation:** CPU, memory, thread, and GC metrics
+### Logging
+- Structured logs across domain logic, billing, and background jobs
+
+### Metrics
+- Prometheus-compatible metrics for:
+  - Subscription counts
+  - Billing success/failure
+  - Retry attempts
+
+### Tracing
+- OpenTelemetry tracing for:
+  - HTTP requests
+  - EF Core queries
+  - Background services
+
+### Runtime Instrumentation
+- CPU, memory, GC, thread, and process metrics
 
 ---
 
 ## Testing
 
-The project includes unit and integration tests focused on **business behavior**, not implementation details.
+Testing focuses on **business behavior**, not implementation details.
 
-### Test Coverage
+### Covered Areas
 
-- `OrganizationService`
+- **OrganizationService**
   - Organization creation
   - User management
   - Role enforcement
 
-- `SubscriptionService`
+- **SubscriptionService**
   - Trial creation
   - Plan upgrades
   - Cancellation logic
   - Invoice generation
 
-- `SubscriptionLifecycleOrchestrator`
+- **SubscriptionLifecycleOrchestrator**
   - Trial expiration
-  - Active subscription billing and period advancement
-  - Past-due handling
+  - Billing period advancement
+  - Past-due transitions
   - Cancellation after grace period
 
-- `BillingService`
-  - Billing retries and failure handling
-  - Invoice generation
-  - Past-due status enforcement
+- **BillingService**
+  - Retry behavior
+  - Failure handling
+  - Invoice creation
 
 ### Testing Stack
 
-- **xUnit**
-- **FluentAssertions**
-- Moq for mocking services
+- xUnit
+- FluentAssertions
+- Moq (where appropriate)
+- Integration tests using real EF Core contexts
 
 ---
 
@@ -158,7 +184,7 @@ The project includes unit and integration tests focused on **business behavior**
 - **Entity Framework Core 10**
 - **SQL Server**
 - **Blazor WebAssembly** (planned)
-- **OpenTelemetry** (Prometheus/OTLP)
+- **OpenTelemetry** (Prometheus / OTLP)
 - **xUnit + FluentAssertions**
 
 ---
@@ -168,7 +194,7 @@ The project includes unit and integration tests focused on **business behavior**
 ### Prerequisites
 
 - .NET SDK 10+
-- SQL Server (local or Docker)
+- SQL Server (local instance or Docker)
 - Visual Studio 2022+ or VS Code
 
 ### Setup
@@ -177,3 +203,5 @@ The project includes unit and integration tests focused on **business behavior**
 dotnet restore
 dotnet ef database update --project Recuria.Infrastructure
 dotnet run --project Recuria.Api
+
+
