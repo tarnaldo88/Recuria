@@ -124,6 +124,7 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
 
             // Capture the domain event BEFORE commit (commit clears DomainEvents)
             var expiredEvt = subscription.DomainEvents.OfType<SubscriptionExpiredDomainEvent>().SingleOrDefault();
+            expiredEvt.Should().NotBeNull("Expire() should raise a SubscriptionExpiredDomainEvent when period has ended");
 
             _subscriptions.Update(subscription);
             await _uow.CommitAsync();
@@ -150,6 +151,7 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             var expiredEvt = subscription.DomainEvents
                 .OfType<SubscriptionExpiredDomainEvent>()
                 .SingleOrDefault();
+            expiredEvt.Should().NotBeNull("Expire() should raise a SubscriptionExpiredDomainEvent when now equals PeriodEnd");
 
             _subscriptions.Update(subscription);
             await _uow.CommitAsync();
