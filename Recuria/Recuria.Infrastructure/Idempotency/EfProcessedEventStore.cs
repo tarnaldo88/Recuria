@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Recuria.Infrastructure.Idempotency
 {
-    internal sealed class EfProcessedEventStore : IProcessedEventStore
+    public sealed class EfProcessedEventStore : IProcessedEventStore
     {
         private readonly RecuriaDbContext _db;
 
@@ -21,12 +21,18 @@ namespace Recuria.Infrastructure.Idempotency
         }
 
         public Task<bool> ExistsAsync(Guid eventId, string handler, CancellationToken ct)
-            => _db.ProcessedEvents.AnyAsync(x => x.EventId == eventId, ct);
+            => _db.ProcessedEvents.AnyAsync(x => x.EventId == eventId && x.Handler == handler, ct);
 
         public async Task MarkProcessedAsync(Guid eventId, string handler, CancellationToken ct)
         {
-            _db.ProcessedEvents.Add(new ProcessedEvent(eventId));
+            _db.ProcessedEvents.Add(new ProcessedEvent
+            (
+                eventId,
+                handler,
+                DateTime.UtcNow
+            ));
             await _db.SaveChangesAsync(ct);
+            //return Task.CompletedTask;
         }
     }
 }

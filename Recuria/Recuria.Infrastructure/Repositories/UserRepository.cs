@@ -19,21 +19,23 @@ namespace Recuria.Infrastructure.Repositories
             _db = db;
         }
 
-        public Task AddAsync(User owner, CancellationToken none)
+        public async Task AddAsync(User owner, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            if (owner is null) throw new ArgumentNullException(nameof(owner));
+
+            await _db.Users.AddAsync(owner, ct);
         }
 
         public async Task<User?> GetByIdAsync(
             Guid id,
             CancellationToken ct)
         {
-            return await _db.Users
-                .FirstOrDefaultAsync(u => u.Id == id, ct);
+            return await _db.Users.FirstOrDefaultAsync(u => u.Id == id, ct);
         }
 
         public void Update(User user)
         {
+            if (user is null) throw new ArgumentNullException(nameof(user));
             _db.Update(user);
         }
     }

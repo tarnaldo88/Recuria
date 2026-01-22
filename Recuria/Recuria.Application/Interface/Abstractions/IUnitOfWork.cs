@@ -8,6 +8,6 @@ namespace Recuria.Application.Interface.Abstractions
 {
     public interface IUnitOfWork
     {
-        Task<int> CommitAsync(CancellationToken ct = default);
+        Task CommitAsync(CancellationToken ct = default);
     }
 }

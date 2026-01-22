@@ -34,33 +34,39 @@ namespace Recuria.Infrastructure.Persistence
                 .HasOne(i => i.Subscription)
                 .WithMany()
                 .HasForeignKey(i => i.SubscriptionId);
+
+            //base.OnModelCreating(modelBuilder);
+
+            //modelBuilder.Entity<ProcessedEvent>()
+            //    .HasIndex(x => new { x.EventId, x.Handler })
+            //    .IsUnique();
         }
 
-        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            var domainEvents = ChangeTracker
-                .Entries<IHasDomainEvents>()
-                .SelectMany(e => e.Entity.DomainEvents)
-                .ToList();
+        //public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        //{
+        //    var domainEvents = ChangeTracker
+        //        .Entries<IHasDomainEvents>()
+        //        .SelectMany(e => e.Entity.DomainEvents)
+        //        .ToList();
 
-            var outBoxMessages = domainEvents
-                .Select(OutBoxMessage.FromDomainEvent)
-                .ToList();
+        //    var outBoxMessages = domainEvents
+        //        .Select(OutBoxMessage.FromDomainEvent)
+        //        .ToList();
 
-            await base.SaveChangesAsync(cancellationToken);
+        //    await base.SaveChangesAsync(cancellationToken);
 
-            if (outBoxMessages.Any())
-            {
-                outBoxMessages.AddRange(outBoxMessages);
-                await base.SaveChangesAsync(cancellationToken);
-            }
+        //    if (outBoxMessages.Any())
+        //    {
+        //        OutBoxMessages.AddRange(outBoxMessages);
+        //        await base.SaveChangesAsync(cancellationToken);
+        //    }
 
-            foreach (var entity in ChangeTracker.Entries<IHasDomainEvents>())
-            {
-                entity.Entity.ClearDomainEvents();
-            }
+        //    foreach (var entity in ChangeTracker.Entries<IHasDomainEvents>())
+        //    {
+        //        //entity.Entity.ClearDomainEvents();
+        //    }
 
-            return 1;
-        }
+        //    return 1;
+        //}
     }
 }

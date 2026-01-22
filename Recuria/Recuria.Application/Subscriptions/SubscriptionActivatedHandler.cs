@@ -26,7 +26,9 @@ namespace Recuria.Application.Subscriptions
         {
             var handlerName = nameof(SubscriptionActivatedHandler);
 
-            if (await _store.ExistsAsync(evt.EventId, handlerName, ct))
+            var eventId = evt.EventId;
+
+            if (await _store.ExistsAsync(eventId, handlerName, ct))
                 return;
 
             // Side effects here
@@ -34,7 +36,7 @@ namespace Recuria.Application.Subscriptions
             // - publish integration event
             // - provision tenant
 
-            await _store.MarkProcessedAsync(evt.EventId, handlerName, ct);
+            await _store.MarkProcessedAsync(eventId, handlerName, ct);
         }
     }
 }

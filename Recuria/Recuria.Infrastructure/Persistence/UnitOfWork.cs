@@ -20,38 +20,39 @@ namespace Recuria.Infrastructure.Persistence
             _dispatcher = dispatcher;
         }
 
-        public async Task<int> CommitAsync(CancellationToken ct = default)
+        public async Task CommitAsync(CancellationToken ct = default)
         {
-            using var tx = await _db.Database.BeginTransactionAsync(ct);
-
+            await using var tx = await _db.Database.BeginTransactionAsync(ct);
             try
             {
-                // 1. COLLECT EVENTS BEFORE SAVING
-                var domainEvents = _db.ChangeTracker
-                    .Entries<Entity>()
-                    .SelectMany(e => e.Entity.DomainEvents)
+                // 1) collect entities + events BEFORE SaveChanges (critical)
+                var domainEntities = _db.ChangeTracker.Entries<IHasDomainEvents>()
+                    .Select(e => e.Entity)
                     .ToList();
 
-                // 2. SAVE CHANGES
-                var result = await _db.SaveChangesAsync(ct);
+                var events = domainEntities
+                    .SelectMany(e => e.DomainEvents)
+                    .ToList();
 
-                // 3. COMMIT DB TRANSACTION
+                // 2) persist aggregate changes
+                await _db.SaveChangesAsync(ct);
+
+                // 3) dispatch domain events (handlers mark processed etc.)
+                await _dispatcher.DispatchAsync(events, ct);
+
+                // 4) clear domain events after dispatch
+                foreach (var entity in domainEntities)
+                    entity.ClearDomainEvents();
+
+                // 5) persist side effects if handler used SAME DbContext instance
+                // (harmless even if handler saved separately)
+                await _db.SaveChangesAsync(ct);
+
                 await tx.CommitAsync(ct);
-
-                // 4. CLEAR EVENTS ONLY AFTER COMMIT
-                foreach (var entry in _db.ChangeTracker.Entries<Entity>())
-                {
-                    entry.Entity.ClearDomainEvents();
-                }
-
-                // 5. DISPATCH EVENTS
-                await _dispatcher.DispatchAsync(domainEvents, ct);
-
-                return result;
             }
             catch
             {
-                await tx.RollbackAsync(ct);
+                try { await tx.RollbackAsync(ct); } catch { }
                 throw;
             }
         }

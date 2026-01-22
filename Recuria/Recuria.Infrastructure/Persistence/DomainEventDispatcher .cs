@@ -1,6 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Recuria.Application.Interface;
 using Recuria.Domain.Abstractions;
+using Recuria.Domain.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,32 +10,34 @@ using System.Threading.Tasks;
 
 namespace Recuria.Infrastructure.Persistence
 {
-    public class DomainEventDispatcher : IDomainEventDispatcher
+    public sealed class DomainEventDispatcher : IDomainEventDispatcher
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        public DomainEventDispatcher(IServiceProvider provider)
+        public DomainEventDispatcher(IServiceScopeFactory scopeFactory)
         {
-            _serviceProvider = provider;
+            _scopeFactory = scopeFactory;
         }
 
-        public async Task DispatchAsync(IEnumerable<IDomainEvent> domainEvent, CancellationToken ct)
+        public async Task DispatchAsync(IEnumerable<IDomainEvent> domainEvents, CancellationToken ct)
         {
-            var eventType = domainEvent.GetType();
+            using var scope = _scopeFactory.CreateScope();
+            var sp = scope.ServiceProvider;
 
-            var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(eventType);
-
-            var handlers = _serviceProvider.GetServices(handlerType);
-
-            foreach (var handler in handlers)
+            foreach (var evt in domainEvents)
             {
-                var method = handlerType.GetMethod(nameof(IDomainEventHandler<IDomainEvent>.HandleAsync));
+                var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(evt.GetType());
+                var enumerableHandlerType = typeof(IEnumerable<>).MakeGenericType(handlerType);
 
-                if (method is null)
-                    continue;
+                var handlers = (IEnumerable<object>)sp.GetRequiredService(enumerableHandlerType);
 
-                var task = (Task)method.Invoke(handler, new object[] { domainEvent, ct })!;
-                await task;
+                foreach (var handler in handlers)
+                {
+                    var method = handlerType.GetMethod("HandleAsync")
+                                 ?? throw new InvalidOperationException($"Handler {handlerType.Name} is missing HandleAsync.");
+
+                    await ((Task)method.Invoke(handler, new object[] { evt, ct })!).ConfigureAwait(false);
+                }
             }
         }
     }

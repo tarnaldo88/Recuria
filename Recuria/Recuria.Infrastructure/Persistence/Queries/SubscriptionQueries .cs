@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Recuria.Infrastructure.Persistence.Queries
 {
-    internal sealed class SubscriptionQueries : ISubscriptionQueries
+    public sealed class SubscriptionQueries : ISubscriptionQueries
     {
         private readonly RecuriaDbContext _db;
 

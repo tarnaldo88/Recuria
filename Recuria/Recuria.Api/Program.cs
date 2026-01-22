@@ -7,24 +7,26 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Recuria.Api.Middleware;
+using Recuria.Application;
 using Recuria.Application.Contracts.Invoice.Validators;
 using Recuria.Application.Contracts.Organizations.Validators;
 using Recuria.Application.Contracts.Subscription.Validators;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
+using Recuria.Application.Interface.Idempotency;
 using Recuria.Application.Observability;
 using Recuria.Application.Subscriptions;
 using Recuria.Application.Validation;
 using Recuria.Domain.Abstractions;
+using Recuria.Domain.Events.Subscription;
 using Recuria.Infrastructure;
+using Recuria.Infrastructure.Idempotency;
 using Recuria.Infrastructure.Observability;
 using Recuria.Infrastructure.Outbox;
 using Recuria.Infrastructure.Persistence;
 using Recuria.Infrastructure.Persistence.Locking;
 using Recuria.Infrastructure.Persistence.Queries;
 using Recuria.Infrastructure.Repositories;
-
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,13 +35,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<RecuriaDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer( builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 builder.Services.AddScoped<IOrganizationQueries, OrganizationQueries>();
-//builder.Services.AddScoped<ISubscriptionQueries, SubscriptionQueries>();
+builder.Services.AddScoped<ISubscriptionQueries, SubscriptionQueries>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 builder.Services.AddScoped<OutboxProcessor>();
@@ -48,7 +49,7 @@ builder.Services.AddScoped<IDatabaseDistributedLock, SqlServerDistributedLock>()
 builder.Services.AddLogging();
 builder.Services.AddMetrics();
 builder.Services.AddScoped<ISubscriptionTelemetry, SubscriptionTelemetry>();
-builder.Services.AddInfrastructure(builder.Configuration);
+//builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddFluentValidationAutoValidation().AddFluentValidationClientsideAdapters();
 builder.Services.AddValidatorsFromAssembly(typeof(CreateOrganizationRequestValidator).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(UpgradeSubscriptionRequestValidator).Assembly);
@@ -56,6 +57,14 @@ builder.Services.AddValidatorsFromAssembly(typeof(CreateInvoiceRequestValidator)
 builder.Services.AddValidatorsFromAssembly(typeof(AddUserRequestValidator).Assembly);
 builder.Services.AddScoped<ValidationBehavior>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IProcessedEventStore, EfProcessedEventStore>();
+//builder.Services.AddScoped<IDomainEventHandler<SubscriptionActivatedDomainEvent>, SubscriptionActivatedHandler>();
+
+
 
 builder.Services.Scan(scan => scan
     .FromAssemblies(
@@ -104,3 +113,8 @@ app.UseMiddleware<ErrorHandlingMiddleware>();
 
 
 app.Run();
+
+namespace Recuria.Api
+{
+    public partial class Program { }
+}
