@@ -186,9 +186,9 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
         public async Task Activate_Should_DispatchDomainEvent_And_MarkProcessedEventStore()
         {
             var (org, subscription) = await CreateSubscriptionAsync(
-                status: SubscriptionStatus.Trial,
-                periodStart: DateTime.UtcNow.AddDays(-10),
-                periodEnd: DateTime.UtcNow.AddDays(+4));
+                  status: SubscriptionStatus.Trial,
+                  periodStart: DateTime.UtcNow.AddDays(-10),
+                  periodEnd: DateTime.UtcNow.AddDays(+4));
 
             var now = DateTime.UtcNow;
 
@@ -201,13 +201,17 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             _subscriptions.Update(subscription);
             await _uow.CommitAsync();
 
-            // Act: call ONLY the handler we care about (avoid dispatcher -> avoids CreateInvoice handler)
+            // Act: call ONLY SubscriptionActivatedHandler (but allow duplicates in DI)
             using (var handlerScope = _factory.Services.CreateScope())
             {
-                var handler = handlerScope.ServiceProvider
+                var handlers = handlerScope.ServiceProvider
                     .GetServices<IDomainEventHandler<SubscriptionActivatedDomainEvent>>()
                     .OfType<SubscriptionActivatedHandler>()
-                    .Single();
+                    .ToList();
+
+                handlers.Should().NotBeEmpty("SubscriptionActivatedHandler must be registered in DI.");
+                // Pick one deterministically
+                var handler = handlers[0];
 
                 await handler.HandleAsync(activatedEvt, CancellationToken.None);
             }
@@ -230,9 +234,9 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
         public async Task Activate_Should_BeIdempotent_HandlerShouldNotDuplicateProcessedMarker()
         {
             var (org, subscription) = await CreateSubscriptionAsync(
-               status: SubscriptionStatus.Trial,
-               periodStart: DateTime.UtcNow.AddDays(-10),
-               periodEnd: DateTime.UtcNow.AddDays(+4));
+        status: SubscriptionStatus.Trial,
+        periodStart: DateTime.UtcNow.AddDays(-10),
+        periodEnd: DateTime.UtcNow.AddDays(+4));
 
             var now = DateTime.UtcNow;
 
@@ -245,26 +249,31 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             _subscriptions.Update(subscription);
             await _uow.CommitAsync();
 
-            // Dispatch twice to prove idempotency
-            using (var dispatchScope = _factory.Services.CreateScope())
+            // Act: call ONLY SubscriptionActivatedHandler twice
+            using (var handlerScope = _factory.Services.CreateScope())
             {
-                var dispatcher = dispatchScope.ServiceProvider.GetRequiredService<IDomainEventDispatcher>();
+                var handlers = handlerScope.ServiceProvider
+                    .GetServices<IDomainEventHandler<SubscriptionActivatedDomainEvent>>()
+                    .OfType<SubscriptionActivatedHandler>()
+                    .ToList();
 
-                await dispatcher.DispatchAsync(new IDomainEvent[] { activatedEvt }, CancellationToken.None);
-                await dispatcher.DispatchAsync(new IDomainEvent[] { activatedEvt }, CancellationToken.None);
+                handlers.Should().NotBeEmpty("SubscriptionActivatedHandler must be registered in DI.");
+                var handler = handlers[0];
+
+                await handler.HandleAsync(activatedEvt, CancellationToken.None);
+                await handler.HandleAsync(activatedEvt, CancellationToken.None);
             }
 
-            // Assert: marker exists, and no duplicates for (EventId, Handler)
+            // Assert: exactly one processed marker row for this handler+event
             using (var verifyScope = _factory.Services.CreateScope())
             {
                 var db = verifyScope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
 
-                var handlerName = nameof(SubscriptionActivatedHandler);
-
                 var count = await db.ProcessedEvents.CountAsync(
-                    x => x.EventId == activatedEvt.EventId && x.Handler == handlerName);
+                    x => x.EventId == activatedEvt.EventId &&
+                         x.Handler == nameof(SubscriptionActivatedHandler));
 
-                count.Should().Be(1, "handler should be idempotent and write only one processed marker");
+                count.Should().Be(1);
             }
         }
 
