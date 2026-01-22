@@ -1,6 +1,6 @@
 ﻿# Recuria
 
-Recuria is a **SaaS subscription and billing platform** built with **ASP.NET Core (.NET 10)**.
+Recuria is a **SaaS subscription and billing platform** built with **ASP.NET Core (.NET 8)**.
 
 It models real-world SaaS business rules including organization ownership, subscription lifecycles, role-based access, billing, invoicing, and observability.
 
@@ -180,7 +180,7 @@ Testing focuses on **business behavior**, not implementation details.
 
 ## Technology Stack
 
-- **.NET 10 / C# 12**
+- **.NET 8 / C# 12**
 - **ASP.NET Core Web API**
 - **Entity Framework Core 10**
 - **SQL Server**
@@ -194,7 +194,7 @@ Testing focuses on **business behavior**, not implementation details.
 
 ### Prerequisites
 
-- .NET SDK 10+
+- .NET SDK 8+
 - SQL Server (local instance or Docker)
 - Visual Studio 2022+ or VS Code
 
