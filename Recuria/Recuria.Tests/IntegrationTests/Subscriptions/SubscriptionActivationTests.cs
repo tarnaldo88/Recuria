@@ -47,10 +47,7 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             _processedEvents = sp.GetRequiredService<IProcessedEventStore>();
         }
 
-        public void Dispose()
-        {
-            _scope.Dispose();
-        }
+        public void Dispose() => _scope.Dispose();
 
         [Fact]
         public async Task Activate_Should_SetActive_And_SetNewBillingPeriod_When_Trial()
@@ -114,7 +111,11 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             _subscriptions.Update(subscription);
             await _uow.CommitAsync();
 
-            var reloaded = await _subscriptions.GetByIdAsync(subscription.Id, CancellationToken.None);
+            //assert using a new scope so that it is not reading a tracked instance
+            using var scope2 = _factory.Services.CreateScope();
+            var subs2 = scope2.ServiceProvider.GetRequiredService<ISubscriptionRepository>();
+
+            var reloaded = await subs2.GetByIdAsync(subscription.Id, CancellationToken.None);
             reloaded!.Status.Should().Be(SubscriptionStatus.Active);
             reloaded.PeriodStart.Should().Be(originalStart);
             reloaded.PeriodEnd.Should().Be(originalEnd);

@@ -27,9 +27,11 @@ namespace Recuria.Tests.IntegrationTests.Infrastructure
             {
                 // Remove existing OrganizationCreated handlers
                 services.RemoveAll<IDomainEventHandler<OrganizationCreatedDomainEvent>>();
+                services.RemoveAll<IHostedService>();
 
                 // Remove ONLY the outbox hosted service (do not remove all hosted services)
                 services.RemoveAll<OutboxProcessorHostedService>();
+                services.RemoveAll<OutboxProcessor>();
 
                 // Add failing one
                 services.AddScoped<
