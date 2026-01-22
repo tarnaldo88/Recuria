@@ -6,6 +6,7 @@ using Recuria.Application.Interface.Idempotency;
 using Recuria.Application.Requests;
 using Recuria.Application.Subscriptions;
 using Recuria.Domain;
+using Recuria.Domain.Abstractions;
 using Recuria.Domain.Entities;
 using Recuria.Domain.Enums;
 using Recuria.Domain.Events.Subscription;
@@ -31,6 +32,8 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
         private readonly IProcessedEventStore _processedEvents;
         private readonly IServiceScope _scope;
 
+        private readonly IDomainEventDispatcher _dispatcher;
+
 
         public SubscriptionActivationTests(CustomWebApplicationFactory factory)
         {
@@ -45,6 +48,7 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             _users = sp.GetRequiredService<IUserRepository>();
             _uow = sp.GetRequiredService<IUnitOfWork>();
             _processedEvents = sp.GetRequiredService<IProcessedEventStore>();
+            _dispatcher = sp.GetRequiredService<IDomainEventDispatcher>();
         }
 
         public void Dispose() => _scope.Dispose();
