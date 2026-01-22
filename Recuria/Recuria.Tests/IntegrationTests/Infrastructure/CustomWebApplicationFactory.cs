@@ -3,11 +3,13 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestPlatform.TestHost;
+using Recuria.Api;
 using Recuria.Application.Interface;
 using Recuria.Domain.Events.Organization;
+using Recuria.Infrastructure.Outbox;
 using Recuria.Infrastructure.Persistence;
-using Recuria.Api;
 using Recuria.Tests.IntegrationTests.TestDoubles;
 using System;
 using System.Collections.Generic;
@@ -23,21 +25,11 @@ namespace Recuria.Tests.IntegrationTests.Infrastructure
         {
             builder.ConfigureServices(services =>
             {
-                //// Remove real DbContext
-                //var descriptor = services.SingleOrDefault(
-                //    d => d.ServiceType == typeof(DbContextOptions<RecuriaDbContext>));
-
-                //if (descriptor != null)
-                //    services.Remove(descriptor);
-
-                //// Add in-memory DB
-                //services.AddDbContext<RecuriaDbContext>(options =>
-                //{
-                //    options.UseInMemoryDatabase("Recuria_TestDb");
-                //});
-
                 // Remove existing OrganizationCreated handlers
                 services.RemoveAll<IDomainEventHandler<OrganizationCreatedDomainEvent>>();
+
+                // Remove ONLY the outbox hosted service (do not remove all hosted services)
+                services.RemoveAll<OutboxProcessorHostedService>();
 
                 // Add failing one
                 services.AddScoped<

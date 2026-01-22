@@ -53,6 +53,7 @@ namespace Recuria.Infrastructure.Repositories
 
         public void Update(Organization organization)
         {
+            if (organization is null) throw new ArgumentNullException(nameof(organization));
             _context.Organizations.Update(organization);
         }
     }
