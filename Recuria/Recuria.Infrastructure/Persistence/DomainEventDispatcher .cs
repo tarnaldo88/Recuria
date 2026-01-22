@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Recuria.Application.Interface;
 using Recuria.Domain.Abstractions;
+using Recuria.Domain.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,22 +20,26 @@ namespace Recuria.Infrastructure.Persistence
         }
 
         public async Task DispatchAsync(IEnumerable<IDomainEvent> domainEvent, CancellationToken ct)
-        {
-            var eventType = domainEvent.GetType();
-
-            var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(eventType);
-
-            var handlers = _serviceProvider.GetServices(handlerType);
-
-            foreach (var handler in handlers)
+        {            
+            foreach (var evt in domainEvent)
             {
-                var method = handlerType.GetMethod(nameof(IDomainEventHandler<IDomainEvent>.HandleAsync));
+                // IMPORTANT: use the EVENT instance type, not domainEvents.GetType()
+                var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(evt.GetType());
 
-                if (method is null)
-                    continue;
+                // Resolve IEnumerable<IDomainEventHandler<TEvent>>
+                var enumerableHandlerType = typeof(IEnumerable<>).MakeGenericType(handlerType);
+                var handlers = (IEnumerable<object>)_serviceProvider.GetRequiredService(enumerableHandlerType);
 
-                var task = (Task)method.Invoke(handler, new object[] { domainEvent, ct })!;
-                await task;
+                foreach (var handler in handlers)
+                {
+                    // Call HandleAsync(TEvent evt, CancellationToken ct)
+                    var method = handlerType.GetMethod("HandleAsync");
+                    if (method is null)
+                        throw new InvalidOperationException($"Handler {handlerType.Name} is missing HandleAsync.");
+
+                    var task = (Task)method.Invoke(handler, new object[] { evt, ct })!;
+                    await task.ConfigureAwait(false);
+                }
             }
         }
     }

@@ -176,7 +176,7 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             await _uow.CommitAsync();
 
             // Assert
-            var handlerName = nameof(SubscriptionExpiredHandler);
+            var handlerName = typeof(SubscriptionActivatedHandler).FullName!;
 
             var exists = await _processedEvents.ExistsAsync(
                 expiredEvt.EventId,
