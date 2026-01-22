@@ -114,7 +114,8 @@ namespace Recuria.Domain.Entities
                 throw new InvalidOperationException("Subscription period has not ended.");
 
             Status = SubscriptionStatus.Expired;
-            RaiseDomainEvent(new SubscriptionExpired(Id));
+            //RaiseDomainEvent(new SubscriptionExpired(Id));
+            AddDomainEvent(new SubscriptionExpiredDomainEvent(Id, OrganizationId));
         }
 
         public void UpgradePlan(PlanType newPlan)
