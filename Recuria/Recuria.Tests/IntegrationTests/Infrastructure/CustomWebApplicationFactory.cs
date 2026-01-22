@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace Recuria.Tests.IntegrationTests.Infrastructure
 {
@@ -37,6 +38,12 @@ namespace Recuria.Tests.IntegrationTests.Infrastructure
                 services.AddScoped<
                     IDomainEventHandler<OrganizationCreatedDomainEvent>,
                     FailingOrganizationCreatedHandler>();
+
+                var sp = services.BuildServiceProvider();
+                using var scope = sp.CreateScope();
+
+                var db = scope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
+                db.Database.Migrate();
             });
         }
     }

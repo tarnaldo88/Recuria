@@ -141,10 +141,9 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             await _uow.CommitAsync();
 
             // Assert: handler side effect was persisted
-            var store = _factory.Services.GetRequiredService<IProcessedEventStore>();
             var handlerName = nameof(SubscriptionActivatedHandler);
 
-            var exists = await store.ExistsAsync(activatedEvent.EventId, handlerName, CancellationToken.None);
+            var exists = await _processedEvents.ExistsAsync(activatedEvent.EventId, handlerName, CancellationToken.None);
             exists.Should().BeTrue();
         }
 
