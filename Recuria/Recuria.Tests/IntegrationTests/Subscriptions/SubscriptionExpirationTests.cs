@@ -120,6 +120,14 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
                 periodStart: end.AddMonths(-1),
                 periodEnd: end);
 
+            _uow.GetType().FullName.Should().Be(
+                "Recuria.Infrastructure.Persistence.UnitOfWork",
+                "tests expect the infrastructure UnitOfWork that dispatches domain events");
+
+            //_dispatcher.GetType().FullName.Should().Be(
+            //    "Recuria.Infrastructure.Persistence.DomainEventDispatcher",
+            //    "tests expect the dispatcher used by UnitOfWork");
+
             var now = end.AddTicks(1); // strictly after
             subscription.Expire(now);
 

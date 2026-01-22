@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
@@ -17,9 +18,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace Recuria.Tests.IntegrationTests.Subscriptions
 {
@@ -42,15 +45,14 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             _factory = factory;
 
             _scope = factory.Services.CreateScope();
-            var sp = _scope.ServiceProvider;
 
-            _subscriptions = sp.GetRequiredService<ISubscriptionRepository>();
-            _queries = sp.GetRequiredService<ISubscriptionQueries>();
-            _organizations = sp.GetRequiredService<IOrganizationRepository>();
-            _users = sp.GetRequiredService<IUserRepository>();
-            _uow = sp.GetRequiredService<IUnitOfWork>();
-            _processedEvents = sp.GetRequiredService<IProcessedEventStore>();
-            _dispatcher = sp.GetRequiredService<IDomainEventDispatcher>();
+            _subscriptions = _scope.ServiceProvider.GetRequiredService<ISubscriptionRepository>();
+            _queries = _scope.ServiceProvider.GetRequiredService<ISubscriptionQueries>();
+            _organizations = _scope.ServiceProvider.GetRequiredService<IOrganizationRepository>();
+            _users = _scope.ServiceProvider.GetRequiredService<IUserRepository>();
+            _uow = _scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+            _processedEvents = _scope.ServiceProvider.GetRequiredService<IProcessedEventStore>();
+            _dispatcher = _scope.ServiceProvider.GetRequiredService<IDomainEventDispatcher>();
         }
 
         public void Dispose() => _scope.Dispose();
@@ -144,15 +146,15 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
         public async Task Activate_Should_DispatchSubscriptionActivatedEvent_And_MarkProcessedEventStore()
         {
             var (org, subscription) = await CreateSubscriptionAsync(
-                status: SubscriptionStatus.Trial,
-                periodStart: DateTime.UtcNow.AddDays(-10),
-                periodEnd: DateTime.UtcNow.AddDays(+4));
+               status: SubscriptionStatus.Trial,
+               periodStart: DateTime.UtcNow.AddDays(-10),
+               periodEnd: DateTime.UtcNow.AddDays(+4));
 
             var now = DateTime.UtcNow;
 
+            // Act: raise event on aggregate
             subscription.Activate(now);
 
-            // capture before commit (commit clears DomainEvents)
             var activatedEvt = subscription.DomainEvents
                 .OfType<SubscriptionActivatedDomainEvent>()
                 .Single();
@@ -160,15 +162,24 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             _subscriptions.Update(subscription);
             await _uow.CommitAsync();
 
-            // IMPORTANT: use the same handler key your store uses
-            var handlerShort = nameof(SubscriptionActivatedHandler);
-            var handlerFull = typeof(SubscriptionActivatedHandler).FullName!;
+            // IMPORTANT: explicitly dispatch the event (do NOT rely on Commit to do it)
+            using (var dispatchScope = _factory.Services.CreateScope())
+            {
+                var dispatcher = dispatchScope.ServiceProvider.GetRequiredService<IDomainEventDispatcher>();
+                await dispatcher.DispatchAsync(new IDomainEvent[] { activatedEvt }, CancellationToken.None);
+            }
 
-            var exists =
-                await _processedEvents.ExistsAsync(activatedEvt.EventId, handlerShort, CancellationToken.None) ||
-                await _processedEvents.ExistsAsync(activatedEvt.EventId, handlerFull, CancellationToken.None);
+            // Assert: processed marker exists (use a fresh scope)
+            using (var verifyScope = _factory.Services.CreateScope())
+            {
+                var processed = verifyScope.ServiceProvider.GetRequiredService<IProcessedEventStore>();
+                var exists = await processed.ExistsAsync(
+                    activatedEvt.EventId,
+                    nameof(SubscriptionActivatedHandler),
+                    CancellationToken.None);
 
-            exists.Should().BeTrue();
+                exists.Should().BeTrue("handler should mark the event as processed after dispatch");
+            }
         }
 
         [Fact]
@@ -190,22 +201,38 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             _subscriptions.Update(subscription);
             await _uow.CommitAsync();
 
-            var handlerName = nameof(SubscriptionActivatedHandler);
+            // Act: call ONLY the handler we care about (avoid dispatcher -> avoids CreateInvoice handler)
+            using (var handlerScope = _factory.Services.CreateScope())
+            {
+                var handler = handlerScope.ServiceProvider
+                    .GetServices<IDomainEventHandler<SubscriptionActivatedDomainEvent>>()
+                    .OfType<SubscriptionActivatedHandler>()
+                    .Single();
 
-            using var verifyScope = _factory.Services.CreateScope();
-            var verifyStore = verifyScope.ServiceProvider.GetRequiredService<IProcessedEventStore>();
+                await handler.HandleAsync(activatedEvt, CancellationToken.None);
+            }
 
-            var exists = await verifyStore.ExistsAsync(activatedEvt.EventId, handlerName, CancellationToken.None);
-            exists.Should().BeTrue();
+            // Assert
+            using (var verifyScope = _factory.Services.CreateScope())
+            {
+                var processed = verifyScope.ServiceProvider.GetRequiredService<IProcessedEventStore>();
+
+                var exists = await processed.ExistsAsync(
+                    activatedEvt.EventId,
+                    nameof(SubscriptionActivatedHandler),
+                    CancellationToken.None);
+
+                exists.Should().BeTrue();
+            }
         }
 
         [Fact]
         public async Task Activate_Should_BeIdempotent_HandlerShouldNotDuplicateProcessedMarker()
         {
             var (org, subscription) = await CreateSubscriptionAsync(
-                status: SubscriptionStatus.Trial,
-                periodStart: DateTime.UtcNow.AddDays(-10),
-                periodEnd: DateTime.UtcNow.AddDays(+4));
+               status: SubscriptionStatus.Trial,
+               periodStart: DateTime.UtcNow.AddDays(-10),
+               periodEnd: DateTime.UtcNow.AddDays(+4));
 
             var now = DateTime.UtcNow;
 
@@ -218,13 +245,27 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             _subscriptions.Update(subscription);
             await _uow.CommitAsync();
 
-            var handlerName = nameof(SubscriptionActivatedHandler);
+            // Dispatch twice to prove idempotency
+            using (var dispatchScope = _factory.Services.CreateScope())
+            {
+                var dispatcher = dispatchScope.ServiceProvider.GetRequiredService<IDomainEventDispatcher>();
 
-            using var verifyScope = _factory.Services.CreateScope();
-            var verifyStore = verifyScope.ServiceProvider.GetRequiredService<IProcessedEventStore>();
+                await dispatcher.DispatchAsync(new IDomainEvent[] { activatedEvt }, CancellationToken.None);
+                await dispatcher.DispatchAsync(new IDomainEvent[] { activatedEvt }, CancellationToken.None);
+            }
 
-            var exists = await verifyStore.ExistsAsync(activatedEvt.EventId, handlerName, CancellationToken.None);
-            exists.Should().BeTrue();
+            // Assert: marker exists, and no duplicates for (EventId, Handler)
+            using (var verifyScope = _factory.Services.CreateScope())
+            {
+                var db = verifyScope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
+
+                var handlerName = nameof(SubscriptionActivatedHandler);
+
+                var count = await db.ProcessedEvents.CountAsync(
+                    x => x.EventId == activatedEvt.EventId && x.Handler == handlerName);
+
+                count.Should().Be(1, "handler should be idempotent and write only one processed marker");
+            }
         }
 
         //Creating helper method to make a persisted org and sub

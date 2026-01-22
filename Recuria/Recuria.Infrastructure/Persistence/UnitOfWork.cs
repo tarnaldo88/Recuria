@@ -25,23 +25,27 @@ namespace Recuria.Infrastructure.Persistence
             await using var tx = await _db.Database.BeginTransactionAsync(ct);
             try
             {
-                await _db.SaveChangesAsync(ct);
-
-                // 1) collect events from tracked aggregates
+                // 1) collect entities + events BEFORE SaveChanges (critical)
                 var domainEntities = _db.ChangeTracker.Entries<IHasDomainEvents>()
                     .Select(e => e.Entity)
                     .ToList();
 
-                var events = domainEntities.SelectMany(e => e.DomainEvents).ToList();
+                var events = domainEntities
+                    .SelectMany(e => e.DomainEvents)
+                    .ToList();
 
-                // 2) dispatch
+                // 2) persist aggregate changes
+                await _db.SaveChangesAsync(ct);
+
+                // 3) dispatch domain events (handlers mark processed etc.)
                 await _dispatcher.DispatchAsync(events, ct);
 
-                // 3) clear events
+                // 4) clear domain events after dispatch
                 foreach (var entity in domainEntities)
                     entity.ClearDomainEvents();
 
-                // 4) persist side effects (ProcessedEvents, etc.)
+                // 5) persist side effects if handler used SAME DbContext instance
+                // (harmless even if handler saved separately)
                 await _db.SaveChangesAsync(ct);
 
                 await tx.CommitAsync(ct);

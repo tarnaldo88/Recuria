@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Recuria.Application.Interface;
 using Recuria.Domain.Abstractions;
 using Recuria.Domain.Events;
@@ -10,33 +10,33 @@ using System.Threading.Tasks;
 
 namespace Recuria.Infrastructure.Persistence
 {
-    public class DomainEventDispatcher : IDomainEventDispatcher
+    public sealed class DomainEventDispatcher : IDomainEventDispatcher
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        public DomainEventDispatcher(IServiceProvider provider)
+        public DomainEventDispatcher(IServiceScopeFactory scopeFactory)
         {
-            _serviceProvider = provider;
+            _scopeFactory = scopeFactory;
         }
 
         public async Task DispatchAsync(IEnumerable<IDomainEvent> domainEvents, CancellationToken ct)
         {
+            using var scope = _scopeFactory.CreateScope();
+            var sp = scope.ServiceProvider;
+
             foreach (var evt in domainEvents)
             {
-                var handlerInterface = typeof(IDomainEventHandler<>).MakeGenericType(evt.GetType());
-                var enumerableHandlerType = typeof(IEnumerable<>).MakeGenericType(handlerInterface);
+                var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(evt.GetType());
+                var enumerableHandlerType = typeof(IEnumerable<>).MakeGenericType(handlerType);
 
-                // GetServices returns empty if none are registered (no exception)
-                var handlers = _serviceProvider.GetServices(enumerableHandlerType);
+                var handlers = (IEnumerable<object>)sp.GetRequiredService(enumerableHandlerType);
 
                 foreach (var handler in handlers)
                 {
-                    var method = handlerInterface.GetMethod("HandleAsync");
-                    if (method is null)
-                        throw new InvalidOperationException($"Handler {handlerInterface.Name} is missing HandleAsync.");
+                    var method = handlerType.GetMethod("HandleAsync")
+                                 ?? throw new InvalidOperationException($"Handler {handlerType.Name} is missing HandleAsync.");
 
-                    var task = (Task)method.Invoke(handler, new object[] { evt, ct })!;
-                    await task.ConfigureAwait(false);
+                    await ((Task)method.Invoke(handler, new object[] { evt, ct })!).ConfigureAwait(false);
                 }
             }
         }

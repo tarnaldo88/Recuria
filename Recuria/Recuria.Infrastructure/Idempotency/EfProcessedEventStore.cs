@@ -32,6 +32,7 @@ namespace Recuria.Infrastructure.Idempotency
                 DateTime.UtcNow
             ));
             await _db.SaveChangesAsync(ct);
+            //return Task.CompletedTask;
         }
     }
 }

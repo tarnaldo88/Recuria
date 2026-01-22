@@ -47,13 +47,10 @@ namespace Recuria.Tests.IntegrationTests.Infrastructure
                 var db = scope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
                 db.Database.Migrate();
 
-                services.TryAddScoped<
-                IDomainEventHandler<SubscriptionActivatedDomainEvent>,
-                SubscriptionActivatedHandler>();
-
-                services.TryAddScoped<
-                    IDomainEventHandler<SubscriptionExpiredDomainEvent>,
-                    SubscriptionExpiredHandler>();
+                // Handlers are already registered via Scrutor scan in Program.cs
+                // Explicitly ensure they're available for the dispatcher
+                services.AddScoped<IDomainEventHandler<SubscriptionActivatedDomainEvent>, SubscriptionActivatedHandler>();
+                services.AddScoped<IDomainEventHandler<SubscriptionExpiredDomainEvent>, SubscriptionExpiredHandler>();
             });
         }
     }
