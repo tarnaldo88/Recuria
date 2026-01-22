@@ -30,12 +30,12 @@ namespace Recuria.Infrastructure.Repositories
             Guid id,
             CancellationToken ct)
         {
-            return await _db.Users
-                .FirstOrDefaultAsync(u => u.Id == id, ct);
+            return await _db.Users.FirstOrDefaultAsync(u => u.Id == id, ct);
         }
 
         public void Update(User user)
         {
+            if (user is null) throw new ArgumentNullException(nameof(user));
             _db.Update(user);
         }
     }
