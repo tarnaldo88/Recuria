@@ -159,50 +159,55 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
         }
 
         [Fact]
-        public async Task Expire_Should_DispatchDomainEvent_And_MarkProcessedEventStore_When_Now_Equals_PeriodEnd()
+        public async Task Expire_Should_DispatchDomainEvent_When_Now_Equals_PeriodEnd()
         {
             var boundaryEnd = DateTime.UtcNow;
-            var (org, subscription) = await CreateActiveSubscriptionAsync(periodStart: boundaryEnd.AddMonths(-1), periodEnd: boundaryEnd);
+
+            var (org, subscription) = await CreateActiveSubscriptionAsync(
+                periodStart: boundaryEnd.AddMonths(-1),
+                periodEnd: boundaryEnd);
 
             subscription.Expire(boundaryEnd);
 
-            var expiredEvt = subscription.DomainEvents
-                .OfType<SubscriptionExpiredDomainEvent>()
-                .SingleOrDefault();
-
-            expiredEvt.Should().NotBeNull("Expire() should raise a SubscriptionExpiredDomainEvent when now equals PeriodEnd");
+            subscription.DomainEvents
+                .OfType<SubscriptionExpired>()
+                .Should()
+                .ContainSingle(e => e.SubscriptionId == subscription.Id);
 
             _subscriptions.Update(subscription);
             await _uow.CommitAsync();
 
-            // Assert
-            var handlerName = typeof(SubscriptionActivatedHandler).FullName!;
+            using var scope2 = _factory.Services.CreateScope();
+            var subs2 = scope2.ServiceProvider.GetRequiredService<ISubscriptionRepository>();
 
-            var exists = await _processedEvents.ExistsAsync(
-                expiredEvt.EventId,
-                handlerName,
-                CancellationToken.None);
-
-            exists.Should().BeTrue();
+            var reloaded = await subs2.GetByIdAsync(subscription.Id, CancellationToken.None);
+            reloaded!.Status.Should().Be(SubscriptionStatus.Expired);
         }
 
         [Fact]
-        public async Task Expire_Should_NotRaiseDomainEvent_When_PeriodNotEnded()
+        public async Task Expire_Should_DispatchDomainEvent_When_PeriodEnded()
         {
             var (org, subscription) = await CreateActiveSubscriptionAsync(
-                periodStart: DateTime.UtcNow.AddDays(-1),
-                periodEnd: DateTime.UtcNow.AddDays(+10));
+                periodStart: DateTime.UtcNow.AddDays(-30),
+                periodEnd: DateTime.UtcNow.AddDays(-1));
 
             var now = DateTime.UtcNow;
-                     
-            Action act = () => subscription.Expire(now);
 
-            // Assert
-            act.Should().Throw<InvalidOperationException>();
+            subscription.Expire(now);
 
             subscription.DomainEvents
-                .OfType<SubscriptionExpiredDomainEvent>()
-                .Should().BeEmpty();
+                .OfType<SubscriptionExpired>()
+                .Should()
+                .ContainSingle(e => e.SubscriptionId == subscription.Id);
+
+            _subscriptions.Update(subscription);
+            await _uow.CommitAsync();
+
+            using var scope2 = _factory.Services.CreateScope();
+            var subs2 = scope2.ServiceProvider.GetRequiredService<ISubscriptionRepository>();
+
+            var reloaded = await subs2.GetByIdAsync(subscription.Id, CancellationToken.None);
+            reloaded!.Status.Should().Be(SubscriptionStatus.Expired);
         }
 
         //Noticing trend of having to make active subscriptions for tests. Making Helper method.
