@@ -190,13 +190,12 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             _subscriptions.Update(subscription);
             await _uow.CommitAsync();
 
-            var handlerShort = nameof(SubscriptionActivatedHandler);
-            var handlerFull = typeof(SubscriptionActivatedHandler).FullName!;
+            var handlerName = nameof(SubscriptionActivatedHandler);
 
-            var exists =
-                await _processedEvents.ExistsAsync(activatedEvt.EventId, handlerShort, CancellationToken.None) ||
-                await _processedEvents.ExistsAsync(activatedEvt.EventId, handlerFull, CancellationToken.None);
+            using var verifyScope = _factory.Services.CreateScope();
+            var verifyStore = verifyScope.ServiceProvider.GetRequiredService<IProcessedEventStore>();
 
+            var exists = await verifyStore.ExistsAsync(activatedEvt.EventId, handlerName, CancellationToken.None);
             exists.Should().BeTrue();
         }
 
@@ -219,12 +218,12 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             _subscriptions.Update(subscription);
             await _uow.CommitAsync();
 
-            var handlerShort = nameof(SubscriptionActivatedHandler);
-            var handlerFull = typeof(SubscriptionActivatedHandler).FullName!;
+            var handlerName = nameof(SubscriptionActivatedHandler);
 
-            var exists =
-                await _processedEvents.ExistsAsync(activatedEvt.EventId, handlerShort, CancellationToken.None) ||
-                await _processedEvents.ExistsAsync(activatedEvt.EventId, handlerFull, CancellationToken.None);
+            using var verifyScope = _factory.Services.CreateScope();
+            var verifyStore = verifyScope.ServiceProvider.GetRequiredService<IProcessedEventStore>();
+
+            var exists = await verifyStore.ExistsAsync(activatedEvt.EventId, handlerName, CancellationToken.None);
             exists.Should().BeTrue();
         }
 
