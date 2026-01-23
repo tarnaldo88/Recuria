@@ -1,9 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
-using Recuria.Domain.Entities;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
