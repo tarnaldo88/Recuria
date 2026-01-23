@@ -11,6 +11,7 @@ namespace Recuria.Application.Interface.Abstractions
     {
         Task<Subscription> GetByOrganizationIdAsync(Guid organizationId);
         Task<Subscription> GetByIdAsync(Guid id, CancellationToken ct);
+        Task<List<Subscription>> GetDueForProcessingAsync(DateTime now, CancellationToken ct);
         Task AddAsync(Subscription subscription, CancellationToken ct);
         Task UpdateAsync(Subscription subscription);
         void Update(Subscription subscription);

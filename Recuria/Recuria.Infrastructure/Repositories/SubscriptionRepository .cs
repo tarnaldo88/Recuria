@@ -2,6 +2,7 @@
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
 using Recuria.Domain.Entities;
+using Recuria.Domain.Enums;
 using Recuria.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;
@@ -35,6 +36,17 @@ namespace Recuria.Infrastructure.Repositories
         public async Task<Subscription> GetByIdAsync(Guid id, CancellationToken ct)
         {
             return await _context.Subscriptions.FindAsync(id);
+        }
+
+        public async Task<List<Subscription>> GetDueForProcessingAsync(DateTime now, CancellationToken ct)
+        {
+            return await _context.Subscriptions
+                .Where(s =>
+                    (s.Status == SubscriptionStatus.Trial
+                    || s.Status == SubscriptionStatus.Active
+                    || s.Status == SubscriptionStatus.PastDue)
+                    && s.PeriodEnd <= now)
+                .ToListAsync(ct);
         }
 
         public async Task AddAsync(Subscription subscription, CancellationToken ct)
