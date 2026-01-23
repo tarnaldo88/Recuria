@@ -1,0 +1,78 @@
+[33m7f4737d[m ChangeUserRoleRequest Created
+[33mcff132a[m deleted redundant file
+[33m5f1dd73[m deleted unused using statements
+[33m692d7dd[m Created CustomWebApplicationFactory and added mvc.testing package
+[33mb5eb668[m created integration test base
+[33m63e16b5[m created org flow tests and test for create org and add user, change role, and remove user
+[33mc38b888[m created SubscriptionFlowTests and constructor
+[33m9517012[m added SeedUser
+[33mec89bc5[m fixed var name in org flow test. Added test for sub flow test
+[33m5d1a47b[m Fixed parameters for Assert.Equal lines
+[33mdcd9cb8[m Moved file into proper folder, deleted unnecessary file and methods
+[33m48cfdff[m Created failing org created handler, modified Config web host method in customwebappfactory
+[33m00ca928[m created file, need to fix two bugs
+[33m5402014[m fixed test and added user repo to class
+[33mc6491e8[m fixed parameter to correct input
+[33mfacb9b1[m added null coalesce to var org declaration
+[33me26e39d[m Created Org creates trial sub tests
+[33m94befae[m Created enum folder and moved enums there
+[33mc056f89[m fixing imports with recent enum change.
+[33mf7aaaf1[m Adding necessary imports
+[33ma64c93c[m fixing bugs caused by enum relocation
+[33m7b37b8d[m Finished fixing bugs related to enums relocation.
+[33mb137364[m Created activation and expiration test files. Next step to implement.
+[33m2d2d80a[m Added using imports for later use.
+[33m862d88e[m constructor implemented
+[33m895ba2e[m constructor and using statements added
+[33mf622257[m alter constructor to incorporate the various repos, queries, and unit of work.
+[33m7b11752[m creating new test method for active sub should expire when period ended. created owner and org and added to orgs. Next step to implement period start and end, subscription expiration and test whether features worked properly
+[33m0296050[m Added adding of sub to subscription repo, and committed to uow.
+[33mf503c39[m Finished test method. Added Assert test for should be null, and should be expired sub status.
+[33m396d3c5[m Noticed trend while planning out tests. Creating helper method to create a persisted org and persisted active subscription.
+[33me1dbfe4[m refactored method ActiveSubscription_Should_Expire_When_PeriodEnded to now use helper method, and removed unnecessary code.
+[33m1ea0fcb[m Starting to write Expire_Should_Succeed_When_Now_Equals_PeriodEnd method. Next steps are to perform actions then test that boundary condition now == periodend is valid expiration.
+[33m4e80d98[m Finished method Expire_Should_Succeed_When_Now_Equals_PeriodEnd.
+[33m59d8653[m starting to implement test method Expire_Should_Throw_And_NotPersist_When_PeriodNotEnded. setup complete, next step to assert exception handling works when prematurely expiring sub.
+[33m36d91a3[m Finished method Expire_Should_Throw_And_NotPersist_When_PeriodNotEnded. Added to end of method to ensure no changes were persisted.
+[33md23389a[m completed constructor and private members for test class.
+[33m8637404[m Helper method to make a persisted org and sub created.
+[33m039a2a2[m Starting to make Activate_Should_SetActive_And_SetNewBillingPeriod_When_Trial method.
+[33m6871807[m Finished test method Activate_Should_SetActive_And_SetNewBillingPeriod_When_Trial. method activates sub and sets period start and end. Then asserts it is not null, and status and periods are correct.
+[33m6cfe40b[m Starting method: Activate_Should_Succeed_When_StatusIsPastDue.
+[33m0336d4f[m Finished Test method Activate_Should_Succeed_When_StatusIsPastDue. Method now tests that activate will still work when status is marked as PastDue.
+[33m2d589b2[m Test method Activate_Should_Throw_When_StatusIsAlreadyActive_And_NotPersist created. setup, act, and assertion that exception is handled.
+[33m0d7a2ce[m finished test method Activate_Should_Throw_When_StatusIsAlreadyActive_And_NotPersist. Added sub repo update and unit of work commit. final test parts of sub should be active status, and periods being correct.
+[33ma34ec4e[m Fixing sub expire handler and sub expire domain events.
+[33m485d7f1[m fixed bug in HandleAsync method, forgot to add async, called wrong handler.
+[33m9ad81dc[m Now that handlers and domain events for sub expire and activate are correct can now create tests. Starting to implement method Activate_Should_DispatchSubscriptionActivatedEvent_And_MarkProcessedEventStore
+[33meee1d32[m Adding custom web app factory to tests. Implemented test method Activate_Should_DispatchSubscriptionActivatedEvent_And_MarkProcessedEventStore.
+[33mbba6344[m Adding processed event store to both sub activation and expiration tests.
+[33m94f4703[m Adding test to ensure activate should dispatch domain event. Next step is get domain event before commit. Then assert handler pesisted the processed marker.
+[33m33bd8ae[m Finished method Activate_Should_DispatchDomainEvent_And_MarkProcessedEventStore. Tests domain events properly dispatched and mark as processed
+[33m53e56f5[m Expire_Should_DispatchDomainEvent_And_MarkProcessedEventStore_When_PeriodEnded method implemented. It is the expiration version of the activated test method. Testing to ensure handler ran and marked processed.
+[33m2cfe7a0[m Expire_Should_DispatchDomainEvent_And_MarkProcessedEventStore_When_Now_Equals_PeriodEnd method implemented to test that expire should dispatch domain event and mark processed for event store
+[33macafbb0[m Expire_Should_DispatchDomainEvent_And_MarkProcessedEventStore_When_Now_Equals_PeriodEnd method written in wrong sub test class. Moved to proper location.
+[33ma6faad1[m Activate_Should_BeIdempotent_HandlerShouldNotDuplicateProcessedMarker method created.  Method tests idempotency for activating sub. Fixed bug in Outbox Processor regarding await _dispatcher
+[33m9af5a90[m Added Expire_Should_NotRaiseDomainEvent_When_PeriodNotEnded test method to test that expire should raise domain event when period has not ended.
+[33mc05bd87[m Adding API project reference to tests
+[33m9faa711[m Applying fixes to project to allow for running of tests
+[33mecf8396[m Successful migration, and changes made to allow for integration testing of subscription expiration and activation. Adding service scope to Sub activation tests.
+[33ma061a21[m fixed constructor to use scope properly
+[33m37efcef[m added scope to constructor
+[33mada86e1[m fixed typo on constructor for _factory
+[33m4fd57d6[m Implemented AddAsync, tests were failing because of NotImplemented exception being thrown.
+[33mc6cd043[m In custom web app factory I am removing handlers and outbox hosted service so I can have tests run properly
+[33me0d3c00[m added null handling to update method. made some formatting change
+[33m33f1d54[m Added a new scope so that it is not reading a tracked instance. Attempting fixes to get tests to run properly
+[33m766a9f2[m making necessary changes to get tests running. Altered test method no longer call _factory but instead use _processEvents for line 146.
+[33m0494a64[m fixed lines 126 and 150 by changing Single to SingleOrDefaule.
+[33md6d112d[m Added assert to see if expired event is null.
+[33maa6c80d[m Applying fixes to get tests to pass. Refactor of expire method in subscription so as to add domain event. Refactor of commitAsync in UnitOfWork class.
+[33mc1daffe[m Added dispatcher to tests.
+[33mbd33b69[m 8 of 12 tests Succeeded. Fixes to dispatchAsync, and the tests themselves needing refactoring. next steps to get 4 remaining tests passing.
+[33mb9b9728[m Refactoring to or conditional for exists using short or full handler.
+[33m86f2d85[m Expire method goes back to using Sub expired domain event.
+[33m3de582b[m small refactors to methods To see if domain events are being dispatched or if the tests failing is due to another reason
+[33m7f1fe14[m Added domainevent to activate. Refactored the foreach loop in DispatchAsync method. Added some tryAddScoped to ConfigureWebHost. Still only passing 9/12
+[33m99d7458[m Refactoring throughout entire project. Redundancies discovered and corrected. Proper design and architecture applied to infrastructure that has allowed for more tests to pass. DI wiring diagnostics tests created to check registrations working properly. All diagnostic tests passed. Next steps are to fix last two tests that have not passed.
+[33m56642c0[m[33m ([m[1;31morigin/SubscriptionLifeCycleTests[m[33m, [m[1;32mSubscriptionLifeCycleTests[m[33m)[m All tests Passed. Cause for error on final two tests was more than one SubscriptionActivatedHandler instance registered in DI.
