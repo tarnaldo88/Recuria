@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Recuria.Application.Interface
 {
-    internal interface ISubscriptionLifecycleOrchestrator
+    public interface ISubscriptionLifecycleOrchestrator
     {
         void Process(Subscription subscription, DateTime now);
     }

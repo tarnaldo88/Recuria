@@ -27,6 +27,7 @@ using Recuria.Infrastructure.Persistence;
 using Recuria.Infrastructure.Persistence.Locking;
 using Recuria.Infrastructure.Persistence.Queries;
 using Recuria.Infrastructure.Repositories;
+using Recuria.Infrastructure.Subscriptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +59,12 @@ builder.Services.AddValidatorsFromAssembly(typeof(AddUserRequestValidator).Assem
 builder.Services.AddScoped<ValidationBehavior>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+builder.Services.AddScoped<IBillingService, BillingService>();
+builder.Services.AddScoped<IBillingRetryPolicy, ExponentialBackoffRetryPolicy>();
+builder.Services.AddScoped<ISubscriptionLifecycleOrchestrator, SubscriptionLifecycleOrchestrator>();
+builder.Services.AddScoped<SubscriptionLifecycleProcessor>();
+builder.Services.AddHostedService<SubscriptionLifecycleHostedService>();
+
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
