@@ -13,6 +13,7 @@ using Recuria.Domain.Enums;
 using Recuria.Domain.Events.Organization;
 using Recuria.Domain.Events.Subscription;
 using Recuria.Infrastructure.Persistence;
+using Recuria.Infrastructure.Persistence.Queries;
 using Recuria.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
@@ -51,6 +52,8 @@ namespace Recuria.Tests.Unit.Domain
             services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
             services.AddScoped<IInvoiceRepository, InvoiceRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IOrganizationQueries, OrganizationQueries>();
+            services.AddScoped<ISubscriptionQueries, SubscriptionQueries>();
 
             // Services
             services.AddScoped<IOrganizationService, OrganizationService>();
@@ -83,7 +86,8 @@ namespace Recuria.Tests.Unit.Domain
             // Act: create organization
             var orgId = await orgService.CreateOrganizationAsync(new CreateOrganizationRequest
             {
-                Name = "Test Org"
+                Name = "Test Org",
+                OwnerId = owner.Id
             }, CancellationToken.None);
 
             // Assert organization exists
@@ -98,7 +102,7 @@ namespace Recuria.Tests.Unit.Domain
             // Activate subscription
             var subscriptionService = _provider.GetRequiredService<ISubscriptionService>();
             CancellationToken ct = default(CancellationToken);
-            subscriptionService.ActivateAsync(subscription.Id, ct);
+            await subscriptionService.ActivateAsync(subscription.Id, ct);
 
             // Commit UnitOfWork to trigger domain events
             await _provider.GetRequiredService<IUnitOfWork>().CommitAsync();
