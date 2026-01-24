@@ -14,17 +14,19 @@ using System.Threading.Tasks;
 
 namespace Recuria.Tests.IntegrationTests.Organizations
 {
-    public class OrganizationRollbackTests : IClassFixture<CustomWebApplicationFactory>
+    public class OrganizationRollbackTests : IClassFixture<CustomWebApplicationFactory>, IDisposable
     {
         private readonly IOrganizationService _service;
         private readonly IOrganizationQueries _orgQueries;
         private readonly IUserRepository _users;
+        private readonly IServiceScope _scope;
 
         public OrganizationRollbackTests(CustomWebApplicationFactory factory)
         {
-            _service = factory.Services.GetRequiredService<IOrganizationService>();
-            _orgQueries = factory.Services.GetRequiredService<IOrganizationQueries>();
-            _users = factory.Services.GetRequiredService<IUserRepository>();
+            _scope = factory.Services.CreateScope();
+            _service = _scope.ServiceProvider.GetRequiredService<IOrganizationService>();
+            _orgQueries = _scope.ServiceProvider.GetRequiredService<IOrganizationQueries>();
+            _users = _scope.ServiceProvider.GetRequiredService<IUserRepository>();
         }
 
         [Fact]
@@ -56,6 +58,11 @@ namespace Recuria.Tests.IntegrationTests.Organizations
             // Assert – organization was NOT persisted
             var orgDto = await _orgQueries.GetByIdAsync(createdOrgId, CancellationToken.None);
             orgDto.Should().BeNull();
+        }
+
+        public void Dispose()
+        {
+            _scope.Dispose();
         }
     }
 }
