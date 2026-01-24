@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,8 +27,9 @@ namespace Recuria.Tests.IntegrationTests.Infrastructure
         {
             builder.ConfigureServices(services =>
             {
-                // Remove existing OrganizationCreated handlers
-                services.RemoveAll<IDomainEventHandler<OrganizationCreatedDomainEvent>>();
+                services.RemoveAll<DbContextOptions<RecuriaDbContext>>();
+                services.AddDbContext<RecuriaDbContext>(options =>
+                    options.UseInMemoryDatabase($"RecuriaTests-{Guid.NewGuid()}"));
                 services.RemoveAll<IHostedService>();
 
                 // Remove ONLY the outbox hosted service (do not remove all hosted services)
@@ -39,7 +40,7 @@ namespace Recuria.Tests.IntegrationTests.Infrastructure
                 using var scope = sp.CreateScope();
 
                 var db = scope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
-                db.Database.Migrate();
+                db.Database.EnsureCreated();
 
                 // Handlers are already registered via Scrutor scan in Program.cs
                 // Explicitly ensure they're available for the dispatcher
