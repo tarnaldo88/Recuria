@@ -18,8 +18,8 @@ namespace Recuria.Domain
         public UserRole Role { get; private set; }
 
         // Reference to organization
-        public Guid OrganizationId { get; private set; }
-        public Organization? Organization { get; private set; } = null!;
+        public Guid? OrganizationId { get; private set; }
+        public Organization? Organization { get; private set; } = null;
 
         public User(string email, string name)
         {
