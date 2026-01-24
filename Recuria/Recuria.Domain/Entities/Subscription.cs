@@ -21,6 +21,7 @@ namespace Recuria.Domain.Entities
 
         public DateTime PeriodStart { get; private set; }
         public DateTime PeriodEnd { get; private set; }
+        public byte[] RowVersion { get; private set; } = Array.Empty<byte>();
         private readonly List<BillingAttempt> _billingAttempts = new List<BillingAttempt>();
         public IReadOnlyCollection<BillingAttempt> BillingAttempts => _billingAttempts.AsReadOnly();
         protected Subscription() { } //EF Core
