@@ -23,12 +23,14 @@ namespace Recuria.Domain
 
         public User(string email, string name)
         {
+            Id = Guid.NewGuid();
             Email = email;
             Name = name;
         }
 
         public User(string email, string name, UserRole role, Organization? org)
         {
+            Id = Guid.NewGuid();
             Email = email;
             Name = name;
             Role = role;
