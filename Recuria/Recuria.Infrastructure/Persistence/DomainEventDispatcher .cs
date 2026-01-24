@@ -36,7 +36,14 @@ namespace Recuria.Infrastructure.Persistence
                     var method = handlerType.GetMethod("HandleAsync")
                                  ?? throw new InvalidOperationException($"Handler {handlerType.Name} is missing HandleAsync.");
 
-                    await ((Task)method.Invoke(handler, new object[] { evt, ct })!).ConfigureAwait(false);
+                    try
+                    {
+                        await ((Task)method.Invoke(handler, new object[] { evt, ct })!).ConfigureAwait(false);
+                    }
+                    catch (TargetInvocationException ex) when (ex.InnerException != null)
+                    {
+                        throw ex.InnerException;
+                    }
                 }
             }
         }
