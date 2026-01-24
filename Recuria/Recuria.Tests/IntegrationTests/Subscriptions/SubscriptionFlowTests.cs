@@ -53,7 +53,7 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
 
             Assert.NotNull(subscription);
             Assert.Equal(PlanType.Free, subscription.Subscription.PlanCode);
-            Assert.Equal(SubscriptionStatus.Active, subscription.Subscription.Status);
+            Assert.Equal(SubscriptionStatus.Trial, subscription.Subscription.Status);
         }
 
         private async Task SeedUser(Guid userId)
