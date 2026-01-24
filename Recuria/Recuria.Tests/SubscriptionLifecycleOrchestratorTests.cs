@@ -64,7 +64,7 @@ namespace Recuria.Tests
         public void Process_Should_BillAndAdvancePeriod_WhenActiveAndPeriodEnded()
         {
             var start = DateTime.UtcNow.AddMonths(-1);
-            var end = DateTime.UtcNow.AddDays(-1);
+            var end = DateTime.UtcNow;
             var now = DateTime.UtcNow;
 
             var subscription = new Subscription(_org, PlanType.Pro, SubscriptionStatus.Active, start, end);

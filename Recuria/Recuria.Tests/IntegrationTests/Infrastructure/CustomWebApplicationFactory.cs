@@ -36,11 +36,6 @@ namespace Recuria.Tests.IntegrationTests.Infrastructure
                 services.RemoveAll<OutboxProcessorHostedService>();
                 services.RemoveAll<OutboxProcessor>();
 
-                // Add failing one
-                services.AddScoped<
-                    IDomainEventHandler<OrganizationCreatedDomainEvent>,
-                    FailingOrganizationCreatedHandler>();
-
                 var sp = services.BuildServiceProvider();
                 using var scope = sp.CreateScope();
 
