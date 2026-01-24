@@ -10,8 +10,8 @@ namespace Recuria.Application.Requests
 {
     public class AddUserRequest
     {
-        public string Name { get; init; } = null!;
-        public string Email { get; init; } = null!;
+        public string? Name { get; init; }
+        public string? Email { get; init; }
         public UserRole Role { get; init; }
         public Guid UserId { get; init; }
     }
