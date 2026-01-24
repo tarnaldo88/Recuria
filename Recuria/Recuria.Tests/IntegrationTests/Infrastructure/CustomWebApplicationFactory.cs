@@ -12,7 +12,6 @@ using Recuria.Domain.Events.Organization;
 using Recuria.Domain.Events.Subscription;
 using Recuria.Infrastructure.Outbox;
 using Recuria.Infrastructure.Persistence;
-using Recuria.Tests.IntegrationTests.TestDoubles;
 using System;
 using System.Collections.Generic;
 using System.Linq;

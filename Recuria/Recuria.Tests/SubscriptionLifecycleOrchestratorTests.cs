@@ -71,6 +71,7 @@ namespace Recuria.Tests
 
             _billingService
                 .Setup(b => b.RunBillingCycle(subscription, now))
+                .Callback(() => subscription.AdvancePeriod(now))
                 .Returns(new Invoice(subscription.Id, 29m));
 
 
