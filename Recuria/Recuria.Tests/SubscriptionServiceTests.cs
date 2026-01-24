@@ -7,12 +7,13 @@ using Recuria.Application.Validation;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
 using Recuria.Domain.Enums;
-using Recuria.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FluentValidation;
+using Moq;
 using Xunit;
 
 namespace Recuria.Tests
@@ -21,15 +22,25 @@ namespace Recuria.Tests
     {
         private readonly SubscriptionService _service;
         private readonly Organization _org;
-        private readonly ISubscriptionRepository _subscriptions;
-        private readonly IOrganizationRepository _organizations;
-        private readonly ISubscriptionQueries _queries;
+        private readonly Mock<ISubscriptionRepository> _subscriptions;
+        private readonly Mock<IOrganizationRepository> _organizations;
+        private readonly Mock<ISubscriptionQueries> _queries;
         private readonly ValidationBehavior _validator;
-        private readonly UnitOfWork _unitOfWork;
+        private readonly Mock<IUnitOfWork> _unitOfWork;
 
         public SubscriptionServiceTests()
         {
-            _service = new SubscriptionService(_subscriptions, _organizations, _queries, _validator, _unitOfWork);
+            _subscriptions = new Mock<ISubscriptionRepository>();
+            _organizations = new Mock<IOrganizationRepository>();
+            _queries = new Mock<ISubscriptionQueries>();
+            _unitOfWork = new Mock<IUnitOfWork>();
+            _validator = new ValidationBehavior(Array.Empty<IValidator>());
+            _service = new SubscriptionService(
+                _subscriptions.Object,
+                _organizations.Object,
+                _queries.Object,
+                _validator,
+                _unitOfWork.Object);
             _org = new Organization("Test Org");
         }
 
@@ -68,12 +79,12 @@ namespace Recuria.Tests
         }
 
         [Fact]
-        public void UpgradePlan_Should_Throw_When_Canceled()
+        public async Task UpgradePlan_Should_Throw_When_Canceled()
         {
             var ct = new CancellationToken();
             var sub = _service.CreateTrial(_org);
             _service.ActivateSubscription(sub);
-            _service.CancelSubscription(sub, ct);
+            await _service.CancelSubscription(sub, ct);
 
             Action act = () => _service.UpgradePlan(sub, PlanType.Enterprise);
 
@@ -81,14 +92,14 @@ namespace Recuria.Tests
         }
 
         [Fact]
-        public void CancelSubscription_Should_SetStatusToCanceled()
+        public async Task CancelSubscription_Should_SetStatusToCanceled()
         {
             var sub = _service.CreateTrial(_org);
             var ct = new CancellationToken();
 
             _service.ActivateSubscription(sub);
 
-            _service.CancelSubscription(sub, ct);
+            await _service.CancelSubscription(sub, ct);
             sub.Status.Should().Be(SubscriptionStatus.Canceled);
         }
 
@@ -128,12 +139,13 @@ namespace Recuria.Tests
         }
 
         [Fact]
-        public void AdvancePeriod_When_NotActive_Should_Throw()
+        public async Task AdvancePeriod_When_NotActive_Should_Throw()
         {
             var sub = _service.CreateTrial(_org);
             var ct = new CancellationToken();
 
-            _service.CancelSubscription(sub, ct);
+            _service.ActivateSubscription(sub);
+            await _service.CancelSubscription(sub, ct);
 
             Action act = () => sub.AdvancePeriod(DateTime.UtcNow);
 
