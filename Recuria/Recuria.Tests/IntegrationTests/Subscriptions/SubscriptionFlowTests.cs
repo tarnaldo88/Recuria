@@ -11,6 +11,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using Recuria.Domain.Enums;
+using Recuria.Application.Contracts.Organizations;
 
 namespace Recuria.Tests.IntegrationTests.Subscriptions
 {
@@ -37,8 +38,10 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
 
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
-            var organizationId =
-                await response.Content.ReadFromJsonAsync<Guid>();
+            var createdOrg =
+                await response.Content.ReadFromJsonAsync<OrganizationDto>();
+            Assert.NotNull(createdOrg);
+            var organizationId = createdOrg!.Id;
 
             // Act – query current subscription
             var subResponse =
