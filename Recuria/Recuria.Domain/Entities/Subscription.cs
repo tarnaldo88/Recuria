@@ -23,9 +23,6 @@ namespace Recuria.Domain.Entities
         public DateTime PeriodEnd { get; private set; }
         private readonly List<BillingAttempt> _billingAttempts = new List<BillingAttempt>();
         public IReadOnlyCollection<BillingAttempt> BillingAttempts => _billingAttempts.AsReadOnly();
-        private readonly List<IDomainEvent> _domainEvents = new List<IDomainEvent>();
-        public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents;
-
         protected Subscription() { } //EF Core
 
         public Subscription(
@@ -80,7 +77,7 @@ namespace Recuria.Domain.Entities
             Status = SubscriptionStatus.Active;
             PeriodEnd.AddMonths(1);
             PeriodStart = DateTime.Now;
-            AddDomainEvent(new SubscriptionActivatedDomainEvent(Id, OrganizationId));
+            RaiseDomainEvent(new SubscriptionActivatedDomainEvent(Id, OrganizationId));
         }
 
         public void Activate(DateTime now)
@@ -91,7 +88,7 @@ namespace Recuria.Domain.Entities
             Status = SubscriptionStatus.Active;
             PeriodStart = now;
             PeriodEnd = now.AddMonths(1);
-            AddDomainEvent(new SubscriptionActivatedDomainEvent(Id, OrganizationId));
+            RaiseDomainEvent(new SubscriptionActivatedDomainEvent(Id, OrganizationId));
         }
 
         public void Cancel()
@@ -116,8 +113,8 @@ namespace Recuria.Domain.Entities
 
             Status = SubscriptionStatus.Expired;
            
-            AddDomainEvent(new SubscriptionExpired(Id));
-            AddDomainEvent(new SubscriptionExpiredDomainEvent(Id, OrganizationId));
+            RaiseDomainEvent(new SubscriptionExpired(Id));
+            RaiseDomainEvent(new SubscriptionExpiredDomainEvent(Id, OrganizationId));
         }
 
         public void UpgradePlan(PlanType newPlan)
@@ -186,14 +183,5 @@ namespace Recuria.Domain.Entities
             _billingAttempts.Add(billingAttempt);
         }
 
-        protected void AddDomainEvent(IDomainEvent domainEvent)
-        {
-            _domainEvents.Add(domainEvent);
-        }
-
-        public void ClearDomainEvents()
-        {
-            _domainEvents.Clear();
-        }
     }
 }

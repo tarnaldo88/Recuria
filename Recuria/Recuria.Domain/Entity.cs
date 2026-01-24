@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Recuria.Domain
 {
-    public abstract class Entity
+    public abstract class Entity : IHasDomainEvents
     {
         private readonly List<IDomainEvent> _domainEvents = new();
 
