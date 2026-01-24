@@ -26,6 +26,7 @@ namespace Recuria.Infrastructure.Persistence.Configurations
             builder.Property(s => s.Status).IsRequired();
             builder.Property(s => s.PeriodStart).IsRequired();
             builder.Property(s => s.PeriodEnd).IsRequired();
+            builder.Property(s => s.RowVersion).IsRowVersion();
 
         }
     }
