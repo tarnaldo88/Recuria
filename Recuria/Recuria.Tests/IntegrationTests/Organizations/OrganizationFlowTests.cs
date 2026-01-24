@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using Recuria.Domain.Enums;
+using Recuria.Application.Contracts.Organizations;
 
 namespace Recuria.Tests.IntegrationTests.Organizations
 {
@@ -41,8 +42,10 @@ namespace Recuria.Tests.IntegrationTests.Organizations
 
             Assert.Equal(HttpStatusCode.Created, createOrgResponse.StatusCode);
 
-            var organizationId =
-                await createOrgResponse.Content.ReadFromJsonAsync<Guid>();
+            var createdOrg =
+                await createOrgResponse.Content.ReadFromJsonAsync<OrganizationDto>();
+            Assert.NotNull(createdOrg);
+            var organizationId = createdOrg!.Id;
 
             // Add user
             var addUser = new AddUserRequest
