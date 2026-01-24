@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
@@ -11,22 +11,28 @@ using System.Linq;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Recuria.Domain.Events.Organization;
+using Recuria.Tests.IntegrationTests.TestDoubles;
 
 namespace Recuria.Tests.IntegrationTests.Organizations
 {
-    public class OrganizationRollbackTests : IClassFixture<CustomWebApplicationFactory>, IDisposable
+    public class OrganizationRollbackTests : IClassFixture<OrganizationRollbackTests.FailingOrganizationCreatedFactory>, IDisposable
     {
         private readonly IOrganizationService _service;
         private readonly IOrganizationQueries _orgQueries;
         private readonly IUserRepository _users;
+        private readonly IUnitOfWork _uow;
         private readonly IServiceScope _scope;
 
-        public OrganizationRollbackTests(CustomWebApplicationFactory factory)
+        public OrganizationRollbackTests(FailingOrganizationCreatedFactory factory)
         {
             _scope = factory.Services.CreateScope();
             _service = _scope.ServiceProvider.GetRequiredService<IOrganizationService>();
             _orgQueries = _scope.ServiceProvider.GetRequiredService<IOrganizationQueries>();
             _users = _scope.ServiceProvider.GetRequiredService<IUserRepository>();
+            _uow = _scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         }
 
         [Fact]
@@ -35,6 +41,7 @@ namespace Recuria.Tests.IntegrationTests.Organizations
             // Arrange
             var owner = new User("owner@test.com", "ownerName");
             await _users.AddAsync(owner, CancellationToken.None);
+            await _uow.CommitAsync(CancellationToken.None);
 
             var request = new CreateOrganizationRequest
             {
@@ -63,6 +70,21 @@ namespace Recuria.Tests.IntegrationTests.Organizations
         public void Dispose()
         {
             _scope.Dispose();
+        }
+
+        public sealed class FailingOrganizationCreatedFactory : CustomWebApplicationFactory
+        {
+            protected override void ConfigureWebHost(IWebHostBuilder builder)
+            {
+                base.ConfigureWebHost(builder);
+                builder.ConfigureServices(services =>
+                {
+                    services.RemoveAll<IDomainEventHandler<OrganizationCreatedDomainEvent>>();
+                    services.AddScoped<
+                        IDomainEventHandler<OrganizationCreatedDomainEvent>,
+                        FailingOrganizationCreatedHandler>();
+                });
+            }
         }
     }
 }

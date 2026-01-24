@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Recuria.Application;
 using Recuria.Application.Interface;
@@ -22,6 +22,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using FluentAssertions;
+using Recuria.Application.Validation;
+using FluentValidation;
 
 namespace Recuria.Tests.Unit.Domain
 {
@@ -54,6 +56,7 @@ namespace Recuria.Tests.Unit.Domain
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IOrganizationQueries, OrganizationQueries>();
             services.AddScoped<ISubscriptionQueries, SubscriptionQueries>();
+            services.AddScoped<ValidationBehavior>(_ => new ValidationBehavior(Array.Empty<IValidator>()));
 
             // Services
             services.AddScoped<IOrganizationService, OrganizationService>();

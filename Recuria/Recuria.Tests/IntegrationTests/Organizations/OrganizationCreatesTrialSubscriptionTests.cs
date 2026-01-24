@@ -23,6 +23,7 @@ namespace Recuria.Tests.IntegrationTests.Organizations
         private readonly IOrganizationService _organizationService;
         private readonly ISubscriptionQueries _subscriptionQueries;
         private readonly IUserRepository _users;
+        private readonly IUnitOfWork _uow;
         private readonly IServiceScope _scope;
 
         public OrganizationCreatesTrialSubscriptionTests(
@@ -37,6 +38,8 @@ namespace Recuria.Tests.IntegrationTests.Organizations
 
             _users =
                 _scope.ServiceProvider.GetRequiredService<IUserRepository>();
+            _uow =
+                _scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         }
 
         [Fact]
@@ -45,6 +48,7 @@ namespace Recuria.Tests.IntegrationTests.Organizations
             // Arrange
             var owner = new User("owner@trialtest.com", "ownerName");
             await _users.AddAsync(owner, CancellationToken.None);
+            await _uow.CommitAsync(CancellationToken.None);
 
             var request = new CreateOrganizationRequest
             {
