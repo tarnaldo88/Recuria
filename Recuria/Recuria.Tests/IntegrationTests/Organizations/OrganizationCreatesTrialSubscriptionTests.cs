@@ -18,23 +18,25 @@ using Recuria.Domain.Enums;
 namespace Recuria.Tests.IntegrationTests.Organizations
 {
     public class OrganizationCreatesTrialSubscriptionTests
-    : IClassFixture<CustomWebApplicationFactory>
+    : IClassFixture<CustomWebApplicationFactory>, IDisposable
     {
         private readonly IOrganizationService _organizationService;
         private readonly ISubscriptionQueries _subscriptionQueries;
         private readonly IUserRepository _users;
+        private readonly IServiceScope _scope;
 
         public OrganizationCreatesTrialSubscriptionTests(
             CustomWebApplicationFactory factory)
         {
+            _scope = factory.Services.CreateScope();
             _organizationService =
-                factory.Services.GetRequiredService<IOrganizationService>();
+                _scope.ServiceProvider.GetRequiredService<IOrganizationService>();
 
             _subscriptionQueries =
-                factory.Services.GetRequiredService<ISubscriptionQueries>();
+                _scope.ServiceProvider.GetRequiredService<ISubscriptionQueries>();
 
             _users =
-                factory.Services.GetRequiredService<IUserRepository>();
+                _scope.ServiceProvider.GetRequiredService<IUserRepository>();
         }
 
         [Fact]
@@ -63,8 +65,13 @@ namespace Recuria.Tests.IntegrationTests.Organizations
                     CancellationToken.None);
 
             subscription.Should().NotBeNull();
-            subscription!.Subscription.Status.Should().Be(SubscriptionStatus.Active);
+            subscription!.Subscription.Status.Should().Be(SubscriptionStatus.Trial);
             subscription.Subscription.PlanCode.Should().Be(PlanType.Free);
+        }
+
+        public void Dispose()
+        {
+            _scope.Dispose();
         }
     }
 }
