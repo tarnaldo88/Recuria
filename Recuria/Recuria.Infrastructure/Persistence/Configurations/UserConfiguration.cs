@@ -17,10 +17,13 @@ namespace Recuria.Infrastructure.Persistence.Configurations
 
             builder.Property(u => u.Role)
                 .IsRequired();
+            builder.Property(u => u.OrganizationId)
+                .IsRequired(false);
 
             builder.HasOne(u => u.Organization)
                 .WithMany(o => o.Users)
                 .HasForeignKey(u => u.OrganizationId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }
