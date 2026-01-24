@@ -23,13 +23,15 @@ namespace Recuria.Tests.IntegrationTests.Infrastructure
 {
     public class CustomWebApplicationFactory : WebApplicationFactory<Recuria.Api.Program>
     {
+        private readonly string _dbName = $"RecuriaTests-{Guid.NewGuid()}";
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.ConfigureServices(services =>
             {
                 services.RemoveAll<DbContextOptions<RecuriaDbContext>>();
                 services.AddDbContext<RecuriaDbContext>(options =>
-                    options.UseInMemoryDatabase($"RecuriaTests-{Guid.NewGuid()}"));
+                    options.UseInMemoryDatabase(_dbName));
                 services.RemoveAll<IHostedService>();
 
                 // Remove ONLY the outbox hosted service (do not remove all hosted services)
