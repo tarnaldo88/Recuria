@@ -23,7 +23,10 @@ namespace Recuria.Infrastructure.Persistence
 
         public async Task CommitAsync(CancellationToken ct = default)
         {
-            if (_db.Database.IsInMemory())
+            if (string.Equals(
+                _db.Database.ProviderName,
+                "Microsoft.EntityFrameworkCore.InMemory",
+                StringComparison.OrdinalIgnoreCase))
             {
                 await CommitCoreAsync(ct);
                 return;
