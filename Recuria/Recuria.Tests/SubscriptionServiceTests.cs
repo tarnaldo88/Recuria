@@ -34,6 +34,9 @@ namespace Recuria.Tests
             _organizations = new Mock<IOrganizationRepository>();
             _queries = new Mock<ISubscriptionQueries>();
             _unitOfWork = new Mock<IUnitOfWork>();
+            _unitOfWork
+                .Setup(u => u.CommitAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
             _validator = new ValidationBehavior(Array.Empty<IValidator>());
             _service = new SubscriptionService(
                 _subscriptions.Object,
