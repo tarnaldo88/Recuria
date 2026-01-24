@@ -19,20 +19,16 @@ namespace Recuria.Application
     {
         private readonly IInvoiceRepository _invoices;
         private readonly ISubscriptionRepository _subscriptions;
-        private readonly IUnitOfWork _uow;
         private readonly ValidationBehavior _validator;
 
         public InvoiceService(
             IInvoiceRepository invoices,
             ISubscriptionRepository subscriptions,
-            ValidationBehavior validator,
-            IUnitOfWork unitOfWork
-            )
+            ValidationBehavior validator)
         {
             _invoices = invoices;
             _subscriptions = subscriptions;
             _validator = validator;
-            _uow = unitOfWork;
         }
 
         public async Task<Guid> CreateInvoiceAsync(
@@ -75,7 +71,6 @@ namespace Recuria.Application
                 );
 
             await _invoices.AddAsync(invoice, ct);
-            await _uow.CommitAsync(ct);
 
             return invoice;
         }

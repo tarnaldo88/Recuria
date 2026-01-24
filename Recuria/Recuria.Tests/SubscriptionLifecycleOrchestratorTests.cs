@@ -106,7 +106,7 @@ namespace Recuria.Tests
             var subscription = new Subscription(
                    _org,
                    PlanType.Pro,
-                   SubscriptionStatus.Active,
+                   SubscriptionStatus.PastDue,
                    DateTime.UtcNow.AddMonths(-2),
                    DateTime.UtcNow.AddDays(-10)
             );
@@ -126,7 +126,7 @@ namespace Recuria.Tests
             var subscription = new Subscription(
                 _org,
                 PlanType.Pro,
-                SubscriptionStatus.Active,
+                SubscriptionStatus.Canceled,
                 DateTime.UtcNow.AddMonths(-2),
                 DateTime.UtcNow.AddMonths(-1)
             );

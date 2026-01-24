@@ -13,16 +13,13 @@ namespace Recuria.Application.Invoices
     {
         private readonly IInvoiceService _invoices;
         private readonly ISubscriptionRepository _subscriptions;
-        private readonly IUnitOfWork _uow;
 
         public CreateInvoiceOnSubscriptionActivated(
             IInvoiceService invoices,
-            ISubscriptionRepository subscriptions,
-            IUnitOfWork uow)
+            ISubscriptionRepository subscriptions)
         {
             _invoices = invoices;
             _subscriptions = subscriptions;
-            _uow = uow;
         }
 
         public async Task HandleAsync(
@@ -35,9 +32,7 @@ namespace Recuria.Application.Invoices
             if (subscription == null)
                 return;
 
-            _invoices.GenerateFirstInvoice(subscription);
-
-            await _uow.CommitAsync(ct);
+            await _invoices.GenerateFirstInvoice(subscription, ct);
         }
     }
 }

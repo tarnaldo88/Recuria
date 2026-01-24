@@ -22,6 +22,6 @@ namespace Recuria.Application.Interface
             CancellationToken ct);
 
         Task CancelAsync(Guid subscriptionId, CancellationToken ct);
-        void ActivateAsync(Guid subscriptionId, CancellationToken ct);
+        Task ActivateAsync(Guid subscriptionId, CancellationToken ct);
     }
 }

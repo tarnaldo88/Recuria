@@ -41,7 +41,7 @@ namespace Recuria.Application
             subscription.UpgradePlan(newPlan);
         }
 
-        public async void CancelSubscription(Subscription subscription, CancellationToken ct)
+        public async Task CancelSubscription(Subscription subscription, CancellationToken ct)
         {
             subscription.Cancel();
             _subscriptions.Update(subscription);
@@ -52,7 +52,7 @@ namespace Recuria.Application
         public Invoice GenerateInvoice(Subscription subscription, decimal amount)
         {
             if (subscription.Status != SubscriptionStatus.Active)
-                throw new InvalidOperationException("Invoices can only be generated for active subscriptions.");
+                throw new InvalidOperationException("Cannot generate invoice for inactive subscription.");
 
             return new Invoice(subscription.Id, amount);
         }
@@ -126,7 +126,7 @@ namespace Recuria.Application
             await _uow.CommitAsync(ct);
         }
 
-        public async void ActivateAsync(Guid subscriptionId, CancellationToken ct = default)
+        public async Task ActivateAsync(Guid subscriptionId, CancellationToken ct = default)
         {
             var subscription = await _subscriptions.GetByIdAsync(subscriptionId, ct);
             await _validator.ValidateAsync(subscription);
