@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Recuria.Application.Contracts.Organizations;
 using Recuria.Application.Interface;
 using Recuria.Application.Requests;
@@ -56,6 +57,7 @@ namespace Recuria.Api.Controllers
         }
 
         [HttpGet("me")]
+        [Authorize]
         public async Task<ActionResult<OrganizationDto>> GetMyOrganization(
             CancellationToken cancellationToken)
         {
