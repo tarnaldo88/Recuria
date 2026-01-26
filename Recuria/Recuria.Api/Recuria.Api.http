@@ -1,6 +1,89 @@
-@Recuria.Api_HostAddress = http://localhost:5132
-
-GET {{Recuria.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+@Recuria.Api_HostAddress = http://localhost:5234
+@ownerUserId = {{$guid}}
+@memberUserId = {{$guid}}
 
 ###
+# Create owner user
+@name createOwner
+POST {{Recuria.Api_HostAddress}}/api/users
+Content-Type: application/json
+
+{
+  "id": "{{ownerUserId}}",
+  "email": "owner@recuria.local",
+  "name": "Owner One"
+}
+
+###
+# Create member user
+@name createMember
+POST {{Recuria.Api_HostAddress}}/api/users
+Content-Type: application/json
+
+{
+  "id": "{{memberUserId}}",
+  "email": "member@recuria.local",
+  "name": "Member One"
+}
+
+###
+# Create organization
+@name createOrganization
+POST {{Recuria.Api_HostAddress}}/api/organizations
+Content-Type: application/json
+
+{
+  "name": "Acme Inc",
+  "ownerId": "{{ownerUserId}}"
+}
+
+@organizationId = {{createOrganization.response.body.$.id}}
+
+###
+# Get organization by id
+GET {{Recuria.Api_HostAddress}}/api/organizations/{{organizationId}}
+
+###
+# Add member to organization
+POST {{Recuria.Api_HostAddress}}/api/organizations/{{organizationId}}/users
+Content-Type: application/json
+
+{
+  "userId": "{{memberUserId}}",
+  "email": "member@recuria.local",
+  "name": "Member One",
+  "role": "Member"
+}
+
+###
+# Start trial subscription for organization
+@name createTrial
+POST {{Recuria.Api_HostAddress}}/api/subscriptions/trial/{{organizationId}}
+
+@subscriptionId = {{createTrial.response.body.$.id}}
+
+###
+# Get current subscription
+GET {{Recuria.Api_HostAddress}}/api/subscriptions/current/{{organizationId}}
+
+###
+# Upgrade subscription
+POST {{Recuria.Api_HostAddress}}/api/subscriptions/{{subscriptionId}}/upgrade
+Content-Type: application/json
+
+{
+  "newPlan": "Pro"
+}
+
+###
+# Cancel subscription
+POST {{Recuria.Api_HostAddress}}/api/subscriptions/{{subscriptionId}}/cancel
+
+###
+# List invoices for organization
+GET {{Recuria.Api_HostAddress}}/api/organization/{{organizationId}}/invoices
+
+###
+# Get invoice details (replace with an id from list)
+@invoiceId = {{$guid}}
+GET {{Recuria.Api_HostAddress}}/api/invoices/{{invoiceId}}
