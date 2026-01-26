@@ -81,9 +81,11 @@ POST {{Recuria.Api_HostAddress}}/api/subscriptions/{{subscriptionId}}/cancel
 
 ###
 # List invoices for organization
-GET {{Recuria.Api_HostAddress}}/api/organization/{{organizationId}}/invoices
+# Note: InvoiceController has no route prefix, so this is rooted at /organization/...
+GET {{Recuria.Api_HostAddress}}/organization/{{organizationId}}
 
 ###
 # Get invoice details (replace with an id from list)
 @invoiceId = {{$guid}}
-GET {{Recuria.Api_HostAddress}}/api/invoices/{{invoiceId}}
+# Note: InvoiceController has no route prefix, so this is rooted at /{invoiceId}
+GET {{Recuria.Api_HostAddress}}/{{invoiceId}}
