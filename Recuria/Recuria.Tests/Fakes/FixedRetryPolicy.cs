@@ -18,7 +18,8 @@ namespace Recuria.Tests.Fakes
 
         public TimeSpan GetRetryDelay(int attempt)
         {
-            throw new NotImplementedException();
+            // throw new NotImplementedException();
+            return TimeSpan.FromSeconds(1);
         }
 
         public bool ShouldRetry(int attempt, Exception ex)
