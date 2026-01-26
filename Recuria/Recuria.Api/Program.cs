@@ -1,7 +1,9 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
+using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry.Exporter.Prometheus;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -28,6 +30,7 @@ using Recuria.Infrastructure.Persistence.Locking;
 using Recuria.Infrastructure.Persistence.Queries;
 using Recuria.Infrastructure.Repositories;
 using Recuria.Infrastructure.Subscriptions;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +40,30 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<RecuriaDbContext>(options =>
     options.UseSqlServer( builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var issuer = builder.Configuration["Jwt:Issuer"];
+        var audience = builder.Configuration["Jwt:Audience"];
+        var key = builder.Configuration["Jwt:SigningKey"];
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = !string.IsNullOrWhiteSpace(issuer),
+            ValidateAudience = !string.IsNullOrWhiteSpace(audience),
+            ValidateIssuerSigningKey = !string.IsNullOrWhiteSpace(key),
+            ValidateLifetime = true,
+            ValidIssuer = issuer,
+            ValidAudience = audience,
+            IssuerSigningKey = string.IsNullOrWhiteSpace(key)
+                ? null
+                : new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
@@ -110,6 +137,7 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
