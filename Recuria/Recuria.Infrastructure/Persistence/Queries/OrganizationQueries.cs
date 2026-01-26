@@ -32,7 +32,17 @@ namespace Recuria.Infrastructure.Persistence.Queries
 
         public Task<OrganizationSummaryDto?> GetAsync(Guid organizationId, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            return _db.Organizations
+                .Where(o => o.Id == organizationId)
+                .Select(o => new OrganizationSummaryDto(
+                    o.Id,
+                    o.Name,
+                    o.CreatedAt,
+                    o.Users.Count,
+                    o.Subscriptions.Count
+                ))
+                .FirstOrDefaultAsync(ct);
+            // throw new NotImplementedException();
         }
 
         public async Task<OrganizationDto?> GetByIdAsync(
