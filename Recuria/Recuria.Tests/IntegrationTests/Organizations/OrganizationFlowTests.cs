@@ -58,13 +58,16 @@ namespace Recuria.Tests.IntegrationTests.Organizations
             var addUser = new AddUserRequest
             {
                 UserId = userId,
-                Role = UserRole.Member
+                Role = UserRole.Member,
+                Email = $"{userId}@test.com",
+                Name = "Member User"
             };
 
             var addUserResponse =
                 await Client.PostAsJsonAsync(
                     $"/api/organizations/{organizationId}/users",
-                    addUser);
+                    addUser,
+                    JsonOptions);
 
             Assert.Equal(HttpStatusCode.NoContent, addUserResponse.StatusCode);
 
@@ -77,7 +80,8 @@ namespace Recuria.Tests.IntegrationTests.Organizations
             var changeRoleResponse =
                 await Client.PutAsJsonAsync(
                     $"/api/organizations/{organizationId}/users/{userId}/role",
-                    changeRole);
+                    changeRole,
+                    JsonOptions);
 
             Assert.Equal(HttpStatusCode.NoContent, changeRoleResponse.StatusCode);
 
