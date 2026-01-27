@@ -51,6 +51,9 @@ namespace Recuria.Api.Controllers
             Guid id,
             CancellationToken cancellationToken)
         {
+            if (!IsSameOrganization(id))
+                return Forbid();
+
             var org = await _queries.GetByIdAsync(id, cancellationToken);
 
             if (org is null)
@@ -80,6 +83,9 @@ namespace Recuria.Api.Controllers
             [FromBody] AddUserRequest request,
             CancellationToken cancellationToken)
         {
+            if (!IsSameOrganization(id))
+                return Forbid();
+
             await _service.AddUserAsync(id, request, cancellationToken);
 
             return NoContent();
@@ -102,6 +108,9 @@ namespace Recuria.Api.Controllers
             [FromBody] ChangeUserRoleRequest request,
             CancellationToken ct)
         {
+            if (!IsSameOrganization(orgId))
+                return Forbid();
+
             await _service.ChangeUserRoleAsync(
                 orgId,
                 userId,
@@ -118,8 +127,17 @@ namespace Recuria.Api.Controllers
             Guid userId,
             CancellationToken ct)
         {
+            if (!IsSameOrganization(orgId))
+                return Forbid();
+
             await _service.RemoveUserAsync(orgId, userId, ct);
             return NoContent();
+        }
+
+        private bool IsSameOrganization(Guid organizationId)
+        {
+            var orgClaim = User.FindFirst("org_id")?.Value;
+            return Guid.TryParse(orgClaim, out var orgId) && orgId == organizationId;
         }
     }
 }
