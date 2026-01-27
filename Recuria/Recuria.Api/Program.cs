@@ -1,6 +1,7 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
@@ -21,6 +22,7 @@ using Recuria.Application.Subscriptions;
 using Recuria.Application.Validation;
 using Recuria.Domain.Abstractions;
 using Recuria.Domain.Events.Subscription;
+using Recuria.Domain.Enums;
 using Recuria.Infrastructure;
 using Recuria.Infrastructure.Idempotency;
 using Recuria.Infrastructure.Observability;
@@ -32,6 +34,7 @@ using Recuria.Infrastructure.Repositories;
 using Recuria.Infrastructure.Subscriptions;
 using System.Text.Json.Serialization;
 using System.Text;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,13 +65,27 @@ builder.Services
             ValidateLifetime = true,
             ValidIssuer = issuer,
             ValidAudience = audience,
+            RoleClaimType = ClaimTypes.Role,
             IssuerSigningKey = string.IsNullOrWhiteSpace(key)
                 ? null
                 : new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("OwnerOnly", policy =>
+        policy.RequireRole(UserRole.Owner.ToString()));
+
+    options.AddPolicy("AdminOrOwner", policy =>
+        policy.RequireRole(UserRole.Admin.ToString(), UserRole.Owner.ToString()));
+
+    options.AddPolicy("MemberOrAbove", policy =>
+        policy.RequireRole(
+            UserRole.Member.ToString(),
+            UserRole.Admin.ToString(),
+            UserRole.Owner.ToString()));
+});
 
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();

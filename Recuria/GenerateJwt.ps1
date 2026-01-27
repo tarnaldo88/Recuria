@@ -6,6 +6,10 @@ param(
     [string]$UserId = "00000000-0000-0000-0000-000000000002",
 
     [Parameter(Mandatory = $false)]
+    [ValidateSet("Owner", "Admin", "Member")]
+    [string]$Role = "Owner",
+
+    [Parameter(Mandatory = $false)]
     [int]$Hours = 4
 )
 
@@ -40,6 +44,7 @@ $payload = @{
     aud = $audience
     sub = $UserId
     org_id = $OrgId
+    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" = $Role
     iat = $iat
     exp = $exp
 } | ConvertTo-Json -Compress

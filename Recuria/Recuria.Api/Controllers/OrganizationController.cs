@@ -9,6 +9,7 @@ using Recuria.Domain.Enums;
 namespace Recuria.Api.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/organizations")]
     public class OrganizationController : ControllerBase
     {
@@ -27,6 +28,7 @@ namespace Recuria.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "MemberOrAbove")]
         public async Task<ActionResult<OrganizationDto>> Create(
             [FromBody] CreateOrganizationRequest request,
             CancellationToken cancellationToken)
@@ -44,6 +46,7 @@ namespace Recuria.Api.Controllers
         }
 
         [HttpGet("{id:guid}")]
+        [Authorize(Policy = "MemberOrAbove")]
         public async Task<ActionResult<OrganizationDto>> GetById(
             Guid id,
             CancellationToken cancellationToken)
@@ -57,7 +60,7 @@ namespace Recuria.Api.Controllers
         }
 
         [HttpGet("me")]
-        [Authorize]
+        [Authorize(Policy = "MemberOrAbove")]
         public async Task<ActionResult<OrganizationDto>> GetMyOrganization(
             CancellationToken cancellationToken)
         {
@@ -71,6 +74,7 @@ namespace Recuria.Api.Controllers
         }
 
         [HttpPost("{id:guid}/users")]
+        [Authorize(Policy = "AdminOrOwner")]
         public async Task<IActionResult> AddUser(
             Guid id,
             [FromBody] AddUserRequest request,
@@ -91,6 +95,7 @@ namespace Recuria.Api.Controllers
         }
 
         [HttpPut("{orgId:guid}/users/{userId:guid}/role")]
+        [Authorize(Policy = "AdminOrOwner")]
         public async Task<IActionResult> ChangeUserRole(
             Guid orgId,
             Guid userId,
@@ -107,6 +112,7 @@ namespace Recuria.Api.Controllers
         }
 
         [HttpDelete("{orgId:guid}/users/{userId:guid}")]
+        [Authorize(Policy = "AdminOrOwner")]
         public async Task<IActionResult> RemoveUser(
             Guid orgId,
             Guid userId,

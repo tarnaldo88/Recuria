@@ -4,9 +4,26 @@
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk0ODkxNzIsIm9yZ19pZCI6ImMzYmE0ZmJlLWZhZWMtNDRmNy1iMWVlLTczZDAzMDc1ZWI1MSIsInN1YiI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImF1ZCI6IlJlY3VyaWEuQXBpIiwiaXNzIjoiUmVjdXJpYSIsImlhdCI6MTc2OTQ3NDc3Mn0.PRSz6CZHxYfqIkHUDHN6SiG6X_U2-MZJnwtUBnyPFLU
 
 ###
+# Dev bootstrap (Development only)
+@name devBootstrap
+POST {{Recuria.Api_HostAddress}}/api/dev/bootstrap
+Content-Type: application/json
+
+{
+  "organizationName": "Acme Inc",
+  "ownerEmail": "owner@recuria.local",
+  "ownerName": "Owner One"
+}
+
+@token = {{devBootstrap.response.body.$.token}}
+@organizationId = {{devBootstrap.response.body.$.organizationId}}
+@ownerUserId = {{devBootstrap.response.body.$.ownerUserId}}
+
+###
 # Create owner user
 @name createOwner
 POST {{Recuria.Api_HostAddress}}/api/users
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -19,6 +36,7 @@ Content-Type: application/json
 # Create member user
 @name createMember
 POST {{Recuria.Api_HostAddress}}/api/users
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -31,6 +49,7 @@ Content-Type: application/json
 # Create organization
 @name createOrganization
 POST {{Recuria.Api_HostAddress}}/api/organizations
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -43,6 +62,7 @@ Content-Type: application/json
 ###
 # Get organization by id
 GET {{Recuria.Api_HostAddress}}/api/organizations/{{organizationId}}
+Authorization: Bearer {{token}}
 
 ###
 # Get my organization (requires JWT with org_id claim)
@@ -52,6 +72,7 @@ Authorization: Bearer {{token}}
 ###
 # Add member to organization
 POST {{Recuria.Api_HostAddress}}/api/organizations/{{organizationId}}/users
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -65,16 +86,19 @@ Content-Type: application/json
 # Start trial subscription for organization
 @name createTrial
 POST {{Recuria.Api_HostAddress}}/api/subscriptions/trial/{{organizationId}}
+Authorization: Bearer {{token}}
 
 @subscriptionId = {{createTrial.response.body.$.id}}
 
 ###
 # Get current subscription
 GET {{Recuria.Api_HostAddress}}/api/subscriptions/current/{{organizationId}}
+Authorization: Bearer {{token}}
 
 ###
 # Upgrade subscription
 POST {{Recuria.Api_HostAddress}}/api/subscriptions/{{subscriptionId}}/upgrade
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -84,14 +108,15 @@ Content-Type: application/json
 ###
 # Cancel subscription
 POST {{Recuria.Api_HostAddress}}/api/subscriptions/{{subscriptionId}}/cancel
+Authorization: Bearer {{token}}
 
 ###
 # List invoices for organization
-# Note: InvoiceController has no route prefix, so this is rooted at /organization/...
-GET {{Recuria.Api_HostAddress}}/organization/{{organizationId}}
+GET {{Recuria.Api_HostAddress}}/api/invoices/organization/{{organizationId}}
+Authorization: Bearer {{token}}
 
 ###
 # Get invoice details (replace with an id from list)
 @invoiceId = {{$guid}}
-# Note: InvoiceController has no route prefix, so this is rooted at /{invoiceId}
-GET {{Recuria.Api_HostAddress}}/{{invoiceId}}
+GET {{Recuria.Api_HostAddress}}/api/invoices/{{invoiceId}}
+Authorization: Bearer {{token}}

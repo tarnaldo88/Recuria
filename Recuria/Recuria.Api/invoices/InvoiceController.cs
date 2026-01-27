@@ -1,10 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Recuria.Application.Contracts.Invoice;
 using Recuria.Application.Interface;
 
-namespace Recuria.Api.invoices
+namespace Recuria.Api.Invoices
 {
-    public class InvoiceController : Controller
+    [ApiController]
+    [Authorize(Policy = "MemberOrAbove")]
+    [Route("api/invoices")]
+    public class InvoiceController : ControllerBase
     {
         private readonly IInvoiceQueries _invoiceQueries;
 
@@ -14,14 +18,18 @@ namespace Recuria.Api.invoices
         }
 
         [HttpGet("organization/{organizationId:guid}")]
-        public async Task<ActionResult<IReadOnlyList<InvoiceListItemDto>>> GetForOrganization(Guid organizationId, CancellationToken ct)
+        public async Task<ActionResult<IReadOnlyList<InvoiceListItemDto>>> GetForOrganization(
+            Guid organizationId,
+            CancellationToken ct)
         {
             var invoices = await _invoiceQueries.GetForOrganizationAsync(organizationId, ct);
             return Ok(invoices);
         }
 
         [HttpGet("{invoiceId:guid}")]
-        public async Task<ActionResult<InvoiceDetailsDto>> GetDetails(Guid invoiceId, CancellationToken ct)
+        public async Task<ActionResult<InvoiceDetailsDto>> GetDetails(
+            Guid invoiceId,
+            CancellationToken ct)
         {
             var invoice = await _invoiceQueries.GetDetailsAsync(invoiceId, ct);
             if (invoice == null) return NotFound();

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Recuria.Application.Contracts.Subscription;
 using Recuria.Application.Interface;
 using Recuria.Application.Requests;
@@ -7,6 +8,7 @@ using Recuria.Domain.Enums;
 namespace Recuria.Api.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/subscriptions")]
     public class SubscriptionController : ControllerBase
     {
@@ -22,6 +24,7 @@ namespace Recuria.Api.Controllers
         }
 
         [HttpGet("current/{organizationId:guid}")]
+        [Authorize(Policy = "MemberOrAbove")]
         public async Task<ActionResult<SubscriptionDetailsDto>> GetCurrent(Guid organizationId, CancellationToken ct)
         {
             var subscription = await _subscriptionQueries.GetCurrentAsync(organizationId, ct);
@@ -29,6 +32,7 @@ namespace Recuria.Api.Controllers
         }
 
         [HttpPost("trial/{organizationId:guid}")]
+        [Authorize(Policy = "AdminOrOwner")]
         public async Task<ActionResult<SubscriptionDto>> CreateTrial(Guid organizationId, CancellationToken ct)
         {
             var dto = await _subscriptionService.CreateTrialAsync(organizationId, ct);
@@ -37,15 +41,20 @@ namespace Recuria.Api.Controllers
         }
 
         [HttpPost("{subscriptionId:guid}/upgrade")]
-        public async Task<IActionResult> Upgrade(Guid subscriptionId, [FromBody] UpgradeSubscriptionRequest request, CancellationToken ct)
-        {            
+        [Authorize(Policy = "AdminOrOwner")]
+        public async Task<IActionResult> Upgrade(
+            Guid subscriptionId,
+            [FromBody] UpgradeSubscriptionRequest request,
+            CancellationToken ct)
+        {
             await _subscriptionService.UpgradeAsync(subscriptionId, request.NewPlan, ct);
             return NoContent();
         }
 
         [HttpPost("{subscriptionId:guid}/cancel")]
+        [Authorize(Policy = "AdminOrOwner")]
         public async Task<IActionResult> Cancel(Guid subscriptionId, CancellationToken ct)
-        {            
+        {
             await _subscriptionService.CancelAsync(subscriptionId, ct);
             return NoContent();
         }

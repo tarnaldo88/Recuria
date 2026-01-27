@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Recuria.Application.Interface.Abstractions;
 using Recuria.Domain;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 namespace Recuria.Api.Controllers
 {
     [ApiController]
+    [Authorize(Policy = "AdminOrOwner")]
     [Route("api/users")]
     public sealed class UsersController : ControllerBase
     {
