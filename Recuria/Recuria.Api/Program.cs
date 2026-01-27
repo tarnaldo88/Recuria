@@ -95,7 +95,7 @@ builder.Services.AddScoped<IBillingService, BillingService>();
 builder.Services.AddScoped<IBillingRetryPolicy, ExponentialBackoffRetryPolicy>();
 builder.Services.AddScoped<ISubscriptionLifecycleOrchestrator, SubscriptionLifecycleOrchestrator>();
 builder.Services.AddScoped<SubscriptionLifecycleProcessor>();
-// builder.Services.AddHostedService<SubscriptionLifecycleHostedService>();
+builder.Services.AddHostedService<SubscriptionLifecycleHostedService>();
 
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
