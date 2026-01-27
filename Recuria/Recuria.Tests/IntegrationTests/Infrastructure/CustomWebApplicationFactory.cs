@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestPlatform.TestHost;
 using Recuria.Api;
 using Recuria.Application.Interface;
 using Recuria.Application.Subscriptions;
+using Recuria.Application.Organizations;
 using Recuria.Domain.Events.Organization;
 using Recuria.Domain.Events.Subscription;
 using Recuria.Infrastructure.Outbox;
@@ -64,6 +65,7 @@ namespace Recuria.Tests.IntegrationTests.Infrastructure
                 // Explicitly ensure they're available for the dispatcher
                 services.AddScoped<IDomainEventHandler<SubscriptionActivatedDomainEvent>, SubscriptionActivatedHandler>();
                 services.AddScoped<IDomainEventHandler<SubscriptionExpiredDomainEvent>, SubscriptionExpiredHandler>();
+                services.AddScoped<IDomainEventHandler<OrganizationCreatedDomainEvent>, CreateTrialOnOrganizationCreated>();
             });
         }
     }
