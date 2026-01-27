@@ -3,7 +3,7 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk0ODYzMDMsIm9yZ19pZCI6IjAwMDA
 
 
 GET SUBSCRIPTION
-PS C:\Users\tarna\Documents\Projects\NETProjects\Recuria\Recuria> Invoke-RestMethod -Method Get -Uri http://localhost:5132/api/organizations/me `  -Headers @{ Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk0ODkxNzIsIm9yZ19pZCI6ImMzYmE0ZmJlLWZhZWMtNDRmNy1iMWVlLTczZDAzMDc1ZWI1MSIsInN1YiI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImF1ZCI6IlJlY3VyaWEuQXBpIiwiaXNzIjoiUmVjdXJpYSIsImlhdCI6MTc2OTQ3NDc3Mn0.PRSz6CZHxYfqIkHUDHN6SiG6X_U2-MZJnwtUBnyPFLU" }
+Invoke-RestMethod -Method Get -Uri http://localhost:5132/api/organizations/me `  -Headers @{ Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk0ODkxNzIsIm9yZ19pZCI6ImMzYmE0ZmJlLWZhZWMtNDRmNy1iMWVlLTczZDAzMDc1ZWI1MSIsInN1YiI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImF1ZCI6IlJlY3VyaWEuQXBpIiwiaXNzIjoiUmVjdXJpYSIsImlhdCI6MTc2OTQ3NDc3Mn0.PRSz6CZHxYfqIkHUDHN6SiG6X_U2-MZJnwtUBnyPFLU" }
 
 
 id                 : c3ba4fbe-faec-44f7-b1ee-73d03075eb51
