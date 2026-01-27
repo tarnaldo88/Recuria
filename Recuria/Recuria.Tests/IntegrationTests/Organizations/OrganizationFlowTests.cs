@@ -47,7 +47,7 @@ namespace Recuria.Tests.IntegrationTests.Organizations
             Assert.Equal(HttpStatusCode.Created, createOrgResponse.StatusCode);
 
             var createdOrg =
-                await createOrgResponse.Content.ReadFromJsonAsync<OrganizationDto>();
+                await createOrgResponse.Content.ReadFromJsonAsync<OrganizationDto>(JsonOptions);
             Assert.NotNull(createdOrg);
             var organizationId = createdOrg!.Id;
 
