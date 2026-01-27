@@ -13,24 +13,21 @@ namespace Recuria.Infrastructure.Persistence
 {
     public sealed class DomainEventDispatcher : IDomainEventDispatcher
     {
-        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IServiceProvider _serviceProvider;
 
-        public DomainEventDispatcher(IServiceScopeFactory scopeFactory)
+        public DomainEventDispatcher(IServiceProvider serviceProvider)
         {
-            _scopeFactory = scopeFactory;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task DispatchAsync(IEnumerable<IDomainEvent> domainEvents, CancellationToken ct)
         {
-            using var scope = _scopeFactory.CreateScope();
-            var sp = scope.ServiceProvider;
-
             foreach (var evt in domainEvents)
             {
                 var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(evt.GetType());
                 var enumerableHandlerType = typeof(IEnumerable<>).MakeGenericType(handlerType);
 
-                var handlers = (IEnumerable<object>)sp.GetRequiredService(enumerableHandlerType);
+                var handlers = (IEnumerable<object>)_serviceProvider.GetRequiredService(enumerableHandlerType);
 
                 foreach (var handler in handlers)
                 {
