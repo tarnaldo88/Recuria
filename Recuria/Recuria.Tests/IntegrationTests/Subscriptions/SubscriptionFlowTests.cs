@@ -24,6 +24,8 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
         {
             // Arrange
             var ownerId = Guid.NewGuid();
+            var bootstrapOrgId = Guid.NewGuid();
+            SetAuthHeader(ownerId, bootstrapOrgId, UserRole.Owner);
             await SeedUser(ownerId);
 
             var createOrg = new CreateOrganizationRequest
@@ -39,9 +41,11 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
             var createdOrg =
-                await response.Content.ReadFromJsonAsync<OrganizationDto>();
+                await response.Content.ReadFromJsonAsync<OrganizationDto>(JsonOptions);
             Assert.NotNull(createdOrg);
             var organizationId = createdOrg!.Id;
+
+            SetAuthHeader(ownerId, organizationId, UserRole.Owner);
 
             // Act – query current subscription
             var subResponse =
@@ -52,7 +56,7 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
 
             var subscription =
                 await subResponse.Content
-                    .ReadFromJsonAsync<SubscriptionDetailsDto>();
+                    .ReadFromJsonAsync<SubscriptionDetailsDto>(JsonOptions);
 
             Assert.NotNull(subscription);
             Assert.Equal(PlanType.Free, subscription.Subscription.PlanCode);
