@@ -38,10 +38,19 @@ namespace Recuria.Api.Invoices
             Guid invoiceId,
             CancellationToken ct)
         {
-            var orgId = await _db.Invoices
+            var subscriptionId = await _db.Invoices
                 .AsNoTracking()
                 .Where(i => i.Id == invoiceId)
-                .Select(i => i.Subscription.OrganizationId)
+                .Select(i => i.SubscriptionId)
+                .FirstOrDefaultAsync(ct);
+
+            if (subscriptionId == Guid.Empty)
+                return NotFound();
+
+            var orgId = await _db.Subscriptions
+                .AsNoTracking()
+                .Where(s => s.Id == subscriptionId)
+                .Select(s => s.OrganizationId)
                 .FirstOrDefaultAsync(ct);
 
             if (orgId == Guid.Empty)
