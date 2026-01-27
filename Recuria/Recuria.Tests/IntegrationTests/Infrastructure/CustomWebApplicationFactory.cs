@@ -25,9 +25,9 @@ namespace Recuria.Tests.IntegrationTests.Infrastructure
     public class CustomWebApplicationFactory : WebApplicationFactory<Recuria.Api.Program>
     {
         private readonly string _dbName = $"RecuriaTests-{Guid.NewGuid()}";
-        private const string JwtIssuer = "Recuria";
-        private const string JwtAudience = "Recuria.Api";
-        private const string JwtSigningKey = "TEST_SIGNING_KEY_0123456789_0123456789";
+        public const string JwtIssuer = "Recuria";
+        public const string JwtAudience = "Recuria.Api";
+        public const string JwtSigningKey = "TEST_SIGNING_KEY_0123456789_0123456789";
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
