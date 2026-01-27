@@ -105,6 +105,11 @@ namespace Recuria.Application
                 throw new InvalidOperationException("Not found");
 
             subscription.UpgradePlan(newPlan);
+            if (subscription.Status == SubscriptionStatus.Trial)
+            {
+                // Upgrading from trial should activate the paid subscription.
+                subscription.Activate(DateTime.UtcNow);
+            }
 
             _subscriptions.Update(subscription);
             await _uow.CommitAsync(ct);
