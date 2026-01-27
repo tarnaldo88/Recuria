@@ -30,3 +30,7 @@ Invoke-RestMethod -Method Post -Uri http://localhost:5132/api/dev/bootstrap `
     ownerEmail = "owner@recuria.local"
     ownerName = "Owner One"
   } | ConvertTo-Json)
+
+WHO AM I:
+Invoke-RestMethod -Method Get -Uri http://localhost:5132/api/auth/whoami `
+  -Headers @{ Authorization = "Bearer <YOUR_JWT>" }
