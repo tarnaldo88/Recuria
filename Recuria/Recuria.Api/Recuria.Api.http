@@ -70,6 +70,11 @@ GET {{Recuria.Api_HostAddress}}/api/organizations/me
 Authorization: Bearer {{token}}
 
 ###
+# Who am I
+GET {{Recuria.Api_HostAddress}}/api/auth/whoami
+Authorization: Bearer {{token}}
+
+###
 # Add member to organization
 POST {{Recuria.Api_HostAddress}}/api/organizations/{{organizationId}}/users
 Authorization: Bearer {{token}}
