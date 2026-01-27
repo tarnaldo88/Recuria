@@ -1,7 +1,7 @@
 @Recuria.Api_HostAddress = http://localhost:5132
 @ownerUserId = {{$guid}}
 @memberUserId = {{$guid}}
-@token = REPLACE_WITH_JWT
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk0ODkxNzIsIm9yZ19pZCI6ImMzYmE0ZmJlLWZhZWMtNDRmNy1iMWVlLTczZDAzMDc1ZWI1MSIsInN1YiI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImF1ZCI6IlJlY3VyaWEuQXBpIiwiaXNzIjoiUmVjdXJpYSIsImlhdCI6MTc2OTQ3NDc3Mn0.PRSz6CZHxYfqIkHUDHN6SiG6X_U2-MZJnwtUBnyPFLU
 
 ###
 # Create owner user
