@@ -177,7 +177,10 @@ namespace Recuria.Tests.IntegrationTests.Auth
 
             await subs.AddAsync(subscription, CancellationToken.None);
 
-            var invoice = new Invoice(subscription.Id, 10m);
+            var invoice = new Invoice(subscription.Id, 10m)
+            {
+                Id = Guid.NewGuid()
+            };
             db.Invoices.Add(invoice);
 
             await uow.CommitAsync(CancellationToken.None);
