@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestPlatform.TestHost;
 using Recuria.Api;
@@ -24,9 +25,24 @@ namespace Recuria.Tests.IntegrationTests.Infrastructure
     public class CustomWebApplicationFactory : WebApplicationFactory<Recuria.Api.Program>
     {
         private readonly string _dbName = $"RecuriaTests-{Guid.NewGuid()}";
+        private const string JwtIssuer = "Recuria";
+        private const string JwtAudience = "Recuria.Api";
+        private const string JwtSigningKey = "TEST_SIGNING_KEY_0123456789_0123456789";
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            builder.ConfigureAppConfiguration((context, config) =>
+            {
+                var settings = new Dictionary<string, string?>
+                {
+                    ["Jwt:Issuer"] = JwtIssuer,
+                    ["Jwt:Audience"] = JwtAudience,
+                    ["Jwt:SigningKey"] = JwtSigningKey
+                };
+
+                config.AddInMemoryCollection(settings);
+            });
+
             builder.ConfigureServices(services =>
             {
                 services.RemoveAll<DbContextOptions<RecuriaDbContext>>();
