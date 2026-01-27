@@ -94,7 +94,8 @@ namespace Recuria.Tests.IntegrationTests.Organizations
             await Client.PostAsJsonAsync("/api/users", new
             {
                 Id = userId,
-                Email = $"{userId}@test.com"
+                Email = $"{userId}@test.com",
+                Name = "Test User"
             });
         }
     }
