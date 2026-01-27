@@ -5,6 +5,8 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Xunit;
 
 namespace Recuria.Tests.IntegrationTests.Infrastructure
@@ -13,6 +15,10 @@ namespace Recuria.Tests.IntegrationTests.Infrastructure
     : IClassFixture<CustomWebApplicationFactory>
     {
         protected readonly HttpClient Client;
+        protected static readonly JsonSerializerOptions JsonOptions = new()
+        {
+            Converters = { new JsonStringEnumConverter() }
+        };
 
         protected IntegrationTestBase(CustomWebApplicationFactory factory)
         {
