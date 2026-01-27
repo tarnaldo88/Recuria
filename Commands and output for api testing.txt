@@ -1,0 +1,22 @@
+JWT TOKEN GENERATED FROM SCRIPT
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk0ODYzMDMsIm9yZ19pZCI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInN1YiI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImF1ZCI6IlJlY3VyaWEuQXBpIiwiaXNzIjoiUmVjdXJpYSIsImlhdCI6MTc2OTQ0MzEwM30.EWnt1iDPYY8IyOqX7IRtHQOviQHV696lJ3yXFFM_igo
+
+
+GET SUBSCRIPTION
+PS C:\Users\tarna\Documents\Projects\NETProjects\Recuria\Recuria> Invoke-RestMethod -Method Get -Uri http://localhost:5132/api/organizations/me `  -Headers @{ Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk0ODkxNzIsIm9yZ19pZCI6ImMzYmE0ZmJlLWZhZWMtNDRmNy1iMWVlLTczZDAzMDc1ZWI1MSIsInN1YiI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImF1ZCI6IlJlY3VyaWEuQXBpIiwiaXNzIjoiUmVjdXJpYSIsImlhdCI6MTc2OTQ3NDc3Mn0.PRSz6CZHxYfqIkHUDHN6SiG6X_U2-MZJnwtUBnyPFLU" }
+
+
+id                 : c3ba4fbe-faec-44f7-b1ee-73d03075eb51
+name               : Acme Inc
+createdAt          : 2026-01-27T00:45:44.5680239
+ownerEmail         : owner@recuria.local
+userCount          : 1
+activeSubscription : @{id=4fa69fcd-edd0-4128-ab9d-4e2dc7e53ca7; planCode=0; status=0; periodStart=2026-01-27T00:45:44.67562; periodEnd=2026-02-10T00:45:44.67562; isTrial=True; 
+                     isPastDue=False}
+
+
+
+UPGRADE SUBSCRIPTION
+Invoke-RestMethod -Method Post -Uri http://localhost:5132/api/subscriptions/4fa69fcd-edd0-4128-ab9d-4e2dc7e53ca7/upgrade `
+  -ContentType "application/json" `
+  -Body (@{ newPlan = "Pro" } | ConvertTo-Json)
