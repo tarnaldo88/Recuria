@@ -14,16 +14,12 @@ namespace Recuria.Application.Organizations
     {
         private readonly ISubscriptionRepository _subscriptions;
         private readonly IOrganizationRepository _orgs;
-        private readonly IUnitOfWork _uow;
-
         public CreateTrialOnOrganizationCreated(
             ISubscriptionRepository subscriptions,
-            IOrganizationRepository orgs,
-            IUnitOfWork uow)
+            IOrganizationRepository orgs)
         {
             _subscriptions = subscriptions;
             _orgs = orgs;
-            _uow = uow;
         }
 
         public async Task HandleAsync(
@@ -39,8 +35,6 @@ namespace Recuria.Application.Organizations
 
             //await _subscriptions.CreateTrialAsync(org.Id, ct);
             await _subscriptions.AddAsync(subscription, ct);
-
-            await _uow.CommitAsync(ct);
         }
     }
 
