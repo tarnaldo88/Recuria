@@ -91,6 +91,8 @@ namespace Recuria.Tests.IntegrationTests.Organizations
 
         private async Task SeedUser(Guid userId)
         {
+            // Ensure auth for protected user creation endpoint
+            SetAuthHeader(userId, Guid.NewGuid(), UserRole.Owner);
             await Client.PostAsJsonAsync("/api/users", new
             {
                 Id = userId,
