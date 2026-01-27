@@ -26,6 +26,10 @@ namespace Recuria.Tests.IntegrationTests.Organizations
             // Arrange
             var ownerId = Guid.NewGuid();
             var userId = Guid.NewGuid();
+            var bootstrapOrgId = Guid.NewGuid();
+
+            // Bootstrap auth for create user/org (org id can be arbitrary here)
+            SetAuthHeader(ownerId, bootstrapOrgId, UserRole.Owner);
 
             await SeedUser(ownerId);
             await SeedUser(userId);
@@ -46,6 +50,9 @@ namespace Recuria.Tests.IntegrationTests.Organizations
                 await createOrgResponse.Content.ReadFromJsonAsync<OrganizationDto>();
             Assert.NotNull(createdOrg);
             var organizationId = createdOrg!.Id;
+
+            // Update auth to the created organization for org-scoped endpoints
+            SetAuthHeader(ownerId, organizationId, UserRole.Owner);
 
             // Add user
             var addUser = new AddUserRequest
