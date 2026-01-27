@@ -48,7 +48,18 @@ namespace Recuria.Api.Controllers
         public async Task<ActionResult<User>> GetById(Guid id, CancellationToken ct)
         {
             var user = await _users.GetByIdAsync(id, ct);
-            return user is null ? NotFound() : Ok(user);
+            if (user is null)
+                return NotFound();
+
+            var orgClaim = User.FindFirst("org_id")?.Value;
+            if (user.OrganizationId == null ||
+                !Guid.TryParse(orgClaim, out var orgId) ||
+                user.OrganizationId != orgId)
+            {
+                return Forbid();
+            }
+
+            return Ok(user);
         }
     }
 }
