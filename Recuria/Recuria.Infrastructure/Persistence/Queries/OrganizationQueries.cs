@@ -37,9 +37,11 @@ namespace Recuria.Infrastructure.Persistence.Queries
                 .Select(o => new OrganizationSummaryDto(
                     o.Id,
                     o.Name,
-                    o.CreatedAt,
                     o.Users.Count,
-                    o.Subscriptions.Count
+                    o.Subscriptions
+                        .OrderByDescending(s => s.PeriodEnd)
+                        .Select(s => s.Status.ToString())
+                        .FirstOrDefault() ?? "None"
                 ))
                 .FirstOrDefaultAsync(ct);
             // throw new NotImplementedException();
