@@ -12,14 +12,11 @@ namespace Recuria.Application.Organizations
     public sealed class UserAddedToOrganizationHandler : IDomainEventHandler<UserAddedToOrganizationDomainEvent>
     {
         private readonly IUserRepository _users;
-        private readonly IUnitOfWork _uow;
 
         public UserAddedToOrganizationHandler(
-            IUserRepository users,
-            IUnitOfWork uow)
+            IUserRepository users)
         {
             _users = users;
-            _uow = uow;
         }
         public async Task HandleAsync(
            UserAddedToOrganizationDomainEvent @event,
@@ -34,7 +31,6 @@ namespace Recuria.Application.Organizations
             // - Provision permissions
             // - Audit log
 
-            await _uow.CommitAsync(ct);
         }
     }
 }
