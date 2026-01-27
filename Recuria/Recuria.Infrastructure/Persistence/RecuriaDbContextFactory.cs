@@ -14,7 +14,7 @@ namespace Recuria.Infrastructure.Persistence
         {
             var options = new DbContextOptionsBuilder<RecuriaDbContext>()
                 .UseSqlServer(
-                    "Server=(localdb)\\mssqllocaldb;Database=Recuria;Trusted_Connection=True;MultipleActiveResultSets=true")
+                    "Server=(localdb)\\mssqllocaldb;Database=RecuriaDb;Trusted_Connection=True;MultipleActiveResultSets=true")
                 .Options;
 
             return new RecuriaDbContext(options);
