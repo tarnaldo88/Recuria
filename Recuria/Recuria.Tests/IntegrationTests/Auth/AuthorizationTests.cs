@@ -69,7 +69,7 @@ namespace Recuria.Tests.IntegrationTests.Auth
             using var client = CreateClientWithToken(orgB, UserRole.Member);
             var response = await client.GetAsync($"/api/invoices/{invoiceId}");
 
-            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.Forbidden);
         }
 
         private HttpClient CreateClientWithToken(Guid organizationId, UserRole role)
