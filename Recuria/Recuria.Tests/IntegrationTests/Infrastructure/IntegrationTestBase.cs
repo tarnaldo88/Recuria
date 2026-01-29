@@ -15,6 +15,7 @@ namespace Recuria.Tests.IntegrationTests.Infrastructure
     : IClassFixture<CustomWebApplicationFactory>
     {
         protected readonly HttpClient Client;
+        protected readonly CustomWebApplicationFactory Factory;
         protected static readonly JsonSerializerOptions JsonOptions = new()
         {
             Converters = { new JsonStringEnumConverter() }
@@ -22,6 +23,7 @@ namespace Recuria.Tests.IntegrationTests.Infrastructure
 
         protected IntegrationTestBase(CustomWebApplicationFactory factory)
         {
+            Factory = factory;
             Client = factory.CreateClient();
         }
 
