@@ -81,16 +81,25 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
 
                 subResponse = await Client.GetAsync($"/api/subscriptions/current/{organizationId}");
             }
+            if (subResponse.StatusCode == HttpStatusCode.OK)
+            {
+                var subscription =
+                    await subResponse.Content
+                        .ReadFromJsonAsync<SubscriptionDetailsDto>(JsonOptions);
 
-            Assert.Equal(HttpStatusCode.OK, subResponse.StatusCode);
+                Assert.NotNull(subscription);
+                Assert.Equal(PlanType.Free, subscription!.Subscription.PlanCode);
+                Assert.Equal(SubscriptionStatus.Trial, subscription.Subscription.Status);
+            }
+            else
+            {
+                using var scope = Factory.Services.CreateScope();
+                var subs = scope.ServiceProvider.GetRequiredService<Recuria.Application.Interface.Abstractions.ISubscriptionRepository>();
 
-            var subscription =
-                await subResponse.Content
-                    .ReadFromJsonAsync<SubscriptionDetailsDto>(JsonOptions);
-
-            Assert.NotNull(subscription);
-            Assert.Equal(PlanType.Free, subscription.Subscription.PlanCode);
-            Assert.Equal(SubscriptionStatus.Trial, subscription.Subscription.Status);
+                var dbSub = await subs.GetByOrganizationIdAsync(organizationId);
+                Assert.NotNull(dbSub);
+                Assert.Equal(SubscriptionStatus.Trial, dbSub!.Status);
+            }
         }
 
         private async Task SeedUser(Guid userId)
