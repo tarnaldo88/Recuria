@@ -43,7 +43,7 @@ namespace Recuria.Tests.IntegrationTests.Organizations
             };
 
             var createOrgResponse =
-                await Client.PostAsJsonAsync("/api/organizations", createOrg);
+                await Client.PostAsJsonAsync("/api/organizations", createOrg, JsonOptions);
 
             Assert.Equal(HttpStatusCode.Created, createOrgResponse.StatusCode);
 
