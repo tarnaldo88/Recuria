@@ -56,7 +56,7 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             if (subResponse.StatusCode == HttpStatusCode.NotFound)
             {
                 var createTrialResponse =
-                    await Client.PostAsync($"/api/subscriptions/trial/{organizationId}", null);
+                    await Client.PostAsJsonAsync($"/api/subscriptions/trial/{organizationId}", new { }, JsonOptions);
                 Assert.Equal(HttpStatusCode.Created, createTrialResponse.StatusCode);
 
                 subResponse =
