@@ -26,6 +26,11 @@ Health check:
 GET http://localhost:5132/api/health
 ```
 
+## Swagger (Development)
+```
+http://localhost:5132/swagger
+```
+
 ## Dev bootstrap (Development only)
 Creates an owner user + organization and returns a JWT with `org_id` + `role`.
 ```powershell
