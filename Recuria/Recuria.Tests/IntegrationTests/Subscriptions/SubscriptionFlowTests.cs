@@ -37,7 +37,7 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
 
             // Act – create organization
             var response =
-                await Client.PostAsJsonAsync("/api/organizations", createOrg);
+                await Client.PostAsJsonAsync("/api/organizations", createOrg, JsonOptions);
 
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
