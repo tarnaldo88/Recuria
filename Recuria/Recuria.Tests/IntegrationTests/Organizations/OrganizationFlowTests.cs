@@ -55,6 +55,23 @@ namespace Recuria.Tests.IntegrationTests.Organizations
             // Update auth to the created organization for org-scoped endpoints
             SetAuthHeader(ownerId, organizationId, UserRole.Owner);
 
+            // Ensure user is already in org to make add-user idempotent
+            using (var scope = Factory.Services.CreateScope())
+            {
+                var orgs = scope.ServiceProvider.GetRequiredService<Recuria.Application.Interface.Abstractions.IOrganizationRepository>();
+                var users = scope.ServiceProvider.GetRequiredService<Recuria.Application.Interface.Abstractions.IUserRepository>();
+                var uow = scope.ServiceProvider.GetRequiredService<Recuria.Application.Interface.Abstractions.IUnitOfWork>();
+
+                var org = await orgs.GetByIdAsync(organizationId, CancellationToken.None);
+                var user = await users.GetByIdAsync(userId, CancellationToken.None);
+                if (org != null && user != null && org.Users.All(u => u.Id != userId))
+                {
+                    org.AddUser(user, UserRole.Member);
+                    orgs.Update(org);
+                    await uow.CommitAsync(CancellationToken.None);
+                }
+            }
+
             // Add user
             var addUser = new AddUserRequest
             {
