@@ -13,14 +13,11 @@ namespace Recuria.Application.Organizations
         : IDomainEventHandler<UserRemovedFromOrganizationDomainEvent>
     {
         private readonly IUserRepository _users;
-        private readonly IUnitOfWork _uow;
 
         public UserRemovedFromOrganizationHandler(
-            IUserRepository users,
-            IUnitOfWork uow)
+            IUserRepository users)
         {
             _users = users;
-            _uow = uow;
         }
 
         public async Task HandleAsync(
@@ -34,8 +31,6 @@ namespace Recuria.Application.Organizations
             // Example future logic:
             // user.RevokeAccess();
             // user.DisableIfNoOrganizations();
-
-            await _uow.CommitAsync(ct);
         }
     }
 }

@@ -28,12 +28,13 @@ namespace Recuria.Application.Organizations
         {
             var org = await _orgs.GetByIdAsync(@event.OrganizationId, ct) ?? throw new InvalidOperationException("Organization not found."); 
 
-            if (org.GetCurrentSubscription(DateTime.UtcNow) != null)
+            var existing = await _subscriptions.GetByOrganizationIdAsync(@event.OrganizationId);
+            if (existing != null || org.GetCurrentSubscription(DateTime.UtcNow) != null)
                 return;
 
             var subscription = Subscription.CreateTrial(org, DateTime.UtcNow);
 
-            //await _subscriptions.CreateTrialAsync(org.Id, ct);
+            org.AssignSubscription(subscription);
             await _subscriptions.AddAsync(subscription, ct);
         }
     }
