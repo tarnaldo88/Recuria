@@ -4,6 +4,10 @@
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Njk0ODkxNzIsIm9yZ19pZCI6ImMzYmE0ZmJlLWZhZWMtNDRmNy1iMWVlLTczZDAzMDc1ZWI1MSIsInN1YiI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImF1ZCI6IlJlY3VyaWEuQXBpIiwiaXNzIjoiUmVjdXJpYSIsImlhdCI6MTc2OTQ3NDc3Mn0.PRSz6CZHxYfqIkHUDHN6SiG6X_U2-MZJnwtUBnyPFLU
 
 ###
+# Health
+GET {{Recuria.Api_HostAddress}}/api/health
+
+###
 # Dev bootstrap (Development only)
 @name devBootstrap
 POST {{Recuria.Api_HostAddress}}/api/dev/bootstrap
