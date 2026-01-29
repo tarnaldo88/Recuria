@@ -16,7 +16,7 @@ namespace Recuria.Tests.IntegrationTests.Infrastructure
     {
         protected readonly HttpClient Client;
         protected readonly CustomWebApplicationFactory Factory;
-        protected static readonly JsonSerializerOptions JsonOptions = new()
+        protected static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
         {
             Converters = { new JsonStringEnumConverter() }
         };
