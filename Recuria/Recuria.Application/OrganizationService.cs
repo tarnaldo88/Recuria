@@ -56,7 +56,19 @@ namespace Recuria.Application
             await _validator.ValidateAsync(request);
 
             var org = await _organizations.GetByIdAsync(id, ct) ?? throw new InvalidOperationException("Organization not found.");
-            var user = await _users.GetByIdAsync(request.UserId, ct) ?? throw new InvalidOperationException("User not found.");
+            var user = await _users.GetByIdAsync(request.UserId, ct);
+            if (user == null)
+            {
+                if (string.IsNullOrWhiteSpace(request.Email))
+                    throw new InvalidOperationException("User not found.");
+
+                var name = string.IsNullOrWhiteSpace(request.Name)
+                    ? request.Email
+                    : request.Name;
+
+                user = new User(request.Email, name) { Id = request.UserId };
+                await _users.AddAsync(user, ct);
+            }
 
             org.AddUser(user, role: request.Role);
             _organizations.Update(org);
