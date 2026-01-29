@@ -70,6 +70,11 @@ namespace Recuria.Application
                 await _users.AddAsync(user, ct);
             }
 
+            if (org.Users.Any(u => u.Id == user.Id))
+            {
+                return; // idempotent add
+            }
+
             org.AddUser(user, role: request.Role);
             _organizations.Update(org);
 
