@@ -76,13 +76,14 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
 
         private async Task SeedUser(Guid userId)
         {
-            using var scope = Factory.Services.CreateScope();
-            var users = scope.ServiceProvider.GetRequiredService<Recuria.Application.Interface.Abstractions.IUserRepository>();
-            var uow = scope.ServiceProvider.GetRequiredService<Recuria.Application.Interface.Abstractions.IUnitOfWork>();
+            var response = await Client.PostAsJsonAsync("/api/users", new
+            {
+                Id = userId,
+                Email = $"{userId}@test.com",
+                Name = "Test User"
+            }, JsonOptions);
 
-            var user = new Recuria.Domain.User($"{userId}@test.com", "Test User") { Id = userId };
-            await users.AddAsync(user, CancellationToken.None);
-            await uow.CommitAsync(CancellationToken.None);
+            response.EnsureSuccessStatusCode();
         }
     }
 }
