@@ -133,6 +133,7 @@ builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 builder.Services.AddScoped<IOrganizationQueries, OrganizationQueries>();
 builder.Services.AddScoped<ISubscriptionQueries, SubscriptionQueries>();
+builder.Services.AddScoped<IInvoiceQueries, InvoiceQueries>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 builder.Services.AddScoped<OutboxProcessor>();
