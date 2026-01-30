@@ -8,6 +8,9 @@ using Recuria.Domain.Enums;
 
 namespace Recuria.Api.Controllers
 {
+    /// <summary>
+    /// Organization management endpoints.
+    /// </summary>
     [ApiController]
     [Authorize]
     [Route("api/organizations")]
@@ -27,6 +30,9 @@ namespace Recuria.Api.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Create a new organization.
+        /// </summary>
         [HttpPost]
         [Authorize(Policy = "MemberOrAbove")]
         public async Task<ActionResult<OrganizationDto>> Create(
@@ -45,6 +51,9 @@ namespace Recuria.Api.Controllers
                 org);
         }
 
+        /// <summary>
+        /// Get an organization by id (must match org_id claim).
+        /// </summary>
         [HttpGet("{id:guid}")]
         [Authorize(Policy = "MemberOrAbove")]
         public async Task<ActionResult<OrganizationDto>> GetById(
@@ -62,6 +71,9 @@ namespace Recuria.Api.Controllers
             return Ok(org);
         }
 
+        /// <summary>
+        /// Get the organization from the current JWT (org_id claim).
+        /// </summary>
         [HttpGet("me")]
         [Authorize(Policy = "MemberOrAbove")]
         public async Task<ActionResult<OrganizationDto>> GetMyOrganization(
@@ -76,6 +88,9 @@ namespace Recuria.Api.Controllers
                 : Ok(org);
         }
 
+        /// <summary>
+        /// Add a user to the organization (Admin/Owner only).
+        /// </summary>
         [HttpPost("{id:guid}/users")]
         [Authorize(Policy = "AdminOrOwner")]
         public async Task<IActionResult> AddUser(
@@ -100,6 +115,9 @@ namespace Recuria.Api.Controllers
                 ?? throw new InvalidOperationException("No organization in context"));
         }
 
+        /// <summary>
+        /// Change a user's role in the organization (Admin/Owner only).
+        /// </summary>
         [HttpPut("{orgId:guid}/users/{userId:guid}/role")]
         [Authorize(Policy = "AdminOrOwner")]
         public async Task<IActionResult> ChangeUserRole(
@@ -120,6 +138,9 @@ namespace Recuria.Api.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Remove a user from the organization (Admin/Owner only).
+        /// </summary>
         [HttpDelete("{orgId:guid}/users/{userId:guid}")]
         [Authorize(Policy = "AdminOrOwner")]
         public async Task<IActionResult> RemoveUser(
