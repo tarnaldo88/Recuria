@@ -8,6 +8,9 @@ using Recuria.Domain.Enums;
 
 namespace Recuria.Api.Controllers
 {
+    /// <summary>
+    /// Subscription management endpoints.
+    /// </summary>
     [ApiController]
     [Authorize]
     [Route("api/subscriptions")]
@@ -27,6 +30,9 @@ namespace Recuria.Api.Controllers
             _subscriptions = subscriptions;
         }
 
+        /// <summary>
+        /// Get the current subscription for an organization.
+        /// </summary>
         [HttpGet("current/{organizationId:guid}")]
         [Authorize(Policy = "MemberOrAbove")]
         public async Task<ActionResult<SubscriptionDetailsDto>> GetCurrent(Guid organizationId, CancellationToken ct)
@@ -38,6 +44,9 @@ namespace Recuria.Api.Controllers
             return subscription is null ? NotFound() : Ok(subscription);
         }
 
+        /// <summary>
+        /// Create a trial subscription for an organization.
+        /// </summary>
         [HttpPost("trial/{organizationId:guid}")]
         [Authorize(Policy = "AdminOrOwner")]
         public async Task<ActionResult<SubscriptionDto>> CreateTrial(Guid organizationId, CancellationToken ct)
@@ -50,6 +59,9 @@ namespace Recuria.Api.Controllers
             return CreatedAtAction(nameof(GetCurrent), new { organizationId }, dto);
         }
 
+        /// <summary>
+        /// Upgrade a subscription plan.
+        /// </summary>
         [HttpPost("{subscriptionId:guid}/upgrade")]
         [Authorize(Policy = "AdminOrOwner")]
         public async Task<IActionResult> Upgrade(
@@ -67,6 +79,9 @@ namespace Recuria.Api.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Cancel a subscription.
+        /// </summary>
         [HttpPost("{subscriptionId:guid}/cancel")]
         [Authorize(Policy = "AdminOrOwner")]
         public async Task<IActionResult> Cancel(Guid subscriptionId, CancellationToken ct)
