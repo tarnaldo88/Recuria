@@ -4,6 +4,9 @@ using System.Security.Claims;
 
 namespace Recuria.Api.Controllers
 {
+    /// <summary>
+    /// Auth utilities.
+    /// </summary>
     [ApiController]
     [Authorize]
     [Route("api/auth")]
@@ -15,6 +18,9 @@ namespace Recuria.Api.Controllers
             string? Role,
             IEnumerable<KeyValuePair<string, string>> Claims);
 
+        /// <summary>
+        /// Return the current user's claims.
+        /// </summary>
         [HttpGet("whoami")]
         public ActionResult<WhoAmIResponse> WhoAmI()
         {
