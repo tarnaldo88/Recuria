@@ -7,6 +7,9 @@ using Recuria.Infrastructure.Persistence;
 
 namespace Recuria.Api.Invoices
 {
+    /// <summary>
+    /// Invoice endpoints.
+    /// </summary>
     [ApiController]
     [Authorize(Policy = "MemberOrAbove")]
     [Route("api/invoices")]
@@ -21,6 +24,9 @@ namespace Recuria.Api.Invoices
             _db = db;
         }
 
+        /// <summary>
+        /// List invoices for an organization.
+        /// </summary>
         [HttpGet("organization/{organizationId:guid}")]
         public async Task<ActionResult<IReadOnlyList<InvoiceListItemDto>>> GetForOrganization(
             Guid organizationId,
@@ -33,6 +39,9 @@ namespace Recuria.Api.Invoices
             return Ok(invoices);
         }
 
+        /// <summary>
+        /// Get invoice details.
+        /// </summary>
         [HttpGet("{invoiceId:guid}")]
         public async Task<ActionResult<InvoiceDetailsDto>> GetDetails(
             Guid invoiceId,
