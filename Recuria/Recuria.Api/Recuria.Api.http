@@ -125,6 +125,21 @@ GET {{Recuria.Api_HostAddress}}/api/invoices/organization/{{organizationId}}
 Authorization: Bearer {{token}}
 
 ###
+# Create invoice for current subscription (admin/owner)
+@name createInvoice
+POST {{Recuria.Api_HostAddress}}/api/invoices
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "organizationId": "{{organizationId}}",
+  "amount": 25.00,
+  "description": "Manual test invoice"
+}
+
+@invoiceId = {{createInvoice.response.body.$}}
+
+###
 # Get invoice details (replace with an id from list)
 @invoiceId = {{$guid}}
 GET {{Recuria.Api_HostAddress}}/api/invoices/{{invoiceId}}
