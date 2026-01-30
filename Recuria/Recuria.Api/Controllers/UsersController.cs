@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Recuria.Api.Controllers
 {
+    /// <summary>
+    /// User management endpoints.
+    /// </summary>
     [ApiController]
     [Authorize(Policy = "AdminOrOwner")]
     [Route("api/users")]
@@ -24,6 +27,9 @@ namespace Recuria.Api.Controllers
 
         public sealed record CreateUserRequest(Guid Id, string Email, string? Name);
 
+        /// <summary>
+        /// Create a user.
+        /// </summary>
         [HttpPost]
         public async Task<IActionResult> Create(
             [FromBody] CreateUserRequest request,
@@ -44,6 +50,9 @@ namespace Recuria.Api.Controllers
             return CreatedAtAction(nameof(GetById), new { id = user.Id }, user.Id);
         }
 
+        /// <summary>
+        /// Get a user by id (must match org_id claim).
+        /// </summary>
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<User>> GetById(Guid id, CancellationToken ct)
         {
