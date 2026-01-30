@@ -40,11 +40,17 @@ namespace Recuria.Api.Controllers
             _uow = uow;
         }
 
+        /// <summary>
+        /// Input for the dev bootstrap endpoint.
+        /// </summary>
         public sealed record BootstrapRequest(
             string OrganizationName,
             string OwnerEmail,
             string? OwnerName);
 
+        /// <summary>
+        /// Response payload for the dev bootstrap endpoint.
+        /// </summary>
         public sealed record BootstrapResponse(
             Guid OwnerUserId,
             Guid OrganizationId,

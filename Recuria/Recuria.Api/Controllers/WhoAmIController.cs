@@ -12,6 +12,9 @@ namespace Recuria.Api.Controllers
     [Route("api/auth")]
     public sealed class WhoAmIController : ControllerBase
     {
+        /// <summary>
+        /// Response payload containing current claims.
+        /// </summary>
         public sealed record WhoAmIResponse(
             string? Subject,
             string? OrganizationId,
