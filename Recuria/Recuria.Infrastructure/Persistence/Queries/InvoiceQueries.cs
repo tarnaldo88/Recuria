@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Recuria.Infrastructure.Persistence.Queries
 {
-    internal sealed class InvoiceQueries : IInvoiceQueries
+    public sealed class InvoiceQueries : IInvoiceQueries
     {
         private readonly RecuriaDbContext _db;
 
