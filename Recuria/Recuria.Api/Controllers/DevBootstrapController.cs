@@ -12,6 +12,9 @@ using System.Text;
 
 namespace Recuria.Api.Controllers
 {
+    /// <summary>
+    /// Development-only bootstrap endpoint to seed an org and return a JWT.
+    /// </summary>
     [ApiController]
     [Route("api/dev/bootstrap")]
     [AllowAnonymous]
@@ -47,6 +50,9 @@ namespace Recuria.Api.Controllers
             Guid OrganizationId,
             string Token);
 
+        /// <summary>
+        /// Creates an owner user + organization and returns a JWT with org_id and role claims.
+        /// </summary>
         [HttpPost]
         public async Task<ActionResult<BootstrapResponse>> Bootstrap(
             [FromBody] BootstrapRequest request,
