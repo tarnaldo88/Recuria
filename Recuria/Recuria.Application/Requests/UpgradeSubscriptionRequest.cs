@@ -8,8 +8,14 @@ using Recuria.Domain.Enums;
 
 namespace Recuria.Application.Requests
 {
+    /// <summary>
+    /// Request to upgrade a subscription plan.
+    /// </summary>
     public class UpgradeSubscriptionRequest
     {
+        /// <summary>
+        /// New plan code.
+        /// </summary>
         public PlanType NewPlan { get; init; }
     }
 }
