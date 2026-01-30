@@ -25,6 +25,9 @@ namespace Recuria.Api.Controllers
             _uow = uow;
         }
 
+        /// <summary>
+        /// Request to create a user.
+        /// </summary>
         public sealed record CreateUserRequest(Guid Id, string Email, string? Name);
 
         /// <summary>
