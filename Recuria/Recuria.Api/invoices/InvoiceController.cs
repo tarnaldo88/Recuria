@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Recuria.Application.Contracts.Invoice;
+using Recuria.Application.Contracts.Common;
 using Recuria.Application.Interface;
+using Recuria.Application.Requests;
 using Recuria.Infrastructure.Persistence;
 
 namespace Recuria.Api.Invoices
@@ -16,12 +18,44 @@ namespace Recuria.Api.Invoices
     public class InvoiceController : ControllerBase
     {
         private readonly IInvoiceQueries _invoiceQueries;
+        private readonly ISubscriptionQueries _subscriptionQueries;
+        private readonly IInvoiceService _invoiceService;
         private readonly RecuriaDbContext _db;
 
-        public InvoiceController(IInvoiceQueries invoiceQueries, RecuriaDbContext db)
+        public InvoiceController(
+            IInvoiceQueries invoiceQueries,
+            ISubscriptionQueries subscriptionQueries,
+            IInvoiceService invoiceService,
+            RecuriaDbContext db)
         {
             _invoiceQueries = invoiceQueries;
+            _subscriptionQueries = subscriptionQueries;
+            _invoiceService = invoiceService;
             _db = db;
+        }
+
+        /// <summary>
+        /// Create an invoice for the organization's current subscription.
+        /// </summary>
+        [HttpPost]
+        [Authorize(Policy = "AdminOrOwner")]
+        public async Task<ActionResult<Guid>> Create(
+            [FromBody] CreateInvoiceRequest request,
+            CancellationToken ct)
+        {
+            if (!IsSameOrganization(request.OrganizationId))
+                return Forbid();
+
+            var current = await _subscriptionQueries.GetCurrentAsync(request.OrganizationId, ct);
+            if (current == null)
+                return BadRequest("No active subscription for organization.");
+
+            var invoiceId = await _invoiceService.CreateInvoiceAsync(
+                current.Subscription.Id,
+                new MoneyDto(request.Amount, "USD"),
+                ct);
+
+            return CreatedAtAction(nameof(GetDetails), new { invoiceId }, invoiceId);
         }
 
         /// <summary>
