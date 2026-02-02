@@ -69,6 +69,8 @@ namespace Recuria.Api.Middleware
             };
 
             details.Extensions["traceId"] = ctx.TraceIdentifier;
+            if (ctx.Response.Headers.TryGetValue(CorrelationIdMiddleware.HeaderName, out var correlationId))
+                details.Extensions["correlationId"] = correlationId.ToString();
             details.Extensions["errorCode"] = errorCode;
             return details;
         }
