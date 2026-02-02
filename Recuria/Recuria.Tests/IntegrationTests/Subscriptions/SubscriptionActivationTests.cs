@@ -5,7 +5,6 @@ using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
 using Recuria.Application.Interface.Idempotency;
 using Recuria.Application.Requests;
-using Recuria.Domain;
 using Recuria.Application.Subscriptions;
 using Recuria.Domain;
 using Recuria.Domain.Abstractions;
@@ -56,6 +55,7 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             _dispatcher = _scope.ServiceProvider.GetRequiredService<IDomainEventDispatcher>();
         }
 
+        [Fact]
         public void Dispose() => _scope.Dispose();
 
         [Fact]

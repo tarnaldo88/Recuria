@@ -49,6 +49,7 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             _processedEvents = sp.GetRequiredService<IProcessedEventStore>();
         }
 
+        [Fact]
         public void Dispose()
         {
             _scope.Dispose();
