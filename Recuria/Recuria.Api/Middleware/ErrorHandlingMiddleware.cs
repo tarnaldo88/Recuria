@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Recuria.Api.Middleware
 {
@@ -19,39 +20,64 @@ namespace Recuria.Api.Middleware
             }
             catch (ValidationException ex)
             {
-                await Write(context, 400, new
-                {
-                    type = "validation",
-                    errors = ex.Errors.Select(e => e.ErrorMessage)
-                });
+                var details = CreateProblemDetails(
+                    context,
+                    StatusCodes.Status400BadRequest,
+                    "Validation failed.",
+                    "validation_error");
+
+                details.Extensions["errors"] = ex.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(e => e.ErrorMessage).ToArray());
+
+                await Write(context, details);
             }
             catch (InvalidOperationException ex)
             {
-                await Write(context, 400, new
-                {
-                    type = "business",
-                    message = ex.Message
-                });
+                var details = CreateProblemDetails(
+                    context,
+                    StatusCodes.Status400BadRequest,
+                    ex.Message,
+                    "business_rule_violation");
+                await Write(context, details);
             }
             catch (Exception)
             {
-                await Write(context, 500, new
-                {
-                    type = "server",
-                    message = "An unexpected error occurred."
-                });
+                var details = CreateProblemDetails(
+                    context,
+                    StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred.",
+                    "server_error");
+                await Write(context, details);
             }
         }
 
-        private static Task Write(
+        private static ProblemDetails CreateProblemDetails(
             HttpContext ctx,
             int status,
-            object payload)
+            string title,
+            string errorCode)
         {
-            ctx.Response.StatusCode = status;
-            ctx.Response.ContentType = "application/json";
+            var details = new ProblemDetails
+            {
+                Status = status,
+                Title = title,
+                Type = $"https://httpstatuses.com/{status}",
+                Instance = ctx.Request.Path
+            };
+
+            details.Extensions["traceId"] = ctx.TraceIdentifier;
+            details.Extensions["errorCode"] = errorCode;
+            return details;
+        }
+
+        private static Task Write(HttpContext ctx, ProblemDetails payload)
+        {
+            ctx.Response.StatusCode = payload.Status ?? StatusCodes.Status500InternalServerError;
+            ctx.Response.ContentType = "application/problem+json";
             return ctx.Response.WriteAsJsonAsync(payload);
         }
     }
-
 }
