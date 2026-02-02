@@ -22,6 +22,9 @@ namespace Recuria.Infrastructure.Persistence.Configurations
             builder.Property(x => x.FailureReason).HasMaxLength(500);
 
             builder.Property(x => x.AttemptedAt).IsRequired();
+
+            builder.HasIndex(x => x.SubscriptionId);
+            builder.HasIndex(x => x.AttemptedAt);
         }
     }
 }
