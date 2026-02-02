@@ -10,7 +10,7 @@ namespace Recuria.Infrastructure.Persistence.Entities
     {
         public Guid Id { get; set; }
         public Guid EventId { get;  set; }
-        public string Handler { get;  set; }
+        public string Handler { get;  set; } = string.Empty;
         public DateTime ProcessedOnUtc { get;  set; }
 
         private ProcessedEvent() { } //EF Core
