@@ -28,6 +28,8 @@ namespace Recuria.Infrastructure.Persistence.Configurations
             builder.Property(s => s.PeriodEnd).IsRequired();
             builder.Property(s => s.RowVersion).IsRowVersion();
 
+            builder.HasIndex(s => s.OrganizationId);
+            builder.HasIndex(s => new { s.Status, s.PeriodEnd });
         }
     }
 }
