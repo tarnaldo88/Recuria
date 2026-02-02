@@ -45,6 +45,22 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+var requireJwt = !builder.Environment.IsDevelopment();
+if (requireJwt)
+{
+    var issuer = builder.Configuration["Jwt:Issuer"];
+    var audience = builder.Configuration["Jwt:Audience"];
+    var key = builder.Configuration["Jwt:SigningKey"];
+
+    if (string.IsNullOrWhiteSpace(issuer) ||
+        string.IsNullOrWhiteSpace(audience) ||
+        string.IsNullOrWhiteSpace(key))
+    {
+        throw new InvalidOperationException(
+            "JWT configuration is required in non-development environments (Jwt:Issuer, Jwt:Audience, Jwt:SigningKey).");
+    }
+}
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -143,13 +159,18 @@ builder.Services
         var issuer = builder.Configuration["Jwt:Issuer"];
         var audience = builder.Configuration["Jwt:Audience"];
         var key = builder.Configuration["Jwt:SigningKey"];
+        var requireJwt = !builder.Environment.IsDevelopment();
+
+        options.RequireHttpsMetadata = requireJwt;
+        options.SaveToken = false;
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = !string.IsNullOrWhiteSpace(issuer),
-            ValidateAudience = !string.IsNullOrWhiteSpace(audience),
-            ValidateIssuerSigningKey = !string.IsNullOrWhiteSpace(key),
+            ValidateIssuer = requireJwt || !string.IsNullOrWhiteSpace(issuer),
+            ValidateAudience = requireJwt || !string.IsNullOrWhiteSpace(audience),
+            ValidateIssuerSigningKey = requireJwt || !string.IsNullOrWhiteSpace(key),
             ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(1),
             ValidIssuer = issuer,
             ValidAudience = audience,
             RoleClaimType = ClaimTypes.Role,
@@ -157,6 +178,7 @@ builder.Services
                 ? null
                 : new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
         };
+
     });
 
 builder.Services.AddAuthorization(options =>

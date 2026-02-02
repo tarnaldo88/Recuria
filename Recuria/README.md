@@ -26,6 +26,15 @@ Health check:
 GET http://localhost:5132/api/health
 ```
 
+## JWT configuration (non-development)
+In non-development environments, the API requires these settings:
+```
+Jwt:Issuer
+Jwt:Audience
+Jwt:SigningKey
+```
+If any are missing, the app will fail fast on startup.
+
 ## Swagger (Development)
 ```
 http://localhost:5132/swagger
