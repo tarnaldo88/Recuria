@@ -164,7 +164,7 @@ namespace Recuria.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Email")
+                    b.HasIndex("OrganizationId", "Email")
                         .IsUnique();
 
                     b.HasIndex("OrganizationId");
