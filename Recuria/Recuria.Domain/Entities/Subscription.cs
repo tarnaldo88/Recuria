@@ -14,7 +14,7 @@ namespace Recuria.Domain.Entities
     {
         public Guid Id { get; init; }
         public Guid OrganizationId { get; private set; }
-        public Organization Organization { get; private set; }
+        public Organization Organization { get; private set; } = null!;
 
         public PlanType Plan {  get; private set; }
         public SubscriptionStatus Status { get; private set; }
