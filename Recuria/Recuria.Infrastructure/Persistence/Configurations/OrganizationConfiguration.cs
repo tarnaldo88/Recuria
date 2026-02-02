@@ -21,6 +21,8 @@ namespace Recuria.Infrastructure.Persistence.Configurations
 
             builder.Property(o => o.CreatedAt)
                 .IsRequired();
+
+            builder.HasIndex(o => o.Name);
         }
     }
 }
