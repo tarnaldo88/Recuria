@@ -33,6 +33,8 @@ namespace Recuria.Tests.Unit.Domain
         public OrganizationServiceTests()
         {
             _service = new OrganizationService(_organizations, _users, _queries, _validator, unitOfWork);
+            if(_service is null)
+                throw new NullReferenceException("OrganizationService is null");
         }
 
         private static User CreateUser(string email = "user@test.com")
