@@ -27,9 +27,17 @@ namespace Recuria.Infrastructure.DomainEvents
 
                 var handlers = _provider.GetServices(handlerType);
 
-                foreach (dynamic handler in handlers)
+                foreach (var handler in handlers)
                 {
-                    await handler.HandleAsync((dynamic)@event, ct);
+                    if (handler is null)
+                        continue;
+
+                    var method = handlerType.GetMethod("HandleAsync");
+                    if (method is null)
+                        throw new InvalidOperationException($"Handler {handlerType.Name} is missing HandleAsync.");
+
+                    await ((Task)method.Invoke(handler, new object[] { @event, ct })!)
+                        .ConfigureAwait(false);
                 }
             }
         }
