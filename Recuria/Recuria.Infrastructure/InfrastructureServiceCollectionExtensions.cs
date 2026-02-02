@@ -5,7 +5,6 @@ using Recuria.Application.Interface;
 using Recuria.Infrastructure.Persistence;
 using Recuria.Infrastructure.Persistence.Queries;
 using Scrutor;
-using Scrutor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
