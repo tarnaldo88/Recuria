@@ -22,21 +22,6 @@ namespace Recuria.Tests.Unit.Domain
 {
     public class OrganizationServiceTests
     {
-        private readonly OrganizationService _service;
-        private readonly IOrganizationRepository _organizations;
-        private readonly IUserRepository _users;
-        private readonly IOrganizationQueries _queries;
-        private readonly ValidationBehavior _validator;
-        private readonly UnitOfWork unitOfWork;
-        //private readonly Organization _org;
-
-        public OrganizationServiceTests()
-        {
-            _service = new OrganizationService(_organizations, _users, _queries, _validator, unitOfWork);
-            if(_service is null)
-                throw new NullReferenceException("OrganizationService is null");
-        }
-
         private static User CreateUser(string email = "user@test.com")
         {
             return new User( email:email, name:"Test User", role: UserRole.Member, org: null);
