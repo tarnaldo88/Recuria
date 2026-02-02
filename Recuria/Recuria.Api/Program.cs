@@ -239,6 +239,43 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.UseStatusCodePages(async context =>
+{
+    var response = context.HttpContext.Response;
+    if (response.HasStarted || response.ContentLength > 0 || !string.IsNullOrEmpty(response.ContentType))
+        return;
+
+    var status = response.StatusCode;
+    if (status < 400)
+        return;
+
+    var details = new ProblemDetails
+    {
+        Status = status,
+        Title = status switch
+        {
+            StatusCodes.Status401Unauthorized => "Unauthorized.",
+            StatusCodes.Status403Forbidden => "Forbidden.",
+            StatusCodes.Status404NotFound => "Not found.",
+            _ => "Request failed."
+        },
+        Type = $"https://httpstatuses.com/{status}",
+        Instance = context.HttpContext.Request.Path
+    };
+
+    details.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+    details.Extensions["errorCode"] = status switch
+    {
+        StatusCodes.Status401Unauthorized => "auth_required",
+        StatusCodes.Status403Forbidden => "forbidden",
+        StatusCodes.Status404NotFound => "not_found",
+        _ => "request_failed"
+    };
+
+    response.ContentType = "application/problem+json";
+    await response.WriteAsJsonAsync(details);
+});
+
 app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 app.UseMiddleware<ErrorHandlingMiddleware>();
