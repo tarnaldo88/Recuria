@@ -222,6 +222,7 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
+app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
 app.UseHttpsRedirection();
@@ -264,6 +265,8 @@ app.UseStatusCodePages(async context =>
     };
 
     details.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+    if (context.HttpContext.Response.Headers.TryGetValue(CorrelationIdMiddleware.HeaderName, out var correlationId))
+        details.Extensions["correlationId"] = correlationId.ToString();
     details.Extensions["errorCode"] = status switch
     {
         StatusCodes.Status401Unauthorized => "auth_required",
