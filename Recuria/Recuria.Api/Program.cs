@@ -222,6 +222,8 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
+app.UseMiddleware<ErrorHandlingMiddleware>();
+
 app.UseHttpsRedirection();
 
 if (app.Environment.IsDevelopment())
@@ -236,8 +238,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapControllers();
 
 app.UseStatusCodePages(async context =>
 {
@@ -276,9 +276,9 @@ app.UseStatusCodePages(async context =>
     await response.WriteAsJsonAsync(details);
 });
 
-app.UseOpenTelemetryPrometheusScrapingEndpoint();
+app.MapControllers();
 
-app.UseMiddleware<ErrorHandlingMiddleware>();
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 
 app.Run();
