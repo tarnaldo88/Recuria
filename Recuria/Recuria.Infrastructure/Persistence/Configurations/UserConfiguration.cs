@@ -15,10 +15,23 @@ namespace Recuria.Infrastructure.Persistence.Configurations
         {
             builder.HasKey(u => u.Id);
 
+            builder.Property(u => u.Email)
+                .IsRequired()
+                .HasMaxLength(320);
+
+            builder.Property(u => u.Name)
+                .IsRequired()
+                .HasMaxLength(200);
+
             builder.Property(u => u.Role)
                 .IsRequired();
             builder.Property(u => u.OrganizationId)
                 .IsRequired(false);
+
+            builder.HasIndex(u => u.Email)
+                .IsUnique();
+
+            builder.HasIndex(u => u.OrganizationId);
 
             builder.HasOne(u => u.Organization)
                 .WithMany(o => o.Users)
