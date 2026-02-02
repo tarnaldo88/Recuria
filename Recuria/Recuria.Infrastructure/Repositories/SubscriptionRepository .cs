@@ -33,7 +33,7 @@ namespace Recuria.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Subscription> GetByIdAsync(Guid id, CancellationToken ct)
+        public async Task<Subscription?> GetByIdAsync(Guid id, CancellationToken ct)
         {
             return await _context.Subscriptions.FindAsync(id);
         }
