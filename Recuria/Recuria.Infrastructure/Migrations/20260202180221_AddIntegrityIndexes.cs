@@ -38,9 +38,9 @@ namespace Recuria.Infrastructure.Migrations
                 oldType: "nvarchar(max)");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_Email",
+                name: "IX_Users_OrganizationId_Email",
                 table: "Users",
-                column: "Email",
+                columns: new[] { "OrganizationId", "Email" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -68,7 +68,7 @@ namespace Recuria.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropIndex(
-                name: "IX_Users_Email",
+                name: "IX_Users_OrganizationId_Email",
                 table: "Users");
 
             migrationBuilder.DropIndex(
