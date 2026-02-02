@@ -28,7 +28,7 @@ namespace Recuria.Infrastructure.Persistence.Configurations
             builder.Property(u => u.OrganizationId)
                 .IsRequired(false);
 
-            builder.HasIndex(u => u.Email)
+            builder.HasIndex(u => new { u.OrganizationId, u.Email })
                 .IsUnique();
 
             builder.HasIndex(u => u.OrganizationId);
