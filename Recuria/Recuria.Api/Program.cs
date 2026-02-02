@@ -283,6 +283,7 @@ app.UseStatusCodePages(async context =>
             StatusCodes.Status401Unauthorized => "Unauthorized.",
             StatusCodes.Status403Forbidden => "Forbidden.",
             StatusCodes.Status404NotFound => "Not found.",
+            StatusCodes.Status429TooManyRequests => "Too many requests.",
             _ => "Request failed."
         },
         Type = $"https://httpstatuses.com/{status}",
@@ -297,6 +298,7 @@ app.UseStatusCodePages(async context =>
         StatusCodes.Status401Unauthorized => "auth_required",
         StatusCodes.Status403Forbidden => "forbidden",
         StatusCodes.Status404NotFound => "not_found",
+        StatusCodes.Status429TooManyRequests => "rate_limited",
         _ => "request_failed"
     };
 
