@@ -24,20 +24,20 @@ jobs:
 
       - name: Restore
         run: dotnet restore
-        working-directory: Recuria
+        working-directory: Recuria/Recuria
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
-        working-directory: Recuria
+        working-directory: Recuria/Recuria
 
       - name: Install EF tooling
         run: dotnet tool install --global dotnet-ef
-        working-directory: Recuria
+        working-directory: Recuria/Recuria
 
       - name: Generate idempotent migration script
         run: dotnet ef migrations script --idempotent --project Recuria.Infrastructure --startup-project Recuria.Api
-        working-directory: Recuria
+        working-directory: Recuria/Recuria
 
       - name: Test
         run: dotnet test Recuria.Tests/Recuria.Tests.csproj --configuration Release --no-build
-        working-directory: Recuria
+        working-directory: Recuria/Recuria
