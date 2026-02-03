@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Install EF tooling
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Generate idempotent migration script
+        run: dotnet ef migrations script --idempotent --project Recuria.Infrastructure --startup-project Recuria.Api
+
+      - name: Test
+        run: dotnet test Recuria.Tests/Recuria.Tests.csproj --configuration Release --no-build
