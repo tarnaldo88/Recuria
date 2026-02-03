@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
@@ -12,6 +13,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Recuria.Api.Middleware;
+using Recuria.Api.Configuration;
 using Recuria.Application;
 using Recuria.Application.Contracts.Invoice.Validators;
 using Recuria.Application.Contracts.Organizations.Validators;
@@ -68,6 +70,15 @@ if (requireJwt)
     }
 }
 
+builder.Services.AddOptions<JwtOptions>()
+    .Bind(builder.Configuration.GetSection(JwtOptions.SectionName))
+    .Validate(o =>
+        !string.IsNullOrWhiteSpace(o.Issuer) &&
+        !string.IsNullOrWhiteSpace(o.Audience) &&
+        !string.IsNullOrWhiteSpace(o.SigningKey),
+        "Jwt:Issuer, Jwt:Audience, and Jwt:SigningKey are required.")
+    .ValidateOnStart();
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -101,6 +112,9 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
         };
     };
 });
+
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<RecuriaDbContext>("db", failureStatus: HealthStatus.Unhealthy);
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -163,9 +177,10 @@ builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        var issuer = builder.Configuration["Jwt:Issuer"];
-        var audience = builder.Configuration["Jwt:Audience"];
-        var key = builder.Configuration["Jwt:SigningKey"];
+        var jwt = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
+        var issuer = jwt.Issuer;
+        var audience = jwt.Audience;
+        var key = jwt.SigningKey;
         var requireJwt = !builder.Environment.IsDevelopment();
 
         options.RequireHttpsMetadata = requireJwt;
@@ -336,6 +351,16 @@ app.UseStatusCodePages(async context =>
 });
 
 app.MapControllers();
+
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => false
+});
+
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Name == "db"
+});
 
 app.UseOpenTelemetryPrometheusScrapingEndpoint();
 

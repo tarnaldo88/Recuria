@@ -39,7 +39,10 @@ namespace Recuria.Infrastructure.Outbox
             try
             {
                 var messages = await _db.OutBoxMessages
-                    .Where(m => m.ProcessedOnUtc == null && (m.NextRetryOnUtc == null || m.NextRetryOnUtc <= DateTime.UtcNow))
+                    .Where(m =>
+                        m.ProcessedOnUtc == null
+                        && m.DeadLetteredOnUtc == null
+                        && (m.NextRetryOnUtc == null || m.NextRetryOnUtc <= DateTime.UtcNow))
                     .OrderBy(m => m.OccurredOnUtc)
                     .Take(20)
                     .ToListAsync(ct);
@@ -54,7 +57,7 @@ namespace Recuria.Infrastructure.Outbox
 
                         await _dispatcher.DispatchAsync(new[] { domainEvent }, ct);
 
-                        message.ProcessedOnUtc = DateTime.UtcNow;
+                        message.MarkProcessed();
 
                         _logger.LogDebug(
                             "Dispatching outbox message {MessageId} of type {Type}",
@@ -63,18 +66,34 @@ namespace Recuria.Infrastructure.Outbox
                     }
                     catch (Exception ex)
                     {
-                        message.Error = ex.Message;
                         message.RetryCount++;
-                        message.NextRetryOnUtc =
-                            DateTime.UtcNow.AddMinutes(Math.Pow(2, message.RetryCount));
 
-                        _logger.LogError(ex,
-                            "Failed to process outbox message {MessageId}",
+                        if (message.RetryCount >= OutBoxMessage.MaxRetryCount)
+                        {
+                            message.MarkDeadLettered(ex.Message);
+                            _logger.LogError(ex,
+                                "Outbox message {MessageId} dead-lettered after {RetryCount} retries",
+                                message.Id,
+                                message.RetryCount);
+                        }
+                        else
+                        {
+                            message.Error = ex.Message;
+                            message.NextRetryOnUtc =
+                                DateTime.UtcNow.AddMinutes(Math.Pow(2, message.RetryCount));
+
+                            _logger.LogError(ex,
+                                "Failed to process outbox message {MessageId} (retry {RetryCount})",
+                                message.Id,
+                                message.RetryCount);
+                        }
+                    }
+                    if (message.ProcessedOnUtc != null)
+                    {
+                        _logger.LogInformation(
+                            "Outbox message {MessageId} processed successfully",
                             message.Id);
                     }
-                    _logger.LogInformation(
-                        "Outbox message {MessageId} processed successfully",
-                        message.Id);
                 }
 
                 await _db.SaveChangesAsync(ct);

@@ -9,18 +9,21 @@ namespace Recuria.Infrastructure.Outbox
 {
     public sealed class OutBoxMessage
     {
+        public const int MaxRetryCount = 10;
         public Guid Id { get; init; }
         public DateTime OccurredOnUtc { get; init; }
         public string Type { get; init; } = null!;
         public string Content { get; init; } = null!;
 
         public DateTime? ProcessedOnUtc { get; set; }
+        public DateTime? DeadLetteredOnUtc { get; private set; }
         public string? Error { get; set; }
 
         public int AttemptCount { get; private set; }
         public DateTime? NextAttemptOnUtc { get; private set; }
         public int RetryCount { get; set; }
         public DateTime? NextRetryOnUtc { get; set; }
+        public bool IsDeadLettered => DeadLetteredOnUtc != null;
 
         public static OutBoxMessage FromDomainEvent(IDomainEvent domainEvent)
         {
@@ -44,6 +47,19 @@ namespace Recuria.Infrastructure.Outbox
         {
             ProcessedOnUtc = DateTime.UtcNow;
             Error = null;
+        }
+
+        public void MarkDeadLettered(string error)
+        {
+            Error = error;
+            DeadLetteredOnUtc = DateTime.UtcNow;
+        }
+
+        public void Revive()
+        {
+            DeadLetteredOnUtc = null;
+            Error = null;
+            NextRetryOnUtc = DateTime.UtcNow;
         }
     }
 }

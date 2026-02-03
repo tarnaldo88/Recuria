@@ -8,6 +8,14 @@
 GET {{Recuria.Api_HostAddress}}/api/health
 
 ###
+# Liveness
+GET {{Recuria.Api_HostAddress}}/health/live
+
+###
+# Readiness (DB)
+GET {{Recuria.Api_HostAddress}}/health/ready
+
+###
 # Dev bootstrap (Development only)
 @name devBootstrap
 POST {{Recuria.Api_HostAddress}}/api/dev/bootstrap
@@ -143,4 +151,15 @@ Content-Type: application/json
 # Get invoice details (replace with an id from list)
 @invoiceId = {{$guid}}
 GET {{Recuria.Api_HostAddress}}/api/invoices/{{invoiceId}}
+Authorization: Bearer {{token}}
+
+###
+# List dead-lettered outbox messages (owner only)
+GET {{Recuria.Api_HostAddress}}/api/outbox/dead-lettered?take=50
+Authorization: Bearer {{token}}
+
+###
+# Retry a dead-lettered outbox message (owner only)
+@outboxMessageId = {{$guid}}
+POST {{Recuria.Api_HostAddress}}/api/outbox/{{outboxMessageId}}/retry
 Authorization: Bearer {{token}}

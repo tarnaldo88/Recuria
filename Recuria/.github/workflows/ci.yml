@@ -28,5 +28,11 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
+      - name: Install EF tooling
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Generate idempotent migration script
+        run: dotnet ef migrations script --idempotent --project Recuria.Infrastructure --startup-project Recuria.Api
+
       - name: Test
         run: dotnet test Recuria.Tests/Recuria.Tests.csproj --configuration Release --no-build
