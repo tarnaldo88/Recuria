@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Recuria.Infrastructure.Outbox;
 using Recuria.Infrastructure.Persistence;
+using Recuria.Api.Logging;
 
 namespace Recuria.Api.Controllers
 {
@@ -15,10 +16,12 @@ namespace Recuria.Api.Controllers
     public sealed class OutboxController : ControllerBase
     {
         private readonly RecuriaDbContext _db;
+        private readonly IAuditLogger _audit;
 
-        public OutboxController(RecuriaDbContext db)
+        public OutboxController(RecuriaDbContext db, IAuditLogger audit)
         {
             _db = db;
+            _audit = audit;
         }
 
         public sealed record DeadLetteredOutboxItem(
@@ -75,6 +78,11 @@ namespace Recuria.Api.Controllers
 
             message.Revive();
             await _db.SaveChangesAsync(ct);
+
+            _audit.Log(HttpContext, "outbox.retry", new
+            {
+                messageId = id
+            });
 
             return NoContent();
         }

@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Recuria.Application.Contracts.Organizations;
 using Recuria.Application.Interface;
 using Recuria.Application.Requests;
+using Recuria.Api.Logging;
 using Recuria.Domain;
 using Recuria.Domain.Enums;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Recuria.Api.Controllers
 {
@@ -19,15 +21,21 @@ namespace Recuria.Api.Controllers
         private readonly IOrganizationQueries _queries;
         private readonly IOrganizationService _service;
         private readonly ILogger<OrganizationController> _logger;
+        private readonly IAuditLogger _audit;
+        private readonly IMemoryCache _cache;
 
         public OrganizationController(
             IOrganizationQueries queries,
             IOrganizationService service,
-            ILogger<OrganizationController> logger)
+            ILogger<OrganizationController> logger,
+            IAuditLogger audit,
+            IMemoryCache cache)
         {
             _queries = queries;
             _service = service;
             _logger = logger;
+            _audit = audit;
+            _cache = cache;
         }
 
         /// <summary>
@@ -63,7 +71,15 @@ namespace Recuria.Api.Controllers
             if (!IsSameOrganization(id))
                 return Forbid();
 
-            var org = await _queries.GetByIdAsync(id, cancellationToken);
+            var cacheKey = $"org:{id}";
+            if (!_cache.TryGetValue(cacheKey, out OrganizationDto? org))
+            {
+                org = await _queries.GetByIdAsync(id, cancellationToken);
+                if (org != null)
+                {
+                    _cache.Set(cacheKey, org, TimeSpan.FromSeconds(30));
+                }
+            }
 
             if (org is null)
                 return NotFound();
@@ -81,7 +97,15 @@ namespace Recuria.Api.Controllers
         {
             var organizationId = GetOrganizationIdFromContext();
 
-            var org = await _queries.GetByIdAsync(organizationId, cancellationToken);
+            var cacheKey = $"org:{organizationId}";
+            if (!_cache.TryGetValue(cacheKey, out OrganizationDto? org))
+            {
+                org = await _queries.GetByIdAsync(organizationId, cancellationToken);
+                if (org != null)
+                {
+                    _cache.Set(cacheKey, org, TimeSpan.FromSeconds(30));
+                }
+            }
 
             return org is null
                 ? NotFound()
@@ -102,6 +126,14 @@ namespace Recuria.Api.Controllers
                 return Forbid();
 
             await _service.AddUserAsync(id, request, cancellationToken);
+
+            _audit.Log(HttpContext, "org.user.add", new
+            {
+                organizationId = id,
+                request.UserId,
+                request.Role
+            });
+            _cache.Remove($"org:{id}");
 
             return NoContent();
         }
@@ -135,6 +167,14 @@ namespace Recuria.Api.Controllers
                 request.NewRole,
                 ct);
 
+            _audit.Log(HttpContext, "org.user.role_change", new
+            {
+                organizationId = orgId,
+                userId,
+                newRole = request.NewRole
+            });
+            _cache.Remove($"org:{orgId}");
+
             return NoContent();
         }
 
@@ -152,6 +192,14 @@ namespace Recuria.Api.Controllers
                 return Forbid();
 
             await _service.RemoveUserAsync(orgId, userId, ct);
+
+            _audit.Log(HttpContext, "org.user.remove", new
+            {
+                organizationId = orgId,
+                userId
+            });
+            _cache.Remove($"org:{orgId}");
+
             return NoContent();
         }
 

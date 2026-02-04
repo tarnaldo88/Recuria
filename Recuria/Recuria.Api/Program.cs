@@ -14,6 +14,10 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Recuria.Api.Middleware;
 using Recuria.Api.Configuration;
+using Recuria.Api.Logging;
+using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Compact;
 using Recuria.Application;
 using Recuria.Application.Contracts.Invoice.Validators;
 using Recuria.Application.Contracts.Organizations.Validators;
@@ -54,6 +58,20 @@ builder.WebHost.ConfigureKestrel(options =>
     options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(2);
 });
 
+builder.Host.UseSerilog((ctx, lc) =>
+{
+    var env = ctx.HostingEnvironment;
+    var minLevel = env.IsDevelopment() ? LogEventLevel.Debug : LogEventLevel.Information;
+
+    lc.MinimumLevel.Is(minLevel)
+      .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+      .MinimumLevel.Override("System", LogEventLevel.Warning)
+      .Enrich.FromLogContext()
+      .Enrich.WithProperty("Application", "Recuria")
+      .Enrich.WithProperty("Environment", env.EnvironmentName)
+      .WriteTo.Console(new CompactJsonFormatter());
+});
+
 var requireJwt = !builder.Environment.IsDevelopment();
 if (requireJwt)
 {
@@ -85,12 +103,14 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    });
+});
 
 builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10 MB
 });
+
+builder.Services.AddMemoryCache();
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
@@ -115,6 +135,29 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<RecuriaDbContext>("db", failureStatus: HealthStatus.Unhealthy);
+
+builder.Services.AddSingleton<IAuditLogger, AuditLogger>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DefaultCors", policy =>
+    {
+        var allowedOrigins = builder.Configuration
+            .GetSection("Cors:AllowedOrigins")
+            .Get<string[]>() ?? Array.Empty<string>();
+
+        if (allowedOrigins.Length > 0)
+        {
+            policy.WithOrigins(allowedOrigins)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        }
+        else
+        {
+            policy.WithOrigins();
+        }
+    });
+});
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -171,7 +214,9 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddDbContext<RecuriaDbContext>(options =>
-    options.UseSqlServer( builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sql => sql.CommandTimeout(10)));
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -294,6 +339,31 @@ app.UseMiddleware<ErrorHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    context.Response.Headers["X-Frame-Options"] = "DENY";
+    context.Response.Headers["Referrer-Policy"] = "no-referrer";
+    context.Response.Headers["X-Permitted-Cross-Domain-Policies"] = "none";
+    context.Response.Headers["Cross-Origin-Resource-Policy"] = "same-origin";
+    var csp = builder.Configuration["SecurityHeaders:ContentSecurityPolicy"];
+    if (!string.IsNullOrWhiteSpace(csp))
+    {
+        context.Response.Headers["Content-Security-Policy"] = csp;
+    }
+    var permissions = builder.Configuration["SecurityHeaders:PermissionsPolicy"];
+    if (!string.IsNullOrWhiteSpace(permissions))
+    {
+        context.Response.Headers["Permissions-Policy"] = permissions;
+    }
+    await next();
+});
+
 app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
@@ -308,6 +378,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseCors("DefaultCors");
 
 app.UseStatusCodePages(async context =>
 {

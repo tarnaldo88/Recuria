@@ -4,7 +4,9 @@ using Recuria.Application.Contracts.Subscription;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
 using Recuria.Application.Requests;
+using Recuria.Api.Logging;
 using Recuria.Domain.Enums;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Recuria.Api.Controllers
 {
@@ -19,15 +21,21 @@ namespace Recuria.Api.Controllers
         private readonly ISubscriptionService _subscriptionService;
         private readonly ISubscriptionQueries _subscriptionQueries;
         private readonly ISubscriptionRepository _subscriptions;
+        private readonly IAuditLogger _audit;
+        private readonly IMemoryCache _cache;
 
         public SubscriptionController(
             ISubscriptionService subscriptionService,
             ISubscriptionQueries subscriptionQueries,
-            ISubscriptionRepository subscriptions)
+            ISubscriptionRepository subscriptions,
+            IAuditLogger audit,
+            IMemoryCache cache)
         {
             _subscriptionService = subscriptionService;
             _subscriptionQueries = subscriptionQueries;
             _subscriptions = subscriptions;
+            _audit = audit;
+            _cache = cache;
         }
 
         /// <summary>
@@ -40,7 +48,15 @@ namespace Recuria.Api.Controllers
             if (!IsSameOrganization(organizationId))
                 return Forbid();
 
-            var subscription = await _subscriptionQueries.GetCurrentAsync(organizationId, ct);
+            var cacheKey = $"sub:current:{organizationId}";
+            if (!_cache.TryGetValue(cacheKey, out SubscriptionDetailsDto? subscription))
+            {
+                subscription = await _subscriptionQueries.GetCurrentAsync(organizationId, ct);
+                if (subscription != null)
+                {
+                    _cache.Set(cacheKey, subscription, TimeSpan.FromSeconds(30));
+                }
+            }
             return subscription is null ? NotFound() : Ok(subscription);
         }
 
@@ -55,6 +71,11 @@ namespace Recuria.Api.Controllers
                 return Forbid();
 
             var dto = await _subscriptionService.CreateTrialAsync(organizationId, ct);
+
+            _audit.Log(HttpContext, "subscription.trial.create", new
+            {
+                organizationId
+            });
 
             return CreatedAtAction(nameof(GetCurrent), new { organizationId }, dto);
         }
@@ -76,6 +97,13 @@ namespace Recuria.Api.Controllers
                 return Forbid();
 
             await _subscriptionService.UpgradeAsync(subscriptionId, request.NewPlan, ct);
+
+            _audit.Log(HttpContext, "subscription.upgrade", new
+            {
+                subscriptionId,
+                newPlan = request.NewPlan
+            });
+            _cache.Remove($"sub:current:{subscription.OrganizationId}");
             return NoContent();
         }
 
@@ -93,6 +121,12 @@ namespace Recuria.Api.Controllers
                 return Forbid();
 
             await _subscriptionService.CancelAsync(subscriptionId, ct);
+
+            _audit.Log(HttpContext, "subscription.cancel", new
+            {
+                subscriptionId
+            });
+            _cache.Remove($"sub:current:{subscription.OrganizationId}");
             return NoContent();
         }
 

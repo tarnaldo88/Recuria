@@ -5,6 +5,7 @@ using Recuria.Application.Contracts.Invoice;
 using Recuria.Application.Contracts.Common;
 using Recuria.Application.Interface;
 using Recuria.Application.Requests;
+using Recuria.Api.Logging;
 using Recuria.Infrastructure.Persistence;
 
 namespace Recuria.Api.Invoices
@@ -20,17 +21,20 @@ namespace Recuria.Api.Invoices
         private readonly IInvoiceQueries _invoiceQueries;
         private readonly ISubscriptionQueries _subscriptionQueries;
         private readonly IInvoiceService _invoiceService;
+        private readonly IAuditLogger _audit;
         private readonly RecuriaDbContext _db;
 
         public InvoiceController(
             IInvoiceQueries invoiceQueries,
             ISubscriptionQueries subscriptionQueries,
             IInvoiceService invoiceService,
+            IAuditLogger audit,
             RecuriaDbContext db)
         {
             _invoiceQueries = invoiceQueries;
             _subscriptionQueries = subscriptionQueries;
             _invoiceService = invoiceService;
+            _audit = audit;
             _db = db;
         }
 
@@ -54,6 +58,14 @@ namespace Recuria.Api.Invoices
                 current.Subscription.Id,
                 new MoneyDto(request.Amount, "USD"),
                 ct);
+
+            _audit.Log(HttpContext, "invoice.create", new
+            {
+                organizationId = request.OrganizationId,
+                amount = request.Amount,
+                description = request.Description,
+                invoiceId
+            });
 
             return CreatedAtAction(nameof(GetDetails), new { invoiceId }, invoiceId);
         }

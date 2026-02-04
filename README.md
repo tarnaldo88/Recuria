@@ -4,7 +4,7 @@ Recuria is a **SaaS subscription and billing platform** built with **ASP.NET Cor
 
 It models real-world SaaS business rules including organization ownership, subscription lifecycles, role-based access, billing, invoicing, and observability.
 
-This project is designed as a **portfolio-quality, industry-aligned system** emphasizing domain modeling, correctness, and testability rather than simple CRUD operations.
+This project is designed as a **industry-aligned system** emphasizing domain modeling, correctness, and testability rather than simple CRUD operations.
 
 ---
 
@@ -123,6 +123,11 @@ Recuria enforces realistic SaaS constraints **in code**, not just the database:
 
 ### Logging
 - Structured logs across domain logic, billing, and background jobs
+- Serilog JSON output with correlation IDs (`X-Correlation-Id`)
+
+### CORS & Security Headers
+- Configure allowed origins in `Recuria.Api/appsettings.json`
+- Security headers are enabled by default (CSP, Permissions-Policy, etc.)
 
 ### Metrics
 - Prometheus-compatible metrics for:
@@ -204,5 +209,27 @@ Testing focuses on **business behavior**, not implementation details.
 dotnet restore
 dotnet ef database update --project Recuria.Infrastructure
 dotnet run --project Recuria.Api
+```
 
+---
 
+## Secrets management (free + easy)
+Local development:
+```bash
+dotnet user-secrets init --project Recuria.Api
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<your-connection-string>" --project Recuria.Api
+dotnet user-secrets set "Jwt:Issuer" "Recuria" --project Recuria.Api
+dotnet user-secrets set "Jwt:Audience" "Recuria.Api" --project Recuria.Api
+dotnet user-secrets set "Jwt:SigningKey" "CHANGE_ME_DEV_KEY" --project Recuria.Api
+```
+
+Production (environment variables):
+```
+ConnectionStrings__DefaultConnection
+Jwt__Issuer
+Jwt__Audience
+Jwt__SigningKey
+Cors__AllowedOrigins__0
+SecurityHeaders__ContentSecurityPolicy
+SecurityHeaders__PermissionsPolicy
+```
