@@ -22,6 +22,28 @@
 <button onclick="Bootstrap">Bootstrap</button>
 
 @code {
+    private string _orgName = "Acme Inc";
+    private string _email = "owner@Recuria.local";
+    private string _ownerName = "Owner One";
+    private string? _error;
 
+    private async Task Bootstrap()
+    {
+        _error = null;
+
+        try
+        {
+            var result = await Api.DevBootstrapAsync(new Recuira.Client.BootstrapRequest
+            {
+                OrganizationName = _orgName,
+                OwnerEmail = _email,
+                OwnerName = _ownerName
+            });
+        }
+        catch(Exception ex)
+        {
+            _error = ex.Message;
+        }
+    }
 
 }

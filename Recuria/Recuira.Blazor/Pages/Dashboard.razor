@@ -1,5 +1,60 @@
-﻿<h3>Dashboard</h3>
+﻿@page "/dashboard"
+@inject Recuira.Blazor.Services.AuthState Auth
+@inject Recuria.Client.IRecuriaApiClient Api
+
+<h3>Dashboard</h3>
+
+@if(_loading)
+{
+    <p>Loading...</p>
+}
+else if(_error != null)
+{
+    <p class="text-danger">@_error</p>
+}
+else
+{
+    <div>
+        <h4>@_org?.Name</h4>
+        <p>Owner: @_org?.OwnerEmail</p>
+        <p>Users: @_org?.UserCount</p>
+    </div>
+
+    <div>
+        <h4>Subscription</h4>
+        <p>Plan: @_subscription?.Subscription?.PlanCode</p>
+        <p>Status: @_subscription?.Subscription?.Status</p>
+        <p>Trial: @_subscription?.Subscription?.IsTrial</p>
+    </div>
+}
 
 @code {
+    private bool _loading = true;
+    private string? _error;
+    private Recuria.Client.OrganizationDto? _org;
+    private Recuria.Client.SubscriptionDto> _subscription;
 
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var orgId = await Auth.GetOrgIdAsync();
+            if(string.IsNullOrWhiteSpace(orgId))
+            {
+                _error = "No org id. Go to /bootstrap.";
+                return;
+            }
+
+            _org = await Api.Organizations_GetMyOrganizationAsync();
+            _subscription = await Api.Subscriptions_GetCurrentAsync(Guid.Parse(orgId));
+        }
+        catch(Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
 }
