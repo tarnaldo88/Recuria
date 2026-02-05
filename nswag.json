@@ -15,7 +15,7 @@
       "useBaseUrl": false,
       "generateOptionalParameters": true,
       "generateNullableReferenceTypes": true,
-      "output": "Recuria.Client/Generated/RecuriaApiClient.cs"
+      "output": "Recuria/Recuria.Client/Generated/RecuriaApiClient.cs"
     }
   }
 }
