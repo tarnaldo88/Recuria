@@ -1,0 +1,21 @@
+{
+  "runtime": "Net100",
+  "documentGenerator": {
+    "fromDocument": {
+      "url": "api/openapi.json"
+    }
+  },
+  "codeGenerators": {
+    "openApiToCSharpClient": {
+      "className": "RecuriaApiClient",
+      "namespace": "Recuria.Client",
+      "generateClientInterfaces": true,
+      "injectHttpClient": true,
+      "disposeHttpClient": false,
+      "useBaseUrl": false,
+      "generateOptionalParameters": true,
+      "generateNullableReferenceTypes": true,
+      "output": "Recuria.Client/Generated/RecuriaApiClient.cs"
+    }
+  }
+}
