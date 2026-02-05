@@ -1,5 +1,27 @@
-﻿<h3>Bootstrap</h3>
+﻿@page "/bootstrap"
+@inject Recuira.Blazor.Services.AuthState Auth
+@inject Recuria.Client.IRecuriaApiClient Api
+@inject NavigationManager Nav
+
+<h3>Dev Bootstrap</h3>
+
+@if (!string.IsNullOrEmpty(_error))
+{
+    <p class="text-danger">@error</p>
+}
+
+<div>
+    <label>Org Name</label>
+    <input tabindex="_orgName" />
+</div>
+
+<div>
+    <label>Owner Name</label>
+    <input bind="_ownerName" />
+</div>
+<button onclick="Bootstrap">Bootstrap</button>
 
 @code {
+
 
 }
