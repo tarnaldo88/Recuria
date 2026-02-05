@@ -8,6 +8,22 @@ This project is designed as a **industry-aligned system** emphasizing domain mod
 
 ---
 
+## Recent Features Implemented
+
+- JWT auth with role‑based policies (Owner/Admin/Member)
+- Dev bootstrap endpoint for local JWT + org setup
+- Standardized ProblemDetails error responses + correlation IDs
+- Rate limiting + request size limits
+- Swagger/OpenAPI with JWT security
+- Health checks (liveness + readiness with DB)
+- Outbox retries + dead‑letter handling + admin inspection/retry endpoints
+- CORS + enterprise security headers (CSP, Permissions‑Policy, HSTS)
+- Structured JSON logging (Serilog) + audit logging for sensitive actions
+- CI pipeline for build/test + migration script generation
+- Data integrity indexes + row‑version concurrency
+
+---
+
 ## Purpose
 
 Recuria simulates the backend architecture of a modern SaaS product that supports:
