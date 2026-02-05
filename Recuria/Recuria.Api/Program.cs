@@ -250,6 +250,10 @@ builder.Services
 
 builder.Services.AddAuthorization(options =>
 {
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+
     options.AddPolicy("OwnerOnly", policy =>
         policy.RequireRole(UserRole.Owner.ToString()));
 
@@ -427,12 +431,12 @@ app.MapControllers();
 app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
 {
     Predicate = _ => false
-});
+}).AllowAnonymous();
 
 app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
 {
     Predicate = check => check.Name == "db"
-});
+}).AllowAnonymous();
 
 app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
