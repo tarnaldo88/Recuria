@@ -32,7 +32,7 @@ else
     private bool _loading = true;
     private string? _error;
     private Recuria.Client.OrganizationDto? _org;
-    private Recuria.Client.SubscriptionDto> _subscription;
+    private Recuria.Client.SubscriptionDetailsDto? _subscription;
 
     protected override async Task OnInitializedAsync()
     {
@@ -45,8 +45,8 @@ else
                 return;
             }
 
-            _org = await Api.Organizations_GetMyOrganizationAsync();
-            _subscription = await Api.Subscriptions_GetCurrentAsync(Guid.Parse(orgId));
+            _org = await Api.OrganizationsGETAsync(Guid.Parse(orgId));
+            _subscription = await Api.CurrentAsync(Guid.Parse(orgId));
         }
         catch(Exception ex)
         {

@@ -8,12 +8,10 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp =>
 {
-    var http = new HttpClient
-    {
-        BaseAddress = new Uri("http://localhost:5132/")
-    };
-    return http;
+    var http = new HttpClient { BaseAddress = new Uri("http://localhost:5132/") };
+    return new Recuria.Client.RecuriaApiClient(http);
 });
+
 
 builder.Services.AddScoped<Recuria.Client.IRecuriaApiClient>(sp =>
 {

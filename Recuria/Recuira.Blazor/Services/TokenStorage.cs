@@ -1,4 +1,5 @@
-﻿using Microsoft.JsInterop;
+﻿using Microsoft.JSInterop;
+
 
 namespace Recuira.Blazor.Services
 {

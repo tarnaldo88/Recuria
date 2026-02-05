@@ -7,43 +7,53 @@
 
 @if (!string.IsNullOrEmpty(_error))
 {
-    <p class="text-danger">@error</p>
+    <p class="text-danger">@_error</p>
 }
 
 <div>
     <label>Org Name</label>
-    <input tabindex="_orgName" />
+    <input @bind="_orgName" />
 </div>
-
+<div>
+    <label>Owner Email</label>
+    <input @bind="_email" />
+</div>
 <div>
     <label>Owner Name</label>
-    <input bind="_ownerName" />
+    <input @bind="_ownerName" />
 </div>
-<button onclick="Bootstrap">Bootstrap</button>
+<button @onclick="RunBootstrap">Bootstrap</button>
 
 @code {
     private string _orgName = "Acme Inc";
-    private string _email = "owner@Recuria.local";
+    private string _email = "owner@recuria.local";
     private string _ownerName = "Owner One";
     private string? _error;
 
-    private async Task Bootstrap()
+    private async Task RunBootstrap()
     {
         _error = null;
-
         try
         {
-            var result = await Api.DevBootstrapAsync(new Recuira.Client.BootstrapRequest
+            var result = await Api.BootstrapAsync(new Recuria.Client.BootstrapRequest
             {
                 OrganizationName = _orgName,
                 OwnerEmail = _email,
                 OwnerName = _ownerName
             });
+
+            if (string.IsNullOrWhiteSpace(result.Token) || result.OrganizationId == Guid.Empty)
+            {
+                _error = "Bootstrap failed: missing token or org id.";
+                return;
+            }
+
+            await Auth.SetAuthAsync(result.Token, result.OrganizationId.ToString());
+            Nav.NavigateTo("/dashboard");
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _error = ex.Message;
         }
     }
-
 }
