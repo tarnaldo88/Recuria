@@ -233,3 +233,24 @@ Cors__AllowedOrigins__0
 SecurityHeaders__ContentSecurityPolicy
 SecurityHeaders__PermissionsPolicy
 ```
+
+---
+
+## Disaster recovery (DR)
+Targets (example):
+- RPO: 15 minutes
+- RTO: 1 hour
+
+Automated backup scripts:
+- `scripts\backup-db.ps1`
+- `scripts\restore-db.ps1`
+
+Env vars required:
+```
+RECURIA_SQL_SERVER
+RECURIA_SQL_DATABASE
+RECURIA_SQL_BACKUP_PATH
+RECURIA_SQL_BACKUP_FILE
+```
+
+Run a restore drill quarterly (staging or isolated environment).
