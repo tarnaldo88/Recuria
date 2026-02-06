@@ -11,6 +11,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped<AuthHeaderHandler>();
 builder.Services.AddScoped<TokenStorage>();
 builder.Services.AddScoped<AuthState>();
+builder.Services.AddMudServices();
 
 var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5132/";
 
