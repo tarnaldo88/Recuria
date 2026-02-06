@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Recuira.Blazor;
 using Recuira.Blazor.Services;
 using Microsoft.Extensions.DependencyInjection;
+using MudBlazor.Services; 
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
