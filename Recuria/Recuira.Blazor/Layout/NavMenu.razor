@@ -1,40 +1,10 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">Recuira.Blazor</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
-</div>
+﻿@using MudBlazor
 
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>        
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="dashboard">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Dashboard
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="bootstrap">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Bootstrap
-            </NavLink>
-        </div>
-        </div>
-    </nav>
-</div>
-
-@code {
-    private bool collapseNavMenu = true;
-
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
-}
+<MudNavMenu Class="pa-2">
+    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+    <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+    <MudNavLink Href="/invoices" Icon="@Icons.Material.Filled.ReceiptLong">Invoices</MudNavLink>
+    <MudNavLink Href="/subscriptions" Icon="@Icons.Material.Filled.Subscriptions">Subscriptions</MudNavLink>
+    <MudNavLink Href="/users" Icon="@Icons.Material.Filled.Group">Users</MudNavLink>
+    <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings">Settings</MudNavLink>
+</MudNavMenu>
