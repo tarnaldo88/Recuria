@@ -21,7 +21,7 @@
     else if (_error is not null)
     {
         <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Dense="true">
-            @error
+            @_error
         </MudAlert>
 
         <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="/bootstrap" StartIcon="@Icons.Material.Filled.RocketLaunch">
@@ -43,8 +43,8 @@
                             <MudText><b>Plan:</b>@_subscription?.Subscription?.PlanCode</MudText>
                             <MudText>
                                 <b>Status:</b>
-                                <MudChip Size="Size.Small" Color="@GetStatusColor(_subscription?.Subscription?.Status)">
-                                    @_subscription?.Subscription?.Status
+                                <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(_subscription?.Subscription?.Status)">
+                                    @(_subscription?.Subscription?.Status.ToString() ?? "Unknown")
                                 </MudChip>
                             </MudText>
                         </MudStack>
@@ -86,13 +86,14 @@
         }
     }
 
-    private static Color GetStatusColor(string? status) =>
-       status?.ToLowerInvariant() switch
-       {
-           "active" => Color.Success,
-           "trialing" => Color.Info,
-           "past_due" => Color.Warning,
-           "canceled" => Color.Error,
-           _ => Color.Default
-       };
+    private static Color GetStatusColor(Recuria.Client.SubscriptionStatus? status) =>
+     status switch
+     {
+         Recuria.Client.SubscriptionStatus.Active => Color.Success,
+         Recuria.Client.SubscriptionStatus.Trial => Color.Info,
+         Recuria.Client.SubscriptionStatus.PastDue => Color.Warning,
+         Recuria.Client.SubscriptionStatus.Canceled => Color.Error,
+         Recuria.Client.SubscriptionStatus.Expired => Color.Default,
+         _ => Color.Default
+     };
 }
