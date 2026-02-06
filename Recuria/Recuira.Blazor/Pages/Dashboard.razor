@@ -20,9 +20,40 @@
     }
     else if (_error is not null)
     {
-        
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Dense="true">
+            @error
+        </MudAlert>
+
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="/bootstrap" StartIcon="@Icons.Material.Filled.RocketLaunch">
+            Go to Bootstrap
+        </MudButton>
     }
-</MudStack>
+    else
+    {
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Organization</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudStack Spacing="1">
+                            <MudText><b>Plan:</b>@_subscription?.Subscription?.PlanCode</MudText>
+                            <MudText>
+                                <b>Status:</b>
+                                <MudChip Size="Size.Small" Color="@GetStatusColor(_subscription?.Subscription?.Status)">
+                                    @_subscription?.Subscription?.Status
+                                </MudChip>
+                            </MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    }
+    </MudStack>
 
 @code {
     private bool _loading = true;
@@ -41,8 +72,9 @@
                 return;
             }
 
-            _org = await Api.OrganizationsGETAsync(Guid.Parse(orgId));
-            _subscription = await Api.CurrentAsync(Guid.Parse(orgId));
+            var parsedOrgId = Guid.Parse(orgId);
+            _org = await Api.OrganizationsGETAsync(parsedOrgId);
+            _subscription = await Api.CurrentAsync(parsedOrgId);
         }
         catch(Exception ex)
         {
@@ -53,4 +85,14 @@
             _loading = false;
         }
     }
+
+    private static Color GetStatusColor(string? status) =>
+       status?.ToLowerInvariant() switch
+       {
+           "active" => Color.Success,
+           "trialing" => Color.Info,
+           "past_due" => Color.Warning,
+           "canceled" => Color.Error,
+           _ => Color.Default
+       };
 }
