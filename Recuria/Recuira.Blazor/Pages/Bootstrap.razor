@@ -3,12 +3,22 @@
 @inject Recuria.Client.IRecuriaApiClient Api
 @inject NavigationManager Nav
 
-<h3>Dev Bootstrap</h3>
+<PageTitle>Dev Bootstrap</PageTitle>
 
-@if (!string.IsNullOrEmpty(_error))
-{
-    <p class="text-danger">@_error</p>
-}
+<MudStack Spacing="3">
+    <MudText Typo="Typo.h4">Bootstrap</MudText>
+
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Dense="true">
+            @_error
+        </MudAlert>
+    }
+
+
+</MudStack>
+
+
 
 <div>
     <label>Org Name</label>
