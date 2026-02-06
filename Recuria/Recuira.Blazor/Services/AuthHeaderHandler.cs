@@ -2,11 +2,11 @@
 
 namespace Recuira.Blazor.Services
 {
-    public sealed class AuthHeadHandler : DelegatingHandler
+    public sealed class AuthHeaderHandler : DelegatingHandler
     {
         private readonly AuthState _auth;
 
-        public AuthHeadHandler(AuthState auth)
+        public AuthHeaderHandler(AuthState auth)
         {
             _auth = auth;
         }
