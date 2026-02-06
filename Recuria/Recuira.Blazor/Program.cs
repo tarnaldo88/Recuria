@@ -25,4 +25,7 @@ builder.Services.AddScoped(sp =>
     return new Recuria.Client.RecuriaApiClient(http);
 });
 
+builder.Services.AddScoped<Recuria.Client.IRecuriaApiClient>(sp =>
+    sp.GetRequiredService<Recuria.Client.RecuriaApiClient>());
+
 await builder.Build().RunAsync();
