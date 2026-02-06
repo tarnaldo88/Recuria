@@ -379,10 +379,10 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseCors("DefaultCors");
+
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseCors("DefaultCors");
 
 app.UseStatusCodePages(async context =>
 {
