@@ -2,31 +2,27 @@
 @inject Recuira.Blazor.Services.AuthState Auth
 @inject Recuria.Client.IRecuriaApiClient Api
 
-<h3>Dashboard</h3>
+<PageTitle>Dashboard</PageTitle>
 
-@if(_loading)
-{
-    <p>Loading...</p>
-}
-else if(_error != null)
-{
-    <p class="text-danger">@_error</p>
-}
-else
-{
-    <div>
-        <h4>@_org?.Name</h4>
-        <p>Owner: @_org?.OwnerEmail</p>
-        <p>Users: @_org?.UserCount</p>
-    </div>
+<MudStack Spacing="3">
+    <MudText Typo="Typo.h4">Dashboard</MudText>
 
-    <div>
-        <h4>Subscription</h4>
-        <p>Plan: @_subscription?.Subscription?.PlanCode</p>
-        <p>Status: @_subscription?.Subscription?.Status</p>
-        <p>Trial: @_subscription?.Subscription?.IsTrial</p>
-    </div>
-}
+    @if (_loading)
+    {
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudSkeleton Height="180px" Width="100%" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSkeleton Height="180px" Width="100%" />
+            </MudItem>
+        </MudGrid>
+    }
+    else if (_error is not null)
+    {
+        
+    }
+</MudStack>
 
 @code {
     private bool _loading = true;
