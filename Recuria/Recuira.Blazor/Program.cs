@@ -12,18 +12,15 @@ builder.Services.AddScoped<AuthHeaderHandler>();
 builder.Services.AddScoped<TokenStorage>();
 builder.Services.AddScoped<AuthState>();
 
-builder.Services.AddHttpClient("Api", client =>
-{
-    client.BaseAddress = new Uri("http://localhost:5132/");
-})
-.AddHttpMessageHandler<AuthHeaderHandler>();
+var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5132/";
 
 builder.Services.AddScoped(sp =>
 {
     var handler = sp.GetRequiredService<AuthHeaderHandler>();
+    handler.InnerHandler = new HttpClientHandler();
     var http = new HttpClient(handler)
     {
-        BaseAddress = new Uri("http://localhost:5132/")
+        BaseAddress = new Uri(apiBaseUrl)
     };
     return new Recuria.Client.RecuriaApiClient(http);
 });

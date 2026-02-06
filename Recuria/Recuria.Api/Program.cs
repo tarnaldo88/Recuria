@@ -341,8 +341,6 @@ var app = builder.Build();
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
-app.UseHttpsRedirection();
-
 if (!app.Environment.IsDevelopment())
 {
     // app.UseHsts();
