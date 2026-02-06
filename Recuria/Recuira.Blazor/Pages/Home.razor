@@ -2,6 +2,24 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<MudStack>
+    <MudPaper Class="pa-6" Elevation="0" Style="border:1px solid #E2E8F0;">
+        <MudText Typo="Typo.h4" GutterBottom="true">Welcome to Recuria</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            Manage organizations, subscriptions, billing, and operations from one place.
+        </MudText>
+        
+        <MudStack Row="true" Spacing="2">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/dashboard" StartIcon="@Icons.Material.Filled.Dashboard">
+                Open Dashboard
+            </MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Default" Href="/bootstrap" StartIcon="@Icons.Material.Filled.RocketLaunch" >
+                Run Bootstrap
+            </MudButton>
+        </MudStack>
+    </MudPaper>
 
-Welcome to your new app.
+    <MudGrid>
+
+    </MudGrid>
+</MudStack>
