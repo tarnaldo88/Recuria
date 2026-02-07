@@ -21,7 +21,26 @@
     <MudPaper Class="pa-5" e;Elevation="0" Style="border:1px solid #E2E8F0; max-width: 760px;">
         <MudGrid>
             <MudItem xs="12">
-
+                <MudTextField @bind-Value="_orgName"
+                    Label="Organization Name"
+                    Variant="Variant.Outlined"
+                    Margin="Margin.Dense"
+                    Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="_ownerName"
+                    Label="Owner Name"
+                    Variant="Variant.Outlined"
+                    Margin="Margin.Dense"
+                    Required="true" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="_email"
+                              Label="Owner Email"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              InputType="InputType.Email"
+                              Required="true" />
             </MudItem>
         </MudGrid>
     </MudPaper>
