@@ -42,32 +42,35 @@
                               InputType="InputType.Email"
                               Required="true" />
             </MudItem>
+            <MudItem xs="12" Class="mt-2">
+                <MudStack Row="true" Spacing="2">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               OnClick="RunBootstrap"
+                               Disabled="@_submitting"
+                               StartIcon="@Icons.Material.Filled.RocketLaunch">
+                        @(_submitting ? "Bootstrapping..." : "Bootstrap Tenant")
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Default"
+                               Href="/dashboard"
+                               Disabled="@_submitting">
+                        Cancel
+                    </MudButton>
+                </MudStack>
+            </MudItem>
         </MudGrid>
     </MudPaper>
       
 </MudStack>
-
-
-
-<div>
-    <label>Org Name</label>
-    <input @bind="_orgName" />
-</div>
-<div>
-    <label>Owner Email</label>
-    <input @bind="_email" />
-</div>
-<div>
-    <label>Owner Name</label>
-    <input @bind="_ownerName" />
-</div>
-<button @onclick="RunBootstrap">Bootstrap</button>
 
 @code {
     private string _orgName = "Acme Inc";
     private string _email = "owner@recuria.local";
     private string _ownerName = "Owner One";
     private string? _error;
+    private bool _submitting;
 
     private async Task RunBootstrap()
     {
