@@ -6,7 +6,7 @@
 <PageTitle>Dev Bootstrap</PageTitle>
 
 <MudStack Spacing="3">
-    <MudText Typo="Typo.h4">Bootstrap</MudText>
+    <MudText Class="bootstrap-title" Typo="Typo.h4">Bootstrap</MudText>
     <MudText Typo="Typo.body2" Color="Color.Secondary">
         Create a tenant and seed your first owner account.
     </MudText>
@@ -18,7 +18,7 @@
         </MudAlert>
     }
 
-    <MudPaper Class="pa-5" e;Elevation="0" Style="border:1px solid #E2E8F0; max-width: 760px;">
+    <MudPaper Class="pa-5 bootstrap-shell" e;Elevation="0" Style="border:1px solid #E2E8F0; max-width: 760px;">
         <MudGrid>
             <MudItem xs="12">
                 <MudTextField @bind-Value="_orgName"
@@ -42,7 +42,7 @@
                               InputType="InputType.Email"
                               Required="true" />
             </MudItem>
-            <MudItem xs="12" Class="mt-2">
+            <MudItem xs="12" Class="bootstrap-actions">
                 <MudStack Row="true" Spacing="2">
                     <MudButton Variant="Variant.Filled"
                                Color="Color.Primary"

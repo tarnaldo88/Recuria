@@ -1,0 +1,26 @@
+﻿:host {
+    display: block;
+}
+
+::deep .bootstrap-shell {
+    width: 100%;
+    max-width: 760px;
+}
+
+::deep .bootstrap-title {
+    letter-spacing: 0.1px;
+}
+
+::deep .bootstrap-actions {
+    padding-top: 0.25rem;
+}
+
+@media (max-width: 600px) {
+    ::deep .bootstrap-shell {
+        max-width: 100%;
+    }
+
+    ::deep .bootstrap-actions .mud-button-root {
+        width: 100%;
+    }
+}
