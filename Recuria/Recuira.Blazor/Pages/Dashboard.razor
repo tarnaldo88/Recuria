@@ -36,6 +36,7 @@
                     <MudCardHeader>
                         <CardHeaderContent>
                             <MudText Typo="Typo.h6">Organization</MudText>
+                            <MudText>@orgName</MudText>
                         </CardHeaderContent>
                     </MudCardHeader>
                     <MudCardContent>
@@ -60,6 +61,7 @@
     private string? _error;
     private Recuria.Client.OrganizationDto? _org;
     private Recuria.Client.SubscriptionDetailsDto? _subscription;
+    private string? orgName = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -75,6 +77,7 @@
             var parsedOrgId = Guid.Parse(orgId);
             _org = await Api.OrganizationsGETAsync(parsedOrgId);
             _subscription = await Api.CurrentAsync(parsedOrgId);
+            orgName = _org.Name ?? "unknown";
         }
         catch(Exception ex)
         {
