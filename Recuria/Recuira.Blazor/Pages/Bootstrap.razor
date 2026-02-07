@@ -90,9 +90,9 @@
         {
             var result = await Api.BootstrapAsync(new Recuria.Client.BootstrapRequest
             {
-                OrganizationName = _orgName,
-                OwnerEmail = _email,
-                OwnerName = _ownerName
+                OrganizationName = _orgName.Trim(),
+                OwnerEmail = _email.Trim(),
+                OwnerName = _ownerName.Trim()
             });
 
             if (string.IsNullOrWhiteSpace(result.Token) || result.OrganizationId == Guid.Empty)
@@ -107,6 +107,10 @@
         catch (Exception ex)
         {
             _error = ex.Message;
+        }
+        finally
+        {
+            _submitting = false;
         }
     }
 }
