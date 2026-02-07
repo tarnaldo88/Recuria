@@ -7,6 +7,9 @@
 
 <MudStack Spacing="3">
     <MudText Typo="Typo.h4">Bootstrap</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary">
+        Create a tenant and seed your first owner account.
+    </MudText>
 
     @if (!string.IsNullOrEmpty(_error))
     {
@@ -15,11 +18,14 @@
         </MudAlert>
     }
 
-    <MudGrid>
-        <MudItem>
+    <MudPaper Class="pa-5" e;Elevation="0" Style="border:1px solid #E2E8F0; max-width: 760px;">
+        <MudGrid>
+            <MudItem xs="12">
 
-        </MudItem>
-    </MudGrid>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+      
 </MudStack>
 
 
