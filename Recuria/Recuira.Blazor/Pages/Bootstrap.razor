@@ -75,6 +75,17 @@
     private async Task RunBootstrap()
     {
         _error = null;
+
+        if (string.IsNullOrWhiteSpace(_orgName) ||
+            string.IsNullOrWhiteSpace(_ownerName) ||
+            string.IsNullOrWhiteSpace(_email))
+        {
+            _error = "Organization name, owner name, and email are required.";
+            return;
+        }
+
+        _submitting = true;
+
         try
         {
             var result = await Api.BootstrapAsync(new Recuria.Client.BootstrapRequest
