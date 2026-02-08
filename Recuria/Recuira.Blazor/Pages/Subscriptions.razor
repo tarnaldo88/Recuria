@@ -14,8 +14,30 @@
         </MudAlert>
     }
 
+    @if (_loading)
+    {
+        <MudSkeleton Height="220px" Width="100%" />
+    }
+    else if(_details is null)
+    {
+        <MudAlert Severity="Severity.Warning" Dense="true">
+            No subscription data available.
+        </MudAlert>
+    }
+    else
+    {
+        
+    }
+
 </MudStack>
 @code {
     private string _error;
+    private bool _loading;
+    private bool _busy;
+    private Guid _orgId;
+    private Recuria.Client.SubscriptionDetailsDto? _details;
+    private Recuria.Client.PlanType _selectedPlan = Recuria.Client.PlanType.Free;
+    private bool _canUpgrade;
+    private bool _canCancel;
 
 }
