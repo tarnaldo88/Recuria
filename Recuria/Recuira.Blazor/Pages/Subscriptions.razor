@@ -25,6 +25,12 @@
         <MudAlert Severity="Severity.Warning" Dense="true">
             No subscription data available.
         </MudAlert>
+        <MudButton Variant="Variant.Filled"
+           Color="Color.Primary"
+           Disabled="_busy"
+           OnClick="CreateTrial">
+            Start Trial
+        </MudButton>
     }
     else
     {
@@ -69,8 +75,8 @@
                                 Variant="Variant.Outlined"
                                 Dense="true"
                                 @bind-Value="_selectedPlan">
-                                <MudSelectItem Value="Recuria.Client.PlanType.Free">Free</MudSelectItem>
 
+                                <MudSelectItem Value="Recuria.Client.PlanType.Free">Free</MudSelectItem>
                                 <MudSelectItem Value="Recuria.Client.PlanType.Pro">Pro</MudSelectItem>
                                 <MudSelectItem Value="Recuria.Client.PlanType.Enterprise">Enterprise</MudSelectItem>
                             </MudSelect>
