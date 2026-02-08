@@ -30,7 +30,20 @@
     }
     else
     {
-        
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">
+                        Invoice #@(_invoice.InvoiceNumber ?? _invoice.Id.ToString())
+                    </MudText>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(_invoice.Status)">
+                        @(_invoice.Status ?? "Unknown")
+                    </MudChip>
+                </CardHeaderActions>
+            </MudCardHeader>
+        </MudCard>
     }
     </MudStack>
 
