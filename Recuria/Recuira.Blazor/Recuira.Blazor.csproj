@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="wwwroot\images\RecuriaLogo.png" />
+    <None Include="wwwroot\images\smallRecuriaLogo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Recuria.Client\Recuria.Client.csproj" />
   </ItemGroup>
 
