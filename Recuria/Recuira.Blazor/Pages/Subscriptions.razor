@@ -220,6 +220,26 @@
         {
             _busy = false;
         }
+    }    
+
+    private async Task CreateTrial()
+    {
+        _busy = true;
+        _error = null;
+
+        try
+        {
+            await Api.TrialAsync(_orgId);
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
     }
 
     private static string PlanLabel(Recuria.Client.PlanType plan) =>
