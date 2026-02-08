@@ -2,6 +2,7 @@
 @inject Recuira.Blazor.Services.AuthState Auth
 @inject Recuria.Client.IRecuriaApiClient Api
 @using System.Globalization
+@using Recuria.Client
 
 <PageTitle>Subscriptions</PageTitle>
 
@@ -144,6 +145,14 @@
             _selectedPlan = _details.Subscription.PlanCode;
             _canCancel = _details.Actions.CanCancel;
             _canUpgrade = _details.Actions.CanUpgrade;
+        }
+        catch (ApiException ex) when (ex.StatusCode == 404)
+        {
+            // No active/trial/past-due subscription after cancel
+            _details = null;
+            _canCancel = false;
+            _canUpgrade = false;
+            _error = "No active/trial/past-due subscription found."; 
         }
         catch (Exception ex)
         {
