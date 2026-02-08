@@ -49,7 +49,7 @@
                 <MudGrid>
                     <MudItem xs="12" md="6">
                         <MudText><b>Issued:</b> @_invoice.IssuedOnUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudText>
-                        <MudText><b>Paid:</b> @_invoice.PaidOnUtc?.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudText>
+                        <MudText><b>Paid:</b> @(_invoice.PaidOnUtc?.ToLocalTime().ToString("g", CultureInfo.CurrentCulture) ?? "No date")</MudText>
                     </MudItem>
                     <MudItem xs="12" md="6">
                         <MudText><b>Subtotal:</b> @FormatMoney(_invoice.Subtotal?.Amount, _invoice.Subtotal?.Currency)</MudText>
