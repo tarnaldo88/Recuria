@@ -85,6 +85,9 @@ namespace Recuria.Api.Controllers
         /// </summary>
         [HttpPost("{subscriptionId:guid}/upgrade")]
         [Authorize(Policy = "AdminOrOwner")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Upgrade(
             Guid subscriptionId,
             [FromBody] UpgradeSubscriptionRequest request,
@@ -112,6 +115,9 @@ namespace Recuria.Api.Controllers
         /// </summary>
         [HttpPost("{subscriptionId:guid}/cancel")]
         [Authorize(Policy = "AdminOrOwner")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Cancel(Guid subscriptionId, CancellationToken ct)
         {
             var subscription = await _subscriptions.GetByIdAsync(subscriptionId, ct);
