@@ -1,0 +1,35 @@
+﻿:host {
+    display: block;
+}
+
+::deep .subs-page {
+    width: 100%;
+}
+
+::deep .subs-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+}
+
+    ::deep .subs-card .mud-card-header {
+        padding-bottom: 0.25rem;
+    }
+
+::deep .subs-meta b {
+    min-width: 130px;
+    display: inline-block;
+}
+
+::deep .subs-actions {
+    max-width: 420px;
+}
+
+@media (max-width: 900px) {
+    ::deep .subs-actions {
+        max-width: 100%;
+    }
+
+        ::deep .subs-actions .mud-button-root {
+            width: 100%;
+        }
+}
