@@ -26,7 +26,31 @@
     }
     else
     {
-        
+        <MudGrid>
+            <MudCard Class="subs-card">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Current Subscription</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudStack Spacing="1" Class="subs-meta">
+                        <MudText><b>Plan:</b> @PlanLabel(_details.Subscription.PlanCode)</MudText>
+                        <MudText>
+                            <b>Status:</b>
+                            <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(_details.Subscription.Status)">
+                                @_details.Subscription.Status.ToString()
+                            </MudChip>
+                        </MudText>
+                        <MudText><b>Trial:</b> @(_details.Subscription.IsTrial ? "Yes" : "No")</MudText>
+                        <MudText><b>Past Due:</b> @(_details.Subscription.IsPastDue ? "Yes" : "No")</MudText>
+                        <MudText><b>Period Start:</b> @_details.Subscription.PeriodStart.ToLocalTime().ToString("yyyy-MM-dd")</MudText>
+                        <MudText><b>Period End:</b> @_details.Subscription.PeriodEnd.ToLocalTime().ToString("yyyy-MM-dd")</MudText>
+                        <MudText><b>Subscription Id:</b> @_details.Subscription.Id</MudText>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudGrid>
     }
 
 </MudStack>
