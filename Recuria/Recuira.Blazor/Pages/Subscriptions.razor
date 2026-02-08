@@ -102,7 +102,7 @@
 
 </MudStack>
 @code {
-    private string _error;
+    private string? _error;
     private bool _loading;
     private bool _busy;
     private Guid _orgId;
@@ -118,6 +118,93 @@
 
     private async Task LoadData()
     {
-        
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            var orgIdRaw = await Auth.GetOrgIdAsync();
+            if(string.IsNullOrWhiteSpace(orgIdRaw))
+            {
+                _error = "No organization id found. Go to /bootstrap first.";
+                return;
+            }
+
+            _orgId = Guid.Parse(orgIdRaw);
+            _details = await Api.CurrentAsync(_orgId);
+
+            _selectedPlan = _details.Subscription.PlanCode;
+            _canCancel = _details.Actions.CanCancel;
+            _canUpgrade = _details.Actions.CanUpgrade;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
+
+    private async Task UpgradePlan()
+    {
+        if(_details is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+
+        try
+        {
+            await Api.UpgradeAsync(_details.Subscription.Id, new Recuria.Client.UpgradeSubscriptionRequest
+            {
+                NewPlan = _selectedPlan
+            });
+
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task CancelSubscription()
+    {
+        if (_details is null)
+            return;
+
+        _busy = true;
+        _error = null;
+
+        try
+        {
+            await Api.CancelAsync(_details.Subscription.Id);
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private static string PlanLabel(Recuria.Client.PlanType plan) =>
+        plan switch
+        {
+            Recuria.Client.PlanType.Free => "Free",
+            Recuria.Client.PlanType.Pro => "Pro",
+            Recuria.Client.PlanType.Enterprise => "Enterprise",
+            _ => plan.ToString()
+        };
 }
