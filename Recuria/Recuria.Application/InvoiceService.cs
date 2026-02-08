@@ -61,7 +61,7 @@ namespace Recuria.Application
             if(subscription.Plan == PlanType.Pro)
             {
                 amount = 25.0m;
-            } else if(subscription.Plan == PlanType.Pro)
+            } else if(subscription.Plan == PlanType.Enterprise)
             {
                 amount = 100m;
             }
