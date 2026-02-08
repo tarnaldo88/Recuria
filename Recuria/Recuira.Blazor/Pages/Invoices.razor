@@ -1,5 +1,198 @@
-﻿<h3>Invoices</h3>
+﻿@page "/invoices"
+@inject Recuira.Blazor.Services.AuthState Auth
+@inject Recuria.Client.IRecuriaApiClient Api
+@inject NavigationManager Nav
 
-@code {
+<PageTitle>Invoices</PageTitle>
 
+<MudStack Spacing="3">
+    <MudText Typo="Typo.h4">Invoices</MudText>
+
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Dense="true">
+            @_error
+        </MudAlert>
+    }
+
+    <MudCard Class="invoice-card">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">Create Invoice</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudGrid>
+                <MudItem xs="12" md="4">
+                    <MudNumericField T="double"
+                            Label="Amount"
+                            Variant="Variant.Filled"
+                            Margin="Margin.Dense"
+                            Min="0.01"
+                            @bind-Value="_newAmount" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField Label="Description"
+                            Variant="Variant.Outlined"
+                            Margin="Margin.Dense"
+                            @bind-Value="_newDescription" />
+                </MudItem>
+                <MudItem xs="12" md="2" Class="invoice-actions">
+                    <MudButton Variant="Variant.Filled"
+                        Color="Color.Primary"
+                        FullWidth="true"
+                        Disabled="@(_busy || _newAmount <= 0)"
+                        OnClick="CreateInvoice">
+                        Create
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+    </MudCard>
+
+    <MudCard Class="invoice-card">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">Invoice History</MudText>
+            </CardHeaderContent>
+            <CardHeaderActions>
+                <MudButton Variant="Variant.Text" Disabled="_busy" onclick="LoadInvoices">Refresh</MudButton>
+            </CardHeaderActions>
+        </MudCardHeader>
+        <MudCardContent>
+            @if(_loading)
+            {
+                <MudSkeleton Height="180px" Width="100%"/>
+            }
+            else
+            {
+                <MudTable T="Recuria.Client.InvoiceListItemDto" Items="_invoices" Dense="true" Hover="true">
+                    <HeaderContent>
+                        <MudTh>Issued</MudTh>
+                        <MudTh>Total</MudTh>
+                        <MudTh>Status</MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.IssuedOnUtc.ToLocalTime().ToString("yyyy-MM-dd")</MudTd>
+                        <MudTd>@FormatMoney(context.Total?.Amount, context.Total?.Currency)</MudTd>
+                        <MudTd>
+                            <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">
+                                @(context.Status ?? "Unknown")
+                            </MudChip>
+                        </MudTd>
+                        <MudTd>
+                            <MudButton Variant="Variant.Text"
+                                       Color="Color.Primary"
+                                       OnClick="@(() => OpenDetails(context.Id))">
+                                View
+                            </MudButton>
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <MudText Typo="Typo.body2">No invoices found.</MudText>
+                    </NoRecordsContent>
+                </MudTable>
+            }
+        </MudCardContent>
+    </MudCard>
+</MudStack>
+
+    @code {
+    private bool _loading = true;
+    private bool _busy;
+    private string? _error;
+    private Guid _orgId;
+
+    private double _newAmount = 49.00;
+    private string? _newDescription = "Monthly subscription";
+
+    private List<Recuria.Client.InvoiceListItemDto> _invoices = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInvoices();
+    }
+
+    private async Task LoadInvoices()
+    {
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            var orgIdRaw = await Auth.GetOrgIdAsync();
+            if (string.IsNullOrWhiteSpace(orgIdRaw))
+            {
+                _error = "No organization id found. Go to /bootstrap first.";
+                return;
+            }
+
+            _orgId = Guid.Parse(orgIdRaw);
+            var results = await Api.OrganizationAsync(_orgId);
+            _invoices = results
+                .OrderByDescending(x => x.IssuedOnUtc)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task CreateInvoice()
+    {
+        if(_newAmount <= 0)
+        {
+            _error = "Amount must be greater than 0.";
+            return;
+        }
+        _busy = true;
+        _error = null;
+
+        try
+        {
+            await Api.InvoicesPOSTAsync(new Recuria.Client.CreateInvoiceRequest
+            {
+                OrganizationId = _orgId,
+                Amount = _newAmount,
+                Description = string.IsNullOrWhiteSpace(_newDescription) ? null : _newDescription.Trim()
+            });
+
+            await LoadInvoices();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private void OpenDetails(Guid id) => Nav.NavigateTo($"/invoices/{id}");
+
+    private static string FormatMoney(double? amount, string? currency)
+    {
+        var value = amount ?? 0;
+        var code = string.IsNullOrWhiteSpace(currency) ? "USD" : currency.ToUpperInvariant();
+        var symbol = code == "USD" ? "$" : code + " ";
+        return $"{symbol}{value:N2}";
+    }
+
+    private static Color GetStatusColor(string? status) =>
+        status?.ToLowerInvariant() switch
+        {
+            "paid" => Color.Success,
+            "open" => Color.Info,
+            "pending" => Color.Warning,
+            "failed" => Color.Error,
+            "void" => Color.Default,
+            _ => Color.Default
+        };
 }

@@ -1,0 +1,22 @@
+﻿:host {
+    display: block;
+}
+
+::deep .invoice-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+}
+
+::deep .invoice-actions {
+    max-width: 220px;
+}
+
+@media (max-width: 900px) {
+    ::deep .invoice-actions {
+        max-width: 100%;
+    }
+
+        ::deep .invoice-actions .mud-button-root {
+            width: 100%;
+        }
+}
