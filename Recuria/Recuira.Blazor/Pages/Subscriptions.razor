@@ -1,5 +1,21 @@
-﻿<h3>Subscriptions</h3>
+﻿@page "/subscriptions"
+@inject Recuira.Blazor.Services.AuthState Auth
+@inject Recuria.Client.IRecuriaApiClient Api
 
+<PageTitle>Subscriptions</PageTitle>
+
+<MudStack Spacing="3" Class="subs-page">
+    <MudText Typo="Typo.h4">Subscriptions</MudText>
+
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Dense="true">
+            @_error
+        </MudAlert>
+    }
+
+</MudStack>
 @code {
+    private string _error;
 
 }
