@@ -1,3 +1,8 @@
+.app-logo {
+    border-radius: 4px;
+    object-fit: contain;
+}
+
 .page {
     position: relative;
     display: flex;
