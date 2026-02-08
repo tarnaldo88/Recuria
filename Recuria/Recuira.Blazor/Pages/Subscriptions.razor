@@ -40,4 +40,13 @@
     private bool _canUpgrade;
     private bool _canCancel;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        
+    }
 }
