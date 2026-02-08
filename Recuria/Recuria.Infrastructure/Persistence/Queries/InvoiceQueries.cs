@@ -1,12 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Recuria.Application.Contracts.Common;
 using Recuria.Application.Contracts.Invoice;
 using Recuria.Application.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Recuria.Infrastructure.Persistence.Queries
 {
@@ -20,8 +15,8 @@ namespace Recuria.Infrastructure.Persistence.Queries
         }
 
         public async Task<IReadOnlyList<InvoiceListItemDto>> GetForOrganizationAsync(
-        Guid organizationId,
-        CancellationToken ct)
+            Guid organizationId,
+            CancellationToken ct)
         {
             return await _db.Invoices
                 .Where(i => i.Subscription.OrganizationId == organizationId)
@@ -29,10 +24,7 @@ namespace Recuria.Infrastructure.Persistence.Queries
                 .Select(i => new InvoiceListItemDto(
                     i.Id,
                     i.InvoiceDate,
-                    new MoneyDto(
-                        i.Amount,
-                        "USD"          // temporary until currency is modeled
-                    ),
+                    new MoneyDto(i.Amount, "USD"),
                     i.Paid ? "Paid" : "Unpaid"
                 ))
                 .ToListAsync(ct);
@@ -49,6 +41,7 @@ namespace Recuria.Infrastructure.Persistence.Queries
                     i.Id,
                     i.InvoiceDate,
                     i.Paid,
+                    i.PaidOnUtc,
                     i.Amount
                 })
                 .FirstOrDefaultAsync(ct);
@@ -58,9 +51,9 @@ namespace Recuria.Infrastructure.Persistence.Queries
 
             return new InvoiceDetailsDto(
                 result.Id,
-                result.Id.ToString()[..8],   // now safe – in memory
+                result.Id.ToString()[..8],
                 result.InvoiceDate,
-                result.Paid ? result.InvoiceDate : null,
+                result.PaidOnUtc,
                 new MoneyDto(result.Amount, "USD"),
                 new MoneyDto(0, "USD"),
                 new MoneyDto(result.Amount, "USD"),

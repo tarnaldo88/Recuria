@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Recuria.Application.Contracts.Invoice;
+using Recuria.Api.Logging;
 using Recuria.Application.Contracts.Common;
+using Recuria.Application.Contracts.Invoice;
 using Recuria.Application.Interface;
 using Recuria.Application.Requests;
-using Recuria.Api.Logging;
 using Recuria.Infrastructure.Persistence;
 
 namespace Recuria.Api.Invoices
@@ -74,6 +74,34 @@ namespace Recuria.Api.Invoices
         }
 
         /// <summary>
+        /// Mark an invoice as paid.
+        /// </summary>
+        [HttpPost("{invoiceId:guid}/pay")]
+        [Authorize(Policy = "AdminOrOwner")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> MarkPaid(Guid invoiceId, CancellationToken ct)
+        {
+            var orgId = await GetOrganizationIdForInvoiceAsync(invoiceId, ct);
+            if (orgId == null)
+                return NotFound();
+
+            if (!IsSameOrganization(orgId.Value))
+                return Forbid();
+
+            await _invoiceService.MarkPaidAsync(invoiceId, ct);
+
+            _audit.Log(HttpContext, "invoice.mark_paid", new
+            {
+                invoiceId,
+                organizationId = orgId.Value
+            });
+
+            return NoContent();
+        }
+
+        /// <summary>
         /// List invoices for an organization.
         /// </summary>
         [HttpGet("organization/{organizationId:guid}")]
@@ -96,30 +124,29 @@ namespace Recuria.Api.Invoices
             Guid invoiceId,
             CancellationToken ct)
         {
-            var subscriptionId = await _db.Invoices
-                .AsNoTracking()
-                .Where(i => i.Id == invoiceId)
-                .Select(i => i.SubscriptionId)
-                .FirstOrDefaultAsync(ct);
-
-            if (subscriptionId == Guid.Empty)
+            var orgId = await GetOrganizationIdForInvoiceAsync(invoiceId, ct);
+            if (orgId == null)
                 return NotFound();
 
-            var orgId = await _db.Subscriptions
-                .AsNoTracking()
-                .Where(s => s.Id == subscriptionId)
-                .Select(s => s.OrganizationId)
-                .FirstOrDefaultAsync(ct);
-
-            if (orgId == Guid.Empty)
-                return NotFound();
-
-            if (!IsSameOrganization(orgId))
+            if (!IsSameOrganization(orgId.Value))
                 return Forbid();
 
             var invoice = await _invoiceQueries.GetDetailsAsync(invoiceId, ct);
-            if (invoice == null) return NotFound();
+            if (invoice == null)
+                return NotFound();
+
             return Ok(invoice);
+        }
+
+        private async Task<Guid?> GetOrganizationIdForInvoiceAsync(Guid invoiceId, CancellationToken ct)
+        {
+            var orgId = await _db.Invoices
+                .AsNoTracking()
+                .Where(i => i.Id == invoiceId)
+                .Select(i => i.Subscription.OrganizationId)
+                .FirstOrDefaultAsync(ct);
+
+            return orgId == Guid.Empty ? null : orgId;
         }
 
         private bool IsSameOrganization(Guid organizationId)
