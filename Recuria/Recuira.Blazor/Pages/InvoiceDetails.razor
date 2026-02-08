@@ -59,4 +59,23 @@
             _loading = false;
         }
     }
+
+    private static string FormatMoney(double? amount, string? currency)
+    {
+        var value = amount ?? 0;
+        var code = string.IsNullOrWhiteSpace(currency) ? "USD" : currency.ToUpperInvariant();
+        var symbol = code == "USD" ? "$" : code + " ";
+        return $"{symbol}{value:N2}";
+    }
+
+    private static Color GetStatusColor(string? status) =>
+        status?.ToLowerInvariant() switch
+        {
+            "paid" => Color.Success,
+            "open" => Color.Info,
+            "pending" => Color.Warning,
+            "failed" => Color.Error,
+            "void" => Color.Default,
+            _ => Color.Default
+        };
 }
