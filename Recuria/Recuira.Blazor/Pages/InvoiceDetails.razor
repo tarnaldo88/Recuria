@@ -11,8 +11,30 @@
             Back to Invoices
         </MudButton>
     </MudStack>
-</MudStack>
+
+    @if(!string.IsNullOrWhiteSpace(_error))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Dense="true">
+            @_error
+        </MudAlert>
+    }
+    else if(_loading)
+    {
+        <MudSkeleton Height="220px" Width="100%"/>
+    }
+    else if(_invoice is null)
+    {
+        <MudAlert Severity="Severity.Warning" Dense="true">
+            Invoice not found.
+        </MudAlert>
+    }
+    else
+    {
+        
+    }
+    </MudStack>
 
 @code {
     private string? _error;
+    private bool _loading;
 }
