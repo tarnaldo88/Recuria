@@ -98,7 +98,7 @@ namespace Recuria.Domain.Entities
                 return; // idempotent
 
             if (Status != SubscriptionStatus.Active && Status != SubscriptionStatus.PastDue && Status != SubscriptionStatus.Trial)
-                throw new InvalidOperationException("Only active subscriptions can be canceled.");
+                throw new InvalidOperationException("Only trial, active, or past-due subscriptions can be canceled.");
 
             Status = SubscriptionStatus.Canceled;
             RaiseDomainEvent(new SubscriptionCanceled(Id));

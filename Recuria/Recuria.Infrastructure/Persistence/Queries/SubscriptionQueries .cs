@@ -38,7 +38,9 @@ namespace Recuria.Infrastructure.Persistence.Queries
                 ),
                 new SubscriptionActionAvailabilityDto(
                     s.Status == SubscriptionStatus.Trial || s.Status == SubscriptionStatus.PastDue,
-                    s.Status == SubscriptionStatus.Active || s.Status == SubscriptionStatus.PastDue,
+                    s.Status == SubscriptionStatus.Trial ||
+                        s.Status == SubscriptionStatus.Active ||
+                        s.Status == SubscriptionStatus.PastDue,
                     s.Status != SubscriptionStatus.Canceled && s.Status != SubscriptionStatus.Expired
                 )
             ))
