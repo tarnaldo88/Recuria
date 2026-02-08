@@ -1,6 +1,7 @@
 ﻿@page "/invoices/{InvoiceId:guid}"
 @inject Recuria.Client.IRecuriaApiClient Api
 @inject NavigationManager Nav
+@using System.Globalization;
 
 <PageTitle>Invoice Details</PageTitle>
 
@@ -43,6 +44,20 @@
                     </MudChip>
                 </CardHeaderActions>
             </MudCardHeader>
+
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudText><b>Issued:</b> @_invoice.IssuedOnUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudText>
+                        <MudText><b>Paid:</b> @_invoice.PaidOnUtc?.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudText>
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudText><b>Subtotal:</b> @FormatMoney(_invoice.Subtotal?.Amount, _invoice.Subtotal?.Currency)</MudText>
+                        <MudText><b>Tax:</b> @FormatMoney(_invoice.Tax?.Amount, _invoice.Tax?.Currency)</MudText>
+                        <MudText><b>Total:</b> @FormatMoney(_invoice.Total?.Amount, _invoice.Total?.Currency)</MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
         </MudCard>
     }
     </MudStack>
