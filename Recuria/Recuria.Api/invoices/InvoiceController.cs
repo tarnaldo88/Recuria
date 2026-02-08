@@ -43,6 +43,9 @@ namespace Recuria.Api.Invoices
         /// </summary>
         [HttpPost]
         [Authorize(Policy = "AdminOrOwner")]
+        [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Guid>> Create(
             [FromBody] CreateInvoiceRequest request,
             CancellationToken ct)
