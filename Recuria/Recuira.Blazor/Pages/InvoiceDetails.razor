@@ -35,6 +35,9 @@
     </MudStack>
 
 @code {
+    [Parameter] public Guid InvoiceId { get; set; }
+
     private string? _error;
     private bool _loading;
+    private Recuria.Client.InvoiceDetailsDto? _invoice;
 }
