@@ -2,6 +2,7 @@
 @inject Recuira.Blazor.Services.AuthState Auth
 @inject Recuria.Client.IRecuriaApiClient Api
 @inject NavigationManager Nav
+@using System.Globalization
 
 <PageTitle>Invoices</PageTitle>
 
@@ -74,7 +75,7 @@
                         <MudTh></MudTh>
                     </HeaderContent>
                     <RowTemplate>
-                        <MudTd>@context.IssuedOnUtc.ToLocalTime().ToString("yyyy-MM-dd")</MudTd>
+                        <MudTd>@context.IssuedOnUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudTd>
                         <MudTd>@FormatMoney(context.Total?.Amount, context.Total?.Currency)</MudTd>
                         <MudTd>
                             <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">
