@@ -207,4 +207,15 @@
             Recuria.Client.PlanType.Enterprise => "Enterprise",
             _ => plan.ToString()
         };
+
+    private static Color GetStatusColor(Recuria.Client.SubscriptionStatus status) =>
+        status switch
+        {
+            Recuria.Client.SubscriptionStatus.Active => Color.Success,
+            Recuria.Client.SubscriptionStatus.Trial => Color.Info,
+            Recuria.Client.SubscriptionStatus.PastDue => Color.Warning,
+            Recuria.Client.SubscriptionStatus.Canceled => Color.Error,
+            Recuria.Client.SubscriptionStatus.Expired => Color.Default,
+            _ => Color.Default
+        };
 }
