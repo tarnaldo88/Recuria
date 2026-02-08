@@ -27,29 +27,76 @@
     else
     {
         <MudGrid>
-            <MudCard Class="subs-card">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Current Subscription</MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudStack Spacing="1" Class="subs-meta">
-                        <MudText><b>Plan:</b> @PlanLabel(_details.Subscription.PlanCode)</MudText>
-                        <MudText>
-                            <b>Status:</b>
-                            <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(_details.Subscription.Status)">
-                                @_details.Subscription.Status.ToString()
-                            </MudChip>
-                        </MudText>
-                        <MudText><b>Trial:</b> @(_details.Subscription.IsTrial ? "Yes" : "No")</MudText>
-                        <MudText><b>Past Due:</b> @(_details.Subscription.IsPastDue ? "Yes" : "No")</MudText>
-                        <MudText><b>Period Start:</b> @_details.Subscription.PeriodStart.ToLocalTime().ToString("yyyy-MM-dd")</MudText>
-                        <MudText><b>Period End:</b> @_details.Subscription.PeriodEnd.ToLocalTime().ToString("yyyy-MM-dd")</MudText>
-                        <MudText><b>Subscription Id:</b> @_details.Subscription.Id</MudText>
-                    </MudStack>
-                </MudCardContent>
-            </MudCard>
+            <MudItem xs="12" md="7">
+                <MudCard Class="subs-card">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Current Subscription</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudStack Spacing="1" Class="subs-meta">
+                            <MudText><b>Plan:</b> @PlanLabel(_details.Subscription.PlanCode)</MudText>
+                            <MudText>
+                                <b>Status:</b>
+                                <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(_details.Subscription.Status)">
+                                    @_details.Subscription.Status.ToString()
+                                </MudChip>
+                            </MudText>
+                            <MudText><b>Trial:</b> @(_details.Subscription.IsTrial ? "Yes" : "No")</MudText>
+                            <MudText><b>Past Due:</b> @(_details.Subscription.IsPastDue ? "Yes" : "No")</MudText>
+                            <MudText><b>Period Start:</b> @_details.Subscription.PeriodStart.ToLocalTime().ToString("yyyy-MM-dd")</MudText>
+                            <MudText><b>Period End:</b> @_details.Subscription.PeriodEnd.ToLocalTime().ToString("yyyy-MM-dd")</MudText>
+                            <MudText><b>Subscription Id:</b> @_details.Subscription.Id</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="7" >
+                <MudCard Class="subs-card">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Actions</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudStack Spacing="2" Class="subs-actions">
+                            <MudSelect T="Recuria.Client.PlanType"
+                                Label="Select Plan"
+                                Variant="Variant.Outlined"
+                                Dense="true"
+                                @bind-Value="_selectedPlan">
+                                <MudSelectItem Value="Recuria.Client.PlanType.Free">Free</MudSelectItem>
+
+                                <MudSelectItem Value="Recuria.Client.PlanType.Pro">Pro</MudSelectItem>
+                                <MudSelectItem Value="Recuria.Client.PlanType.Enterprise">Enterprise</MudSelectItem>
+                            </MudSelect>
+
+                            <MudButton Variant="Variant.Filled"
+                                    Color="Color.Primary"
+                                    Disabled="@(!_canUpgrade || _busy || _selectedPlan == _details.Subscription.PlanCode)"
+                                    OnClick="UpgradePlan">
+                                Upgrade / Change Plan
+                            </MudButton>
+
+                            <MudButton Variant="Variant.Outlined"
+                                    Color="Color.Error"
+                                    Disabled="@(!_canCancel || _busy)"
+                                    OnClick="CancelSubscription">
+                                Cancel Subscription
+                            </MudButton>
+
+                            <MudButton Variant="Variant.Text"
+                                       Color="Color.Default"
+                                       Disabled="_busy"
+                                       OnClick="LoadData">
+                                Refresh
+                            </MudButton>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
         </MudGrid>
     }
 
