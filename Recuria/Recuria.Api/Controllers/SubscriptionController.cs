@@ -65,6 +65,8 @@ namespace Recuria.Api.Controllers
         /// </summary>
         [HttpPost("trial/{organizationId:guid}")]
         [Authorize(Policy = "AdminOrOwner")]
+        [ProducesResponseType(typeof(SubscriptionDetailsDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<SubscriptionDto>> CreateTrial(Guid organizationId, CancellationToken ct)
         {
             if (!IsSameOrganization(organizationId))
