@@ -40,4 +40,23 @@
     private string? _error;
     private bool _loading;
     private Recuria.Client.InvoiceDetailsDto? _invoice;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            _invoice = await Api.InvoicesGETAsync(InvoiceId);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
 }
