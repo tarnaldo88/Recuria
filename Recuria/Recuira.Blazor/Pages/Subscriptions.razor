@@ -85,9 +85,16 @@
                                     Color="Color.Error"
                                     Disabled="@(!_canCancel || _busy)"
                                     OnClick="CancelSubscription">
-                                Cancel Subscription
+                                @(_details?.Subscription.Status == Recuria.Client.SubscriptionStatus.Trial
+                                    ? "End Trial"
+                                    : "Cancel Subscription")
                             </MudButton>
-
+                            @if (!_canCancel)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    Cancellation is only available for trial, active, or past-due subscriptions.
+                                </MudText>
+                            }
                             <MudButton Variant="Variant.Text"
                                        Color="Color.Default"
                                        Disabled="_busy"
