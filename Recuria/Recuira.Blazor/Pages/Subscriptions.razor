@@ -47,7 +47,7 @@
                             <MudText><b>Trial:</b> @(_details.Subscription.IsTrial ? "Yes" : "No")</MudText>
                             <MudText><b>Past Due:</b> @(_details.Subscription.IsPastDue ? "Yes" : "No")</MudText>
                             <MudText><b>Period Start:</b> @_details.Subscription.PeriodStart.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudText>
-                            <MudText><b>Period End:</b> @_details.Subscription.PeriodEnd.ToLocalTime().ToString("yyyy-MM-dd")</MudText>
+                            <MudText><b>Period End:</b> @_details.Subscription.PeriodEnd.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudText>
                             <MudText><b>Subscription Id:</b> @_details.Subscription.Id</MudText>
                         </MudStack>
                     </MudCardContent>
