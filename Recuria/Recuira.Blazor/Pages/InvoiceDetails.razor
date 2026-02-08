@@ -1,5 +1,18 @@
-﻿<h3>InvoiceDetails</h3>
+﻿@page "/invoices/{InvoiceId:guid}"
+@inject Recuria.Client.IRecuriaApiClient Api
+@inject NavigationManager Nav
+
+<PageTitle>Invoice Details</PageTitle>
+
+<MudStack Spacing="3">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+        <MudText Typo="Typo.h4">Invoice Details</MudText>
+        <MudButton Variant="Variant.Outlined"  OnClick="@(() => Nav.NavigateTo("/invoices"))">
+            Back to Invoices
+        </MudButton>
+    </MudStack>
+</MudStack>
 
 @code {
-
+    private string? _error;
 }
