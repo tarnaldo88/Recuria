@@ -19,6 +19,26 @@
 
     private async Task LoadAll()
     {
-        
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            _whoami = await Api.WhoamiAsync();
+            _org = await Api.MeAsync();
+            _subscription = await Api.Current2Async();
+        }
+        catch(Recuria.Client.ApiException ex) when (ex.StatusCode == 404)
+        {
+            _subscription = null;
+        }
+        catch(Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 }
