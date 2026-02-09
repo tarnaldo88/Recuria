@@ -20,6 +20,10 @@
     private string? _newEmail;
     private Recuria.Client.UserRole _newRole = Recuria.Client.UserRole.Member;
 
+    private string? _lookupUserId;
+    private Recuria.Client.User? _selectedUser;
+    private Recuria.Client.UserRole _selectedRole = Recuria.Client.UserRole.Member;
+
     protected override async Task OnInitializedAsync() => await LoadContext();
 
     private async Task LoadContext()
@@ -73,7 +77,14 @@
 
         try
         {
+            if(!Guid.TryParse(_lookupUserId, out var userId))
+            {
+                _error = "Enter a valid user id.";
+                return;
+            }
 
+            _selectedUser = await Api.UsersGETAsync(userId);
+            _selectedRole = _selectedUser.Role;
         }
         catch(Exception ex)
         {
