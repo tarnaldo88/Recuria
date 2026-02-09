@@ -5,7 +5,32 @@
 <PageTitle>Settings</PageTitle>
 
 <MudStack Spacing="3">
+     <MudText Typo="Typo.h4">Settings</MudText>
 
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Dense="true">@_error</MudAlert>
+    }
+
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudCard>
+                <MudCardHeader><CardHeaderContent><MudText Typo="Typo.h6">Session</MudText></CardHeaderContent></MudCardHeader>
+                <MudCardContent>
+                    @if (_whoami is null)
+                    {
+                        <MudText Typo="Typo.body2">Loading...</MudText>
+                    }
+                    else
+                    {
+                        <MudText><b>Subject:</b> @_whoami.Subject</MudText>
+                        <MudText><b>Organization:</b> @_whoami.OrganizationId</MudText>
+                        <MudText><b>Role:</b> @_whoami.Role</MudText>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
 </MudStack>
 
 @code {
