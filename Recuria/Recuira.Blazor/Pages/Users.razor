@@ -24,6 +24,17 @@
 
     private async Task LoadContext()
     {
-        
+        _error = null;
+        _info = null;
+        var orgIdRaw = await Auth.GetOrgIdAsync();
+
+        if(string.IsNullOrWhiteSpace(orgIdRaw))
+        {
+            _error = "No organization id found. Go to /bootstrap first.";
+            return;
+        }
+
+        _orgId = Guid.Parse(orgIdRaw);
+        _org = await Api.MeAsync();
     }
 }
