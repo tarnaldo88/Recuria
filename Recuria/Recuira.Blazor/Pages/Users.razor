@@ -131,7 +131,16 @@
 
         try
         {
-
+            await Api.UsersDELETEAsync(_orgId, _selectedUser.Id);
+            _info = "User removed.";
+            _selectedUser = null;
+            await LoadContext();
+        }
+        catch (Recuria.Client.ApiException ex) when (ex.StatusCode == 204)
+        {
+            _info = "User removed.";
+            _selectedUser = null;
+            await LoadContext();
         }
         catch (Exception ex)
         {
