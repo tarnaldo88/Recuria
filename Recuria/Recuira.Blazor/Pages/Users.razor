@@ -37,4 +37,31 @@
         _orgId = Guid.Parse(orgIdRaw);
         _org = await Api.MeAsync();
     }
+
+    private async Task AddUser()
+    {
+        _busy = true;
+        _error = null;
+        _info = null;
+
+        try
+        {
+            await Api.UsersPOSTAsync(_orgId, new Recuria.Client.AddUserRequest
+            {
+                UserId = Guid.NewGuid(),
+                Name = string.IsNullOrWhiteSpace(_newName) ? _newEmail : _newName,
+                Email = _newEmail?.Trim(),
+                Role = _newRole
+            });
+            _info = "User added.";
+            await LoadContext();
+        }
+        catch (Recuria.Client.ApiException ex) when (ex.StatusCode == 204) // stale client expecting 200
+        {
+            _info = "User added.";
+            await LoadContext();
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _busy = false; }
+    }
 }
