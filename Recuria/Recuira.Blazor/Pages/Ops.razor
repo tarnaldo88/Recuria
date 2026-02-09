@@ -23,7 +23,38 @@
     </MudStack>
 
     <MudCard>
-
+        <MudCardContent>
+            @if (_loading)
+            {
+                <MudSkeleton Height="160px" Width="100%" />
+            }
+            else
+            {
+                <MudTable T="Recuria.Client.DeadLetteredOutboxItem" Items="_items" Dense="true" Hover="true">
+                    <HeaderContent>
+                        <MudTh>Dead-Lettered</MudTh>
+                        <MudTh>Type</MudTh>
+                        <MudTh>Retries</MudTh>
+                        <MudTh>Error</MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.DeadLetteredOnUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudTd>
+                        <MudTd>@context.Type</MudTd>
+                        <MudTd>@context.RetryCount</MudTd>
+                        <MudTd>@context.Error</MudTd>
+                        <MudTd>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" Disabled="_busy" OnClick="@(() => Retry(context.Id))">
+                                Retry
+                            </MudButton>
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <MudText Typo="Typo.body2">No dead-lettered messages.</MudText>
+                    </NoRecordsContent>
+                </MudTable>
+            }
+        </MudCardContent>
     </MudCard>
  </MudStack>
 
