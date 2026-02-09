@@ -1,4 +1,5 @@
 ﻿@page "/settings"
+@inject Recuira.Blazor.Services.AuthState Auth
 @inject Recuria.Client.IRecuriaApiClient Api
 @using System.Globalization
 
@@ -91,7 +92,16 @@
         {
             _whoami = await Api.WhoamiAsync();
             _org = await Api.MeAsync();
-            _subscription = await Api.Current2Async();
+            var orgIdRaw = await Auth.GetOrgIdAsync();
+            if (string.IsNullOrWhiteSpace(orgIdRaw))
+            {
+                _subscription = null;
+            }
+            else
+            {
+                var orgId = Guid.Parse(orgIdRaw);
+                _subscription = await Api.CurrentAsync(orgId);
+            }
         }
         catch(Recuria.Client.ApiException ex) when (ex.StatusCode == 404)
         {
