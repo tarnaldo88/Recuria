@@ -1,5 +1,29 @@
-﻿<h3>Users</h3>
+﻿@page "/users"
+@inject Recuira.Blazor.Services.AuthState Auth
+@inject Recuria.Client.IRecuriaApiClient Api
+@using System.Globalization
+
+<PageTitle>Users</PageTitle>
+
+<MudStack Spacing="3">
+
+</MudStack>
 
 @code {
+    private bool _busy;
+    private string? _error;
+    private string? _info;
+    private Guid _orgId;
+    private Recuria.Client.OrganizationDto? _org;
 
+    private string? _newName;
+    private string? _newEmail;
+    private Recuria.Client.UserRole _newRole = Recuria.Client.UserRole.Member;
+
+    protected override async Task OnInitializedAsync() => await LoadContext();
+
+    private async Task LoadContext()
+    {
+        
+    }
 }
