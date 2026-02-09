@@ -7,4 +7,27 @@
     <MudNavLink Href="/subscriptions" Icon="@Icons.Material.Filled.Subscriptions">Subscriptions</MudNavLink>
     <MudNavLink Href="/users" Icon="@Icons.Material.Filled.Group">Users</MudNavLink>
     <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings">Settings</MudNavLink>
+
+    @if (_canSeeOps)
+    {
+        <MudNavLink Href="/ops" Icon="@Icons.Material.Filled.AdminPanelSettings">Ops</MudNavLink>
+    }
 </MudNavMenu>
+
+@code {
+    private bool _canSeeOps = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var who = await Api.WhoAmIAsync();
+            var role = Who?.Role?.Trim();
+            _canSeeOps = role is "Owner" or "Admin";
+        }
+        catch(Exception ex)
+        {
+            _canSeeOps = false;
+        }
+    }
+}
