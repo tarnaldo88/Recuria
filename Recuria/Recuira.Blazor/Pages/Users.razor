@@ -108,17 +108,26 @@
             }
         </MudCardContent>
 
-        <MudCard>
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Users</MudText>
-                </CardHeaderContent>
-
-                <MudTable T="Recuria.Client.User" Items="FilteredUsers" Dense="true" Hover="true">
-
-                </MudTable>
-            </MudCardHeader>
-        </MudCard>
+        <MudTable T="Recuria.Client.User" Items="FilteredUsers" Dense="true" Hover="true">
+            <HeaderContent>
+                <MudTh>Id</MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>Email</MudTh>
+                <MudTh>Role</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Id</MudTd>
+                <MudTd>@context.Name</MudTd>
+                <MudTd>@context.Email</MudTd>
+                <MudTd>@context.Role</MudTd>
+                <MudTd>
+                    <MudStack Row="true" Spacing="1">
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" Disabled="_busy" OnClick="@(() => SelectUser(context))">Select</MudButton>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" Disabled="_busy" OnClick="@(() => RemoveUser(context.Id))">Remove</MudButton>
+                    </MudStack>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
     </MudCard>
     </MudStack>
 
@@ -227,6 +236,12 @@
         {
             _busy = false;
         }
+    }
+
+    private void SelectUser(Recuria.Client.User user)
+    {
+        _selectedUser = user;
+        _selectedRole = user.Role;
     }
 
     private async Task ChangeRole()
