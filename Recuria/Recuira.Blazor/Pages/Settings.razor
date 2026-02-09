@@ -30,7 +30,30 @@
                 </MudCardContent>
             </MudCard>
         </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudCard>
+                <MudCardHeader><CardHeaderContent><MudText Typo="Typo.h6">Organization</MudText></CardHeaderContent></MudCardHeader>
+                <MudCardContent>
+                    @if(_org is null)
+                    {
+                        <MudText Typo="Typo.body2">Loading...</MudText>
+                    }
+                    else
+                    {
+                        <MudText><b>Name:</b> @_org.Name</MudText>
+                        <MudText><b>Owner:</b> @_org.OwnerEmail</MudText>
+                        <MudText><b>Users:</b> @_org.UserCount</MudText>
+                        <MudText><b>Created:</b> @_org.CreatedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudText>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
     </MudGrid>
+
+    <MudCard>
+
+    </MudCard>
 </MudStack>
 
 @code {
