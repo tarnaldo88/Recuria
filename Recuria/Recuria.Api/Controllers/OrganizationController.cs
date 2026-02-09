@@ -203,6 +203,25 @@ namespace Recuria.Api.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Get users from the same organization.
+        /// </summary>
+        [HttpGet("{id:guid}/users")]
+        [Authorize(Policy = "AdminOrOwner")]
+        public async Task<ActionResult<IReadOnlyList<UserSummaryDto>>> GetUsers(Guid id, CancellationToken ct)
+        {
+            if (!IsSameOrganization(id))
+                return Forbid();
+
+            var users = await _queries.GetUsersAsync(id, ct); // add query method
+            return Ok(users);
+        }
+
+        /// <summary>
+        /// Check if the user is in the same organization.
+        /// </summary>
+        /// <param name="organizationId">The organization ID to check.</param>
+        /// <returns>True if the user is in the same organization, false otherwise.</returns>
         private bool IsSameOrganization(Guid organizationId)
         {
             var orgClaim = User.FindFirst("org_id")?.Value;
