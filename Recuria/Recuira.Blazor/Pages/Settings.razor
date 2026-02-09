@@ -52,8 +52,25 @@
     </MudGrid>
 
     <MudCard>
-
+        <MudCardHeader><CardHeaderContent><MudText Typo="Typo.h6">Current Subscription</MudText></CardHeaderContent></MudCardHeader>
+        <MudCardContent>
+            @if(_subscription is null)
+            {
+                <MudText Typo="Typo.body2">No current subscription.</MudText>
+            }
+            else
+            {
+                <MudText><b>Plan:</b>@_subscription.Subscription.PlanCode</MudText>
+                <MudText><b>Status:</b> @_subscription.Subscription.Status</MudText>
+                <MudText><b>Start:</b> @_subscription.Subscription.PeriodStart.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudText>
+                <MudText><b>End:</b> @_subscription.Subscription.PeriodEnd.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudText>
+            }
+        </MudCardContent>
     </MudCard>
+
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="LoadAll" Disabled="_loading">
+        Refresh
+    </MudButton>
 </MudStack>
 
 @code {
