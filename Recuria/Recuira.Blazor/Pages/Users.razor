@@ -8,46 +8,34 @@
 <MudStack Spacing="3">
     <MudText Typo="Typo.h4">Users</MudText>
 
-    @if(!string.IsNullOrWhiteSpace(_error))
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Dense="true">@_error</MudAlert>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(_info))
     {
         <MudAlert Severity="Severity.Success" Dense="true">@_info</MudAlert>
     }
 
     <MudCard>
-        <MudCardHeader>
-            <CardHeaderContent>
-                <MudText Typo="Typo.h6">Organization Summary</MudText>
-            </CardHeaderContent>
-        </MudCardHeader>
-        <MudCardContent>
-            @if(_org is null)
-            {
-                <MudText Typo="Typo.body2">Loading Organization...</MudText>
-            }
-            else
-            {
-                <MudText><b>Name:</b> @_org.Name</MudText>
-                <MudText><b>Owner:</b> @_org.OwnerEmail</MudText>
-                <MudText><b>User Count:</b> @_org.UserCount</MudText>
-                <MudText><b>Org Id:</b> @_org.Id</MudText>
-            }
-        </MudCardContent>
-    </MudCard>
-
-    <MudCard>
-        <MudCardHeader>
-            <CardHeaderContent>
-                <MudText Typo="Typo.h6">Add User</MudText>
-            </CardHeaderContent>
-        </MudCardHeader>
         <MudCardContent>
             <MudGrid>
                 <MudItem xs="12" md="4">
-                    <MudTextField @bind-Value="_newName" Label="Name" Variant="Variant.Outlined"/>
+                    <MudTextField @bind-Value="_search"
+                                  Label="Search name or email"
+                                  Variant="Variant.Outlined"
+                                  Immediate="true" />
                 </MudItem>
-                <MudItem xs="12" md="4">
+
+                <MudItem xs="12" md="3">
+                    <MudTextField @bind-Value="_newName" Label="Name" Variant="Variant.Outlined" />
+                </MudItem>
+
+                <MudItem xs="12" md="3">
                     <MudTextField @bind-Value="_newEmail" Label="Email" Variant="Variant.Outlined" />
                 </MudItem>
+
                 <MudItem xs="12" md="2">
                     <MudSelect T="Recuria.Client.UserRole" @bind-Value="_newRole" Label="Role" Variant="Variant.Outlined">
                         <MudSelectItem Value="Recuria.Client.UserRole.Owner">Owner</MudSelectItem>
@@ -55,81 +43,62 @@
                         <MudSelectItem Value="Recuria.Client.UserRole.Member">Member</MudSelectItem>
                     </MudSelect>
                 </MudItem>
-                <MudItem xs="12" md="2" Class="d-flex align-end">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Disabled="_busy" OnClick="AddUser">
-                        Add
-                    </MudButton>
+
+                <MudItem xs="12">
+                    <MudStack Row="true" Spacing="2">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_busy" OnClick="AddUser">Add User</MudButton>
+                        <MudButton Variant="Variant.Outlined" Disabled="_busy" OnClick="LoadUsers">Refresh</MudButton>
+                    </MudStack>
                 </MudItem>
             </MudGrid>
         </MudCardContent>
     </MudCard>
 
-    <MudCard>
-        <MudCardHeader>
-            <CardHeaderContent>
-                <MudText Typo="Typo.h6">User Actions(Lookup by Id)</MudText>
-            </CardHeaderContent>
-        </MudCardHeader>
-        <MudCardContent>
-            <MudGrid>
-                <MudItem xs="12" md="8">
-                    <MudTextField @bind-Value="_lookupUserId" Label="User Id (GUID)" Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" md="4" Class="d-flex align-end">
-                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true" Disabled="_busy" OnClick="LookupUser">
-                        Lookup
-                    </MudButton>
-                </MudItem>
-            </MudGrid>
+    <MudTable T="Recuria.Client.User" Items="FilteredUsers" Dense="true" Hover="true">
+        <HeaderContent>
+            <MudTh>Name</MudTh>
+            <MudTh>Email</MudTh>
+            <MudTh>Role</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Name</MudTd>
+            <MudTd>@context.Email</MudTd>
+            <MudTd>@context.Role</MudTd>
+            <MudTd>
+                <MudStack Row="true" Spacing="1">
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Disabled="_busy" OnClick="@(() => SelectUser(context))">Select</MudButton>
+                    <MudButton Variant="Variant.Text" Color="Color.Error" Disabled="_busy" OnClick="@(() => RemoveUser(context.Id))">Remove</MudButton>
+                </MudStack>
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2">No users found.</MudText>
+        </NoRecordsContent>
+    </MudTable>
 
-            @if(_selectedUser is not null)
-            {
-                <MudDivider Class="my-3" />
-                <MudText><b>Name:</b> @_selectedUser.Name</MudText>
-                <MudText><b>Email:</b> @_selectedUser.Email</MudText>
-                <MudText><b>Role:</b> @_selectedUser.Role</MudText>
-                <MudText><b>Organization:</b> @_selectedUser.OrganizationId</MudText>
-
-                <MudStack Row="true" Spacing="2" Class="mt-3">
+    @if (_selectedUser is not null)
+    {
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Edit Role - @_selectedUser.Email</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
                     <MudSelect T="Recuria.Client.UserRole" @bind-Value="_selectedRole" Label="New Role" Variant="Variant.Outlined">
                         <MudSelectItem Value="Recuria.Client.UserRole.Owner">Owner</MudSelectItem>
                         <MudSelectItem Value="Recuria.Client.UserRole.Admin">Admin</MudSelectItem>
                         <MudSelectItem Value="Recuria.Client.UserRole.Member">Member</MudSelectItem>
                     </MudSelect>
 
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_busy" OnClick="ChangeRole">
-                        Update Role
-                    </MudButton>
-
-                    <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_busy" OnClick="RemoveUser">
-                        Remove User
-                    </MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_busy" OnClick="ChangeRole">Update Role</MudButton>
                 </MudStack>
-            }
-        </MudCardContent>
-
-        <MudTable T="Recuria.Client.User" Items="FilteredUsers" Dense="true" Hover="true">
-            <HeaderContent>
-                <MudTh>Id</MudTh>
-                <MudTh>Name</MudTh>
-                <MudTh>Email</MudTh>
-                <MudTh>Role</MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd>@context.Id</MudTd>
-                <MudTd>@context.Name</MudTd>
-                <MudTd>@context.Email</MudTd>
-                <MudTd>@context.Role</MudTd>
-                <MudTd>
-                    <MudStack Row="true" Spacing="1">
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" Disabled="_busy" OnClick="@(() => SelectUser(context))">Select</MudButton>
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" Disabled="_busy" OnClick="@(() => RemoveUser(context.Id))">Remove</MudButton>
-                    </MudStack>
-                </MudTd>
-            </RowTemplate>
-        </MudTable>
-    </MudCard>
-    </MudStack>
+            </MudCardContent>
+        </MudCard>
+    }
+</MudStack>
 
 @code {
     private bool _busy;
@@ -274,7 +243,7 @@
         }
     }
 
-    private async Task RemoveUser()
+    private async Task RemoveUser(Guid userId)
     {
         if (_selectedUser is null)
             return;
