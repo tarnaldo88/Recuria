@@ -54,7 +54,7 @@
         </MudCardContent>
     </MudCard>
 
-    <MudTable T="Recuria.Client.User" Items="FilteredUsers" Dense="true" Hover="true">
+    <MudTable T="Recuria.Client.UserSummaryDto" Items="FilteredUsers" Dense="true" Hover="true">
         <HeaderContent>
             <MudTh>Name</MudTh>
             <MudTh>Email</MudTh>
@@ -112,12 +112,12 @@
     private string? _newEmail;
     private Recuria.Client.UserRole _newRole = Recuria.Client.UserRole.Member;
 
-    private List<Recuria.Client.User> _users = new();
+    private List<Recuria.Client.UserSummaryDto> _users = new();
     private string? _lookupUserId;
-    private Recuria.Client.User? _selectedUser;
+    private Recuria.Client.UserSummaryDto? _selectedUser;
     private Recuria.Client.UserRole _selectedRole = Recuria.Client.UserRole.Member;
 
-    private IEnumerable<Recuria.Client.User> FilteredUsers =>
+    private IEnumerable<Recuria.Client.UserSummaryDto> FilteredUsers =>
         string.IsNullOrWhiteSpace(_search)
             ? _users
             : _users.Where(u =>
@@ -188,13 +188,13 @@
             // Replace with your generated NSwag method name for:
             // GET /api/organizations/{id}/users
             // Example: _users = (await Api.UsersGET2Async(_orgId)).ToList();
-            _users = (await Api.UsersGETAsync(_orgId)).ToList();
+            _users = (await Api.UsersAllAsync(_orgId)).ToList();
         }
         catch (Exception ex) { _error = ex.Message; }
         finally { _busy = false; }
     }
 
-    private void SelectUser(Recuria.Client.User user)
+    private void SelectUser(Recuria.Client.UserSummaryDto user)
     {
         _selectedUser = user;
         _selectedRole = user.Role;
