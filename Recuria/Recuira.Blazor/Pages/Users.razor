@@ -180,31 +180,18 @@
         finally { _busy = false; }
     }
 
-    private async Task LookupUser()
+    private async Task LoadUsers()
     {
-        _busy = true;
-        _error = null;
-        _info = null;
-
+        _busy = true; _error = null; _info = null;
         try
         {
-            if(!Guid.TryParse(_lookupUserId, out var userId))
-            {
-                _error = "Enter a valid user id.";
-                return;
-            }
-
-            _selectedUser = await Api.UsersGETAsync(userId);
-            _selectedRole = _selectedUser.Role;
+            // Replace with your generated NSwag method name for:
+            // GET /api/organizations/{id}/users
+            // Example: _users = (await Api.UsersGET2Async(_orgId)).ToList();
+            _users = (await Api.UsersGET2Async(_orgId)).ToList();
         }
-        catch(Exception ex)
-        {
-            _error = ex.Message;
-        }
-        finally
-        {
-            _busy = false;
-        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _busy = false; }
     }
 
     private void SelectUser(Recuria.Client.User user)
@@ -215,32 +202,26 @@
 
     private async Task ChangeRole()
     {
-        if (_selectedUser is null)
-            return;
+        if (_selectedUser is null) return;
 
-        _busy = true;
-        _error = null;
-        _info = null;
-
+        _busy = true; _error = null; _info = null;
         try
         {
-            await Api.RoleAsync(_orgId, _selectedUser.Id, new Recuria.Client.ChangeUserRoleRequest { NewRole = _selectedRole });
+            await Api.RoleAsync(_orgId, _selectedUser.Id, new Recuria.Client.ChangeUserRoleRequest
+            {
+                NewRole = _selectedRole
+            });
+
             _info = "Role updated.";
-            await LookupUser();
+            await LoadUsers();
         }
         catch (Recuria.Client.ApiException ex) when (ex.StatusCode == 204)
         {
             _info = "Role updated.";
-            await LookupUser();
+            await LoadUsers();
         }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
-        }
-        finally
-        {
-            _busy = false;
-        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _busy = false; }
     }
 
     private async Task RemoveUser(Guid userId)
