@@ -1,5 +1,41 @@
-﻿<h3>Ops</h3>
+﻿@page "/ops"
+@inject Recuria.Client.IRecuriaApiClient Api
+@using System.Globalization
+
+<PageTitle>Ops</PageTitle>
+
+<MudStack Spacing="3">
+
+</MudStack>
 
 @code {
+    private bool _loading = true;
+    private bool _busy;
+    private int _take = 50;
+    private string? _error;
+    private string? _info;
+    private List<Recuria.Client.DeadLetteredOutboxItem> _items = new();
 
+    protected override async Task OnInitializedAsync() => await LoadDeadLettered();
+
+    private async Task LoadDeadLettered()
+    {
+        _loading = true;
+        _error = null;
+        _info = null;
+
+        try
+        {
+            var result = await Api.DeadLetteredAsync(_take);
+            _items = result.OrderByDescending(XAxisLabelPosition => XAxisLabelPosition.DeadLetteredOnUtc).ToList();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
 }
