@@ -1,4 +1,5 @@
 ﻿@using MudBlazor
+@inject Recuria.Client.IRecuriaApiClient Api
 
 <MudNavMenu Class="pa-2">
     <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
@@ -21,8 +22,8 @@
     {
         try
         {
-            var who = await Api.WhoAmIAsync();
-            var role = Who?.Role?.Trim();
+            var who = await Api.WhoamiAsync();
+            var role = who?.Role?.Trim();
             _canSeeOps = role is "Owner" or "Admin";
         }
         catch(Exception ex)
