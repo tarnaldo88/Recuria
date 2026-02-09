@@ -104,7 +104,14 @@
 
         try
         {
-
+            await Api.RoleAsync(_orgId, _selectedUser.Id, new Recuria.Client.ChangeUserRoleRequest { NewRole = _selectedRole });
+            _info = "Role updated.";
+            await LookupUser();
+        }
+        catch (Recuria.Client.ApiException ex) when (ex.StatusCode == 204)
+        {
+            _info = "Role updated.";
+            await LookupUser();
         }
         catch (Exception ex)
         {
