@@ -199,6 +199,9 @@
 
     private async Task ChangeRole()
     {
+        if (_selectedUser is null)
+            return;
+
         _busy = true;
         _error = null;
         _info = null;
@@ -226,6 +229,9 @@
 
     private async Task RemoveUser()
     {
+        if (_selectedUser is null)
+            return;
+
         _busy = true;
         _error = null;
         _info = null;
