@@ -67,16 +67,61 @@
 
     private async Task LookupUser()
     {
+        _busy = true;
+        _error = null;
+        _info = null;
 
+        try
+        {
+
+        }
+        catch(Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
     }
 
     private async Task ChangeRole()
     {
+        _busy = true;
+        _error = null;
+        _info = null;
 
+        try
+        {
+
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
     }
 
     private async Task RemoveUser()
     {
-        
+        _busy = true;
+        _error = null;
+        _info = null;
+
+        try
+        {
+
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
     }
 }
