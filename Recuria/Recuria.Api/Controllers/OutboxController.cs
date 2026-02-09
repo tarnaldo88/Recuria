@@ -8,10 +8,10 @@ using Recuria.Api.Logging;
 namespace Recuria.Api.Controllers
 {
     /// <summary>
-    /// Operational outbox endpoints (admin only).
+    /// Operational outbox endpoints (admin or owner only).
     /// </summary>
     [ApiController]
-    [Authorize(Policy = "OwnerOnly")]
+    [Authorize(Policy = "AdminOrOwner")]
     [Route("api/outbox")]
     public sealed class OutboxController : ControllerBase
     {
