@@ -21,5 +21,7 @@ namespace Recuria.Application.Interface
         Task<bool> ExistsAsync(
             Guid id,
             CancellationToken cancellationToken);
+
+        Task<IReadOnlyList<UserSummaryDto>> GetUsersAsync(Guid organizationId, CancellationToken ct);
     }
 }
