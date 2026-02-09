@@ -213,7 +213,7 @@ namespace Recuria.Api.Controllers
             if (!IsSameOrganization(id))
                 return Forbid();
 
-            var users = await _queries.GetUsersAsync(id, ct); // add query method
+            var users = await _queries.GetUsersAsync(id, ct);
             return Ok(users);
         }
 

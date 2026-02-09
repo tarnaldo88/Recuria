@@ -188,7 +188,7 @@
             // Replace with your generated NSwag method name for:
             // GET /api/organizations/{id}/users
             // Example: _users = (await Api.UsersGET2Async(_orgId)).ToList();
-            _users = (await Api.UsersGET2Async(_orgId)).ToList();
+            _users = (await Api.UsersGETAsync(_orgId)).ToList();
         }
         catch (Exception ex) { _error = ex.Message; }
         finally { _busy = false; }
