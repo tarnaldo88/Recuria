@@ -107,6 +107,18 @@
                 </MudStack>
             }
         </MudCardContent>
+
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Users</MudText>
+                </CardHeaderContent>
+
+                <MudTable T="Recuria.Client.User" Items="FilteredUsers" Dense="true" Hover="true">
+
+                </MudTable>
+            </MudCardHeader>
+        </MudCard>
     </MudCard>
     </MudStack>
 
@@ -117,15 +129,35 @@
     private Guid _orgId;
     private Recuria.Client.OrganizationDto? _org;
 
+    private string? _search;
     private string? _newName;
     private string? _newEmail;
     private Recuria.Client.UserRole _newRole = Recuria.Client.UserRole.Member;
 
+    private List<Recuria.Client.User> _users = new();
     private string? _lookupUserId;
     private Recuria.Client.User? _selectedUser;
     private Recuria.Client.UserRole _selectedRole = Recuria.Client.UserRole.Member;
 
-    protected override async Task OnInitializedAsync() => await LoadContext();
+    private IEnumerable<Recuria.Client.User> FilteredUsers =>
+        string.IsNullOrWhiteSpace(_search)
+            ? _users
+            : _users.Where(u =>
+                (u.Name ?? string.Empty).Contains(_search, StringComparison.OrdinalIgnoreCase) ||
+                (u.Email ?? string.Empty).Contains(_search, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        var orgIdRaw = await Auth.GetOrgIdAsync();
+        if(string.IsNullOrWhiteSpace(orgIdRaw))
+        {
+            _error = "No organization id found. Go to /bootstrap first.";
+            return;
+        }
+
+        _orgId = Guid.Parse(orgIdRaw);
+        await LoadContext();
+    }
 
     private async Task LoadContext()
     {
