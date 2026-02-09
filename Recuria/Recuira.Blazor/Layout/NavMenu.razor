@@ -26,7 +26,7 @@
             var role = who?.Role?.Trim();
             _canSeeOps = role is "Owner" or "Admin";
         }
-        catch(Exception ex)
+        catch
         {
             _canSeeOps = false;
         }
