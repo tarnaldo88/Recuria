@@ -38,4 +38,24 @@
             _loading = false;
         }
     }
+
+    private async Task Retry(Guid id)
+    {
+        _busy = true;
+        _error = null;
+        _info = null;
+        try
+        {
+            await Api.RetryAsync(id);
+            _info = "Message requeued.";
+            await LoadDeadLettered();
+        }
+        catch (Recuria.Client.ApiException ex) when (ex.StatusCode == 204) // stale client expecting 200
+        {
+            _info = "Message requeued.";
+            await LoadDeadLettered();
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _busy = false; }
+    }
 }
