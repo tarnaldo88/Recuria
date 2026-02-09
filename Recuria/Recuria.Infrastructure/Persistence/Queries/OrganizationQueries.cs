@@ -107,6 +107,21 @@ namespace Recuria.Infrastructure.Persistence.Queries
                 ))
                 .FirstOrDefaultAsync(cancellationToken);
         }
+
+        public async Task<IReadOnlyList<UserSummaryDto>> GetUsersAsync(Guid organizationId, CancellationToken ct)
+        {
+            return await _db.Users
+                .Where(u => u.OrganizationId == organizationId)
+                .OrderBy(u => u.Name)
+                .Select(u => new UserSummaryDto(
+                    u.Id,
+                    u.Name,
+                    u.Email,
+                    u.Role,
+                    u.OrganizationId
+                ))
+                .ToListAsync(ct);
+        }
     }
 
 }
