@@ -6,8 +6,38 @@
 <PageTitle>Users</PageTitle>
 
 <MudStack Spacing="3">
+    <MudText Typo="Typo.h4">Users</MudText>
 
-</MudStack>
+    @if(!string.IsNullOrWhiteSpace(_error))
+    {
+        <MudAlert Severity="Severity.Success" Dense="true">@_info</MudAlert>
+    }
+
+    <MudCard>
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">Organization Summary</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            @if(_org is null)
+            {
+                <MudText Typo="Typo.body2">Loading Organization...</MudText>
+            }
+            else
+            {
+                <MudText><b>Name:</b> @_org.Name</MudText>
+                <MudText><b>Owner:</b> @_org.OwnerEmail</MudText>
+                <MudText><b>User Count:</b> @_org.UserCount</MudText>
+                <MudText><b>Org Id:</b> @_org.Id</MudText>
+            }
+        </MudCardContent>
+    </MudCard>
+
+    <MudCard>
+
+    </MudCard>
+    </MudStack>
 
 @code {
     private bool _busy;
