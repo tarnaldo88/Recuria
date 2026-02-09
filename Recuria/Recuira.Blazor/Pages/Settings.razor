@@ -1,5 +1,24 @@
-﻿<h3>Settings</h3>
+﻿@page "/settings"
+@inject Recuria.Client.IRecuriaApiClient Api
+@using System.Globalization
+
+<PageTitle>Settings</PageTitle>
+
+<MudStack Spacing="3">
+
+</MudStack>
 
 @code {
+    private bool _loading;
+    private string? _error;
+    private Recuria.Client.WhoAmIResponse? _whoami;
+    private Recuria.Client.OrganizationDto? _org;
+    private Recuria.Client.SubscriptionDetailsDto? _subscription;
 
+    protected override async Task OnInitializedAsync() => await LoadAll();
+
+    private async Task LoadAll()
+    {
+        
+    }
 }
