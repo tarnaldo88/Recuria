@@ -1,4 +1,7 @@
-﻿<Router AppAssembly="@typeof(App).Assembly">
+﻿@inject Recuira.Blazor.Services.AuthState Auth
+@inject NavigationManager Nav
+
+<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
@@ -10,3 +13,17 @@
         </LayoutView>
     </NotFound>
 </Router>
+
+@code {
+    private static readonly HashSet<string> PublicRoutes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "",
+        "login",
+        "bootstrap"
+    };
+
+    private async Task GuardNavigation(MudBlazor.NavigationContext context)
+    {
+        
+    }
+}
