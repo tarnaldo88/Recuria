@@ -11,6 +11,7 @@ namespace Recuria.Application.Interface.Abstractions
     {
         Task AddAsync(User owner, CancellationToken none);
         Task<User?> GetByIdAsync(Guid id, CancellationToken ct);
+        Task<User?> GetByEmailInOrganizationAsync(Guid organizationId, string email, CancellationToken ct);
         void Update(User user);
     }
 }

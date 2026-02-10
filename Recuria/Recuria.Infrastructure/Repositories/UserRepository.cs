@@ -33,6 +33,16 @@ namespace Recuria.Infrastructure.Repositories
             return await _db.Users.FirstOrDefaultAsync(u => u.Id == id, ct);
         }
 
+        public async Task<User?> GetByEmailInOrganizationAsync(
+            Guid organizationId,
+            string email,
+            CancellationToken ct)
+        {
+            return await _db.Users.FirstOrDefaultAsync(
+                u => u.OrganizationId == organizationId && u.Email == email,
+                ct);
+        }
+
         public void Update(User user)
         {
             if (user is null) throw new ArgumentNullException(nameof(user));
