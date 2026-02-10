@@ -8,7 +8,7 @@
 <MudStack Spacing="3" Style="max-width:560px;">
     <MudText Typo="Typo.h4">Sign In</MudText>
     <MudText Typo="Typo.body2">
-        Temporary development sign-in. Replace with real auth provider next.
+        Sign in to continue. This environment uses bootstrap auth for local development.
     </MudText>
 
     @if (!string.IsNullOrWhiteSpace(_error))
@@ -40,6 +40,14 @@
 
     private async Task SignIn()
     {
+        if (string.IsNullOrWhiteSpace(_orgName) ||
+            string.IsNullOrWhiteSpace(_ownerEmail) ||
+            string.IsNullOrWhiteSpace(_ownerName))
+        {
+            _error = "Organization, email, and display name are required.";
+            return;
+        }
+
         _busy = true;
         _error = null;
 
@@ -54,7 +62,7 @@
 
             await Auth.SetAuthAsync(result.Token!, result.OrganizationId.ToString());
 
-            var target = string.IsNullOrWhiteSpace(ReturnUrl) ? "/dashboard" : ReturnUrl;
+            var target = NormalizeReturnUrl(ReturnUrl);
             Nav.NavigateTo(target, forceLoad: false);
         }
         catch (Exception ex)
@@ -65,5 +73,16 @@
         {
             _busy = false;
         }
+    }
+
+    private static string NormalizeReturnUrl(string? returnUrl)
+    {
+        if (string.IsNullOrWhiteSpace(returnUrl))
+            return "/dashboard";
+
+        if (!returnUrl.StartsWith("/", StringComparison.Ordinal) || returnUrl.StartsWith("//", StringComparison.Ordinal))
+            return "/dashboard";
+
+        return returnUrl;
     }
 }
