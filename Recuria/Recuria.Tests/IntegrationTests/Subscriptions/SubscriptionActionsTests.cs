@@ -1,7 +1,10 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Recuria.Application.Contracts.Subscription;
+using Recuria.Application.Interface.Abstractions;
+using Recuria.Domain;
 using Recuria.Domain.Enums;
 using Recuria.Tests.IntegrationTests.Infrastructure;
 
@@ -14,21 +17,43 @@ public sealed class SubscriptionActionsTests : IntegrationTestBase
     [Fact]
     public async Task Trial_Subscription_Should_Allow_Cancel()
     {
-        // Seed org via existing flow in your project or helper
-        var orgId = Guid.NewGuid();
-        var userId = Guid.NewGuid();
-        SetAuthHeader(userId, orgId, UserRole.Owner);
+        var (orgId, ownerId) = await SeedOrganizationWithOwnerAsync();
+        SetAuthHeader(ownerId, orgId, UserRole.Owner);
 
-        // create trial if needed in your setup
-        await Client.PostAsJsonAsync($"/api/subscriptions/trial/{orgId}", new { }, JsonOptions);
+        var createTrialResponse = await Client.PostAsJsonAsync($"/api/subscriptions/trial/{orgId}", new { }, JsonOptions);
+        createTrialResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var current = await Client.GetAsync($"/api/subscriptions/current/{orgId}");
-        if (current.StatusCode == HttpStatusCode.NotFound) return; // depends on your seed setup
+        var currentResponse = await Client.GetAsync($"/api/subscriptions/current/{orgId}");
+        currentResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var details = await current.Content.ReadFromJsonAsync<SubscriptionDetailsDto>(JsonOptions);
-        details!.Actions.CanCancel.Should().BeTrue();
+        var details = await currentResponse.Content.ReadFromJsonAsync<SubscriptionDetailsDto>(JsonOptions);
+        details.Should().NotBeNull();
+        details!.Subscription.Status.Should().Be(SubscriptionStatus.Trial);
+        details.Actions.CanCancel.Should().BeTrue();
 
-        var cancel = await Client.PostAsync($"/api/subscriptions/{details.Subscription.Id}/cancel", JsonContent.Create(new { }));
-        cancel.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        var cancelResponse = await Client.PostAsync(
+            $"/api/subscriptions/{details.Subscription.Id}/cancel",
+            JsonContent.Create(new { }));
+
+        cancelResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    private async Task<(Guid OrganizationId, Guid OwnerId)> SeedOrganizationWithOwnerAsync()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var users = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+        var orgs = scope.ServiceProvider.GetRequiredService<IOrganizationRepository>();
+        var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+        var owner = new User($"{Guid.NewGuid()}@sub.test", "Subscription Owner");
+        await users.AddAsync(owner, CancellationToken.None);
+
+        var org = new Organization($"Org-{Guid.NewGuid()}");
+        org.AddUser(owner, UserRole.Owner);
+        await orgs.AddAsync(org, CancellationToken.None);
+
+        await uow.CommitAsync(CancellationToken.None);
+
+        return (org.Id, owner.Id);
     }
 }
