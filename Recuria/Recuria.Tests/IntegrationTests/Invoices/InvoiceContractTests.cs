@@ -25,7 +25,7 @@ public sealed class InvoiceContractTests : IntegrationTestBase
         var request = new CreateInvoiceRequest
         {
             OrganizationId = orgId,
-            Amount = 42.50,
+            Amount = 42.50m,
             Description = "Enterprise test invoice"
         };
 
