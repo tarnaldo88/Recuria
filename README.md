@@ -237,29 +237,98 @@ The Blazor WebAssembly frontend is now actively implemented with a MudBlazor UI 
 
 Testing focuses on **business behavior**, not implementation details.
 
-### Covered Areas
+### Unit Test Coverage
 
-- **OrganizationService**
-  - Organization creation
-  - User management
-  - Role enforcement
+- **Organization domain/service behavior**
+  - Owner invariants
+  - Role constraints
+  - Domain event emission
+  - Files:
+    - `Recuria/Recuria.Tests/Unit/Domain/OrganizationServiceTests.cs`
+    - `Recuria/Recuria.Tests/Unit/Domain/OrganizationSubscriptionInvoiceTests.cs`
 
-- **SubscriptionService**
-  - Trial creation
-  - Plan upgrades
-  - Cancellation logic
-  - Invoice generation
+- **Subscription lifecycle and rules**
+  - Trial creation and activation
+  - Upgrade/cancel constraints
+  - Expiration and overdue transitions
+  - Files:
+    - `Recuria/Recuria.Tests/SubscriptionServiceTests.cs`
+    - `Recuria/Recuria.Tests/SubscriptionLifecycleOrchestratorTests.cs`
 
-- **SubscriptionLifecycleOrchestrator**
-  - Trial expiration
-  - Billing period advancement
-  - Past-due transitions
-  - Cancellation after grace period
+- **Billing behavior**
+  - Invoice creation per cycle
+  - Overdue handling and grace behavior
+  - Failure/retry-oriented behavior
+  - File:
+    - `Recuria/Recuria.Tests/BillingServiceTests.cs`
 
-- **BillingService**
-  - Retry behavior
-  - Failure handling
-  - Invoice creation
+- **DI/Wiring diagnostics**
+  - Container wiring and handler registration checks
+  - File:
+    - `Recuria/Recuria.Tests/DI/DiWiringDiagnosticsTests.cs`
+
+### Integration Test Coverage
+
+- **Authorization boundaries**
+  - Org-claim mismatch checks for organization, subscription, and invoice endpoints
+  - File:
+    - `Recuria/Recuria.Tests/IntegrationTests/Auth/AuthorizationTests.cs`
+
+- **Auth identity contract**
+  - `/api/auth/whoami` payload and claims shape
+  - File:
+    - `Recuria/Recuria.Tests/IntegrationTests/Auth/WhoAmITests.cs`
+
+- **Organization workflows**
+  - Create organization
+  - Add user / change role / remove user
+  - Rollback behavior on domain event handler failure
+  - Users listing by organization (`GET /api/organizations/{id}/users`)
+  - Files:
+    - `Recuria/Recuria.Tests/IntegrationTests/Organizations/OrganizationFlowTests.cs`
+    - `Recuria/Recuria.Tests/IntegrationTests/Organizations/OrganizationRollbackTests.cs`
+    - `Recuria/Recuria.Tests/IntegrationTests/Organizations/OrganizationUsersListTests.cs`
+    - `Recuria/Recuria.Tests/IntegrationTests/Organizations/OrganizationCreatesTrialSubscriptionTests.cs`
+
+- **Subscription workflows**
+  - Trial provisioning flow
+  - Trial cancellation path
+  - Expiration behavior and related events
+  - Files:
+    - `Recuria/Recuria.Tests/IntegrationTests/Subscriptions/SubscriptionFlowTests.cs`
+    - `Recuria/Recuria.Tests/IntegrationTests/Subscriptions/SubscriptionActionsTests.cs`
+    - `Recuria/Recuria.Tests/IntegrationTests/Subscriptions/SubscriptionExpirationTests.cs`
+    - `Recuria/Recuria.Tests/IntegrationTests/Subscriptions/SubscriptionActivationTests.cs`
+
+- **Invoice workflows**
+  - Details retrieval authorization and payload correctness
+  - Description persistence and retrieval
+  - Mark-as-paid endpoint behavior (`PaidOnUtc`)
+  - File:
+    - `Recuria/Recuria.Tests/IntegrationTests/Invoices/InvoiceFlowTests.cs`
+    - `Recuria/Recuria.Tests/IntegrationTests/Invoices/InvoiceContractTests.cs`
+
+- **Ops/Outbox authorization**
+  - Role-based access checks for dead-letter listing and retry
+  - File:
+    - `Recuria/Recuria.Tests/IntegrationTests/Ops/OutboxAuthorizationTests.cs`
+
+- **Error handling contracts**
+  - ProblemDetails shape and consistency
+  - File:
+    - `Recuria/Recuria.Tests/IntegrationTests/ErrorHandling/ProblemDetailsTests.cs`
+
+### Test Command
+
+```bash
+dotnet test Recuria/Recuria.Tests/Recuria.Tests.csproj
+```
+
+### Additional Planned Coverage
+
+- Blazor component-level tests (bUnit) for key pages (`Subscriptions`, `Invoices`, `Users`)
+- API schema stability checks for OpenAPI/NSwag contract drift
+- End-to-end smoke tests for bootstrap -> subscription -> invoice lifecycle
 
 ### Testing Stack
 
