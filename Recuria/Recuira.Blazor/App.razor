@@ -1,4 +1,5 @@
 ﻿@inject Recuira.Blazor.Services.AuthState Auth
+@using Microsoft.AspNetCore.Components.Routing
 @inject NavigationManager Nav
 
 <Router AppAssembly="@typeof(App).Assembly">
@@ -22,8 +23,17 @@
         "bootstrap"
     };
 
-    private async Task GuardNavigation(MudBlazor.NavigationContext context)
+    private async Task GuardNavigation(Microsoft.AspNetCore.Components.Routing.NavigationContext context)
     {
-        
+        var path = Nav.ToBaseRelativePath(context.TargetLocation).Trim('/');
+
+        if (PublicRoutes.Contains(path))
+            return;
+
+        if (!await Auth.IsAuthenticatedAsync())
+        {
+            var returnUrl = "/" + path;
+            Nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(returnUrl)}", forceLoad: false);
+        }
     }
 }
