@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Recuria.Application.Contracts.Subscription;
 using Recuria.Application.Interface.Abstractions;
 using Recuria.Domain;
+using Recuria.Domain.Entities;
 using Recuria.Domain.Enums;
 using Recuria.Tests.IntegrationTests.Infrastructure;
 
