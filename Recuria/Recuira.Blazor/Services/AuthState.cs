@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 
-namespace Recuira.Blazor.Services
+namespace Recuria.Blazor.Services
 {
     //token + org id + role
     public sealed class AuthState

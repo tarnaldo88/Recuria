@@ -1,6 +1,6 @@
 ﻿using System.Net.Http.Headers;
 
-namespace Recuira.Blazor.Services
+namespace Recuria.Blazor.Services
 {
     public sealed class AuthHeaderHandler : DelegatingHandler
     {

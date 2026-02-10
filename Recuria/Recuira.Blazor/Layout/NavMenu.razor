@@ -1,5 +1,8 @@
 ﻿@using MudBlazor
 @inject Recuria.Client.IRecuriaApiClient Api
+@inject Recuria.Blazor.Services.AuthState Auth
+@inject NavigationManager Nav
+
 
 <MudNavMenu Class="pa-2">
     <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
@@ -15,8 +18,9 @@
     }
 </MudNavMenu>
 
-@code {
+    @code {
     private bool _canSeeOps = false;
+    private bool _isAuthenticated;
 
     protected override async Task OnInitializedAsync()
     {
@@ -25,6 +29,7 @@
             var who = await Api.WhoamiAsync();
             var role = who?.Role?.Trim();
             _canSeeOps = role is "Owner" or "Admin";
+            _isAuthenticated = await Auth.IsAuthenticatedAsync();
         }
         catch
         {

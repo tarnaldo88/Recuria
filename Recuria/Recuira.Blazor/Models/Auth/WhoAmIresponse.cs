@@ -1,4 +1,4 @@
-﻿namespace Recuira.Blazor.Models.Auth
+﻿namespace Recuria.Blazor.Models.Auth
 {
     public class WhoAmIresponse
     {

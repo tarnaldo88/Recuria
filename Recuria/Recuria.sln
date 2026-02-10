@@ -5,7 +5,7 @@ VisualStudioVersion = 18.2.11415.280
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Recuria.Api", "Recuria.Api\Recuria.Api.csproj", "{D946D31C-44D0-4E47-8308-972C1A51DFF9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Recuira.Blazor", "Recuira.Blazor\Recuira.Blazor.csproj", "{7833049A-EBFB-49E8-9883-B23168C05E8F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Recuria.Blazor", "Recuira.Blazor\Recuria.Blazor.csproj", "{7833049A-EBFB-49E8-9883-B23168C05E8F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Recuria.Domain", "Recuria.Domain\Recuria.Domain.csproj", "{DC4106DF-68DE-4B30-9DD3-2243470D34FC}"
 EndProject

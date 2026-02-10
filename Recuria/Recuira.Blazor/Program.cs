@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Recuira.Blazor;
-using Recuira.Blazor.Services;
+using Recuria.Blazor;
+using Recuria.Blazor.Services;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Services; 
 

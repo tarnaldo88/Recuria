@@ -1,7 +1,7 @@
 ﻿using Microsoft.JSInterop;
 
 
-namespace Recuira.Blazor.Services
+namespace Recuria.Blazor.Services
 {
     //localStorage helper
     public sealed class TokenStorage
