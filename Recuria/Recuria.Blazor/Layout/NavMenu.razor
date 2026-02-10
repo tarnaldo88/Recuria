@@ -55,7 +55,16 @@
 
     private async Task Logout()
     {
+        try
+        {
+            await Api.LogoutAsync();
+        }
+        catch
+        {
+            // Ignore API logout failures; still clear local session.
+        }
+
         await Auth.ClearAsync();
         Nav.NavigateTo("/login", forceLoad: false);
-    }
+    }    
 }

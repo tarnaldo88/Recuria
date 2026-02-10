@@ -7,9 +7,7 @@
 
 <MudStack Spacing="3" Style="max-width:560px;">
     <MudText Typo="Typo.h4">Sign In</MudText>
-    <MudText Typo="Typo.body2">
-        Sign in to continue. This environment uses bootstrap auth for local development.
-    </MudText>
+    <MudText Typo="Typo.body2">Use your organization ID, email, and password.</MudText>
 
     @if (!string.IsNullOrWhiteSpace(_error))
     {
@@ -18,49 +16,54 @@
 
     <MudPaper Class="pa-4">
         <MudStack Spacing="2">
-            <MudTextField @bind-Value="_orgName" Label="Organization" Variant="Variant.Outlined" />
-            <MudTextField @bind-Value="_ownerEmail" Label="Email" Variant="Variant.Outlined" />
-            <MudTextField @bind-Value="_ownerName" Label="Display Name" Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="_organizationIdText" Label="Organization ID" Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="_email" Label="Email" Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="_password" Label="Password" InputType="InputType.Password" Variant="Variant.Outlined" />
 
             <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_busy" OnClick="SignIn">
                 @(_busy ? "Signing in..." : "Sign In")
             </MudButton>
         </MudStack>
     </MudPaper>
-    </MudStack>
+</MudStack>
 
 @code {
     [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
 
-    private string _orgName = "Acme Inc";
-    private string _ownerEmail = "owner@recuria.local";
-    private string _ownerName = "Owner One";
+    private string _organizationIdText = "";
+    private string _email = "";
+    private string _password = "";
     private bool _busy;
     private string? _error;
 
     private async Task SignIn()
-    {
-        if (string.IsNullOrWhiteSpace(_orgName) ||
-            string.IsNullOrWhiteSpace(_ownerEmail) ||
-            string.IsNullOrWhiteSpace(_ownerName))
+    {             
+        _error = null;
+
+        if(!Guid.TryParse(_organizationIdText, out var organizationId))
         {
-            _error = "Organization, email, and display name are required.";
+            _error = "Organization ID must be a valid GUID.";
+            return;
+        }
+
+        if(string.IsNullOrWhiteSpace(_email) || string.IsNullOrWhiteSpace(_password))
+        {
+            _error = "Email and password are required.";
             return;
         }
 
         _busy = true;
-        _error = null;
 
         try
         {
-            var result = await Api.BootstrapAsync(new Recuria.Client.BootstrapRequest
+            var result = await Api.LoginAsync(new Recuria.Client.LoginRequest
             {
-                OrganizationName = _orgName,
-                OwnerEmail = _ownerEmail,
-                OwnerName = _ownerName
+                OrganizationId = organizationId,
+                Email = _email.Trim(),
+                Password = _password
             });
 
-            await Auth.SetAuthAsync(result.Token!, result.OrganizationId.ToString());
+            await Auth.SetAuthAsync(result.AccessToken!, result.OrganizationId.ToString());
 
             var target = NormalizeReturnUrl(ReturnUrl);
             Nav.NavigateTo(target, forceLoad: false);
