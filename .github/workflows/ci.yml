@@ -36,3 +36,72 @@ jobs:
 
       - name: Test
         run: dotnet test Recuria/Recuria.Tests/Recuria.Tests.csproj --configuration Release --no-build
+
+  contract-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Restore
+        run: dotnet restore Recuria/Recuria.sln
+
+      - name: Build API
+        run: dotnet build Recuria/Recuria.Api/Recuria.Api.csproj --configuration Release --no-restore
+
+      - name: Start API and fetch OpenAPI
+        shell: bash
+        run: |
+          dotnet run --project Recuria/Recuria.Api/Recuria.Api.csproj --launch-profile http --no-build > api.log 2>&1 &
+          API_PID=$!
+          echo "API_PID=$API_PID" >> $GITHUB_ENV
+
+          for i in {1..60}; do
+            if curl -fsS "http://localhost:5132/swagger/v1/swagger.json" -o /tmp/openapi.json; then
+              break
+            fi
+            sleep 2
+          done
+
+          if [ ! -s /tmp/openapi.json ]; then
+            echo "Failed to fetch OpenAPI document from running API."
+            cat api.log
+            exit 1
+          fi
+
+      - name: Stop API
+        if: always()
+        shell: bash
+        run: |
+          if [ -n "${API_PID:-}" ]; then
+            kill "${API_PID}" || true
+          fi
+
+      - name: Compare OpenAPI with committed spec
+        shell: bash
+        run: |
+          diff -u api/openapi.json /tmp/openapi.json
+
+      - name: Restore local tools
+        run: dotnet tool restore
+
+      - name: Regenerate NSwag client
+        run: dotnet nswag run nswag.json
+
+      - name: Ensure generated client is committed
+        shell: bash
+        run: |
+          git diff --exit-code -- Recuria/Recuria.Client/Generated/RecuriaApiClient.cs
+
+      - name: Build generated client
+        run: dotnet build Recuria/Recuria.Client/Recuria.Client.csproj --configuration Release --no-restore
+
+      - name: Build Blazor frontend
+        run: dotnet build Recuria/Recuira.Blazor/Recuira.Blazor.csproj --configuration Release --no-restore
