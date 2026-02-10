@@ -2,7 +2,7 @@
 @using Microsoft.AspNetCore.Components.Routing
 @inject NavigationManager Nav
 
-<Router AppAssembly="@typeof(App).Assembly">
+<Router AppAssembly="@typeof(App).Assembly" OnNavigateAsync="GuardNavigation">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
@@ -26,6 +26,8 @@
     private async Task GuardNavigation(Microsoft.AspNetCore.Components.Routing.NavigationContext _)
     {
         var path = Nav.ToBaseRelativePath(Nav.Uri).Trim('/');
+        if (path.Contains('?'))
+            path = path[..path.IndexOf('?')];
 
         if (PublicRoutes.Contains(path))
             return;
