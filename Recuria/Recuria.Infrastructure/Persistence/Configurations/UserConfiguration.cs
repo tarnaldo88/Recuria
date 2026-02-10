@@ -28,6 +28,18 @@ namespace Recuria.Infrastructure.Persistence.Configurations
             builder.Property(u => u.OrganizationId)
                 .IsRequired(false);
 
+            builder.Property(u => u.PasswordHash)
+                .HasMaxLength(256)
+                .IsRequired(false);
+
+            builder.Property(u => u.PasswordSalt)
+                .HasMaxLength(128)
+                .IsRequired(false);
+
+            builder.Property(u => u.TokenVersion)
+                .HasDefaultValue(0)
+                .IsRequired();
+
             builder.HasIndex(u => new { u.OrganizationId, u.Email })
                 .IsUnique();
 
