@@ -29,14 +29,14 @@ namespace Recuria.Domain
         public User(string email, string name)
         {
             Id = Guid.NewGuid();
-            Email = email;
+            Email = NormalizeEmail(email);
             Name = name;
         }
 
         public User(string email, string name, UserRole role, Organization? org)
         {
             Id = Guid.NewGuid();
-            Email = email;
+            Email = NormalizeEmail(email);
             Name = name;
             Role = role;
             Organization = org;
@@ -107,6 +107,14 @@ namespace Recuria.Domain
         public void RotateTokenVersion()
         {
             checked { TokenVersion++; }
+        }
+
+        private static string NormalizeEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                throw new ArgumentException("Email is required.", nameof(email));
+
+            return email.Trim().ToLowerInvariant();
         }
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry.Exporter.Prometheus;
@@ -13,6 +14,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Recuria.Api.Middleware;
+using Recuria.Api.Auth;
 using Recuria.Api.Configuration;
 using Recuria.Api.Logging;
 using Serilog;
@@ -246,6 +248,38 @@ builder.Services
                 : new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
         };
 
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                var principal = context.Principal;
+                if (principal is null)
+                {
+                    context.Fail("Missing principal.");
+                    return;
+                }
+
+                var tokenVersionRaw = principal.FindFirstValue("token_version");
+                if (string.IsNullOrWhiteSpace(tokenVersionRaw))
+                    return;
+
+                var userIdRaw = principal.FindFirstValue(ClaimTypes.NameIdentifier)
+                                ?? principal.FindFirstValue("sub");
+
+                if (!Guid.TryParse(userIdRaw, out var userId) ||
+                    !int.TryParse(tokenVersionRaw, out var tokenVersion))
+                {
+                    context.Fail("Invalid token claims.");
+                    return;
+                }
+
+                var users = context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
+                var user = await users.GetByIdAsync(userId, context.HttpContext.RequestAborted);
+                if (user is null || user.TokenVersion != tokenVersion)
+                    context.Fail("Token is revoked.");
+            }
+        };
+
     });
 
 builder.Services.AddAuthorization(options =>
@@ -299,6 +333,7 @@ builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProcessedEventStore, EfProcessedEventStore>();
+builder.Services.AddScoped<ITokenService, JwtTokenService>();
 //builder.Services.AddScoped<IDomainEventHandler<SubscriptionActivatedDomainEvent>, SubscriptionActivatedHandler>();
 
 

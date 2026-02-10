@@ -28,7 +28,7 @@ namespace Recuria.Api.Controllers
         /// <summary>
         /// Request to create a user.
         /// </summary>
-        public sealed record CreateUserRequest(Guid Id, string Email, string? Name);
+        public sealed record CreateUserRequest(Guid Id, string Email, string? Name, string? Password);
 
         /// <summary>
         /// Create a user.
@@ -46,6 +46,8 @@ namespace Recuria.Api.Controllers
 
             var name = string.IsNullOrWhiteSpace(request.Name) ? request.Email : request.Name;
             var user = new User(request.Email, name) { Id = request.Id };
+            if (!string.IsNullOrWhiteSpace(request.Password))
+                user.SetPassword(request.Password);
 
             await _users.AddAsync(user, ct);
             await _uow.CommitAsync(ct);

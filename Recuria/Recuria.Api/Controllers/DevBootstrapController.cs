@@ -1,14 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
+using Recuria.Api.Auth;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
 using Recuria.Application.Requests;
 using Recuria.Domain;
 using Recuria.Domain.Enums;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace Recuria.Api.Controllers
 {
@@ -21,23 +18,23 @@ namespace Recuria.Api.Controllers
     public sealed class DevBootstrapController : ControllerBase
     {
         private readonly IWebHostEnvironment _env;
-        private readonly IConfiguration _config;
         private readonly IUserRepository _users;
         private readonly IOrganizationService _organizations;
         private readonly IUnitOfWork _uow;
+        private readonly ITokenService _tokens;
 
         public DevBootstrapController(
             IWebHostEnvironment env,
-            IConfiguration config,
             IUserRepository users,
             IOrganizationService organizations,
-            IUnitOfWork uow)
+            IUnitOfWork uow,
+            ITokenService tokens)
         {
             _env = env;
-            _config = config;
             _users = users;
             _organizations = organizations;
             _uow = uow;
+            _tokens = tokens;
         }
 
         /// <summary>
@@ -46,7 +43,8 @@ namespace Recuria.Api.Controllers
         public sealed record BootstrapRequest(
             string OrganizationName,
             string OwnerEmail,
-            string? OwnerName);
+            string? OwnerName,
+            string? OwnerPassword);
 
         /// <summary>
         /// Response payload for the dev bootstrap endpoint.
@@ -79,6 +77,8 @@ namespace Recuria.Api.Controllers
                 : request.OwnerName;
 
             var owner = new User(request.OwnerEmail, ownerName) { Id = ownerId };
+            if (!string.IsNullOrWhiteSpace(request.OwnerPassword))
+                owner.SetPassword(request.OwnerPassword);
 
             await _users.AddAsync(owner, ct);
             await _uow.CommitAsync(ct);
@@ -91,43 +91,10 @@ namespace Recuria.Api.Controllers
                 },
                 ct);
 
-            var token = CreateJwt(ownerId, orgId, UserRole.Owner);
+            var reloadedOwner = await _users.GetByIdAsync(ownerId, ct) ?? owner;
+            var token = _tokens.CreateAccessToken(reloadedOwner);
 
             return Ok(new BootstrapResponse(ownerId, orgId, token));
-        }
-
-        private string CreateJwt(Guid userId, Guid organizationId, UserRole role)
-        {
-            var issuer = _config["Jwt:Issuer"];
-            var audience = _config["Jwt:Audience"];
-            var key = _config["Jwt:SigningKey"];
-
-            if (string.IsNullOrWhiteSpace(issuer) ||
-                string.IsNullOrWhiteSpace(audience) ||
-                string.IsNullOrWhiteSpace(key))
-            {
-                throw new InvalidOperationException("JWT configuration is missing.");
-            }
-
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
-                new Claim("org_id", organizationId.ToString()),
-                new Claim(ClaimTypes.Role, role.ToString())
-            };
-
-            var creds = new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
-                SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: issuer,
-                audience: audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(4),
-                signingCredentials: creds);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }
