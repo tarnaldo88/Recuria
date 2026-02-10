@@ -5,12 +5,20 @@
 
 
 <MudNavMenu Class="pa-2">
-    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-    <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
-    <MudNavLink Href="/invoices" Icon="@Icons.Material.Filled.ReceiptLong">Invoices</MudNavLink>
-    <MudNavLink Href="/subscriptions" Icon="@Icons.Material.Filled.Subscriptions">Subscriptions</MudNavLink>
-    <MudNavLink Href="/users" Icon="@Icons.Material.Filled.Group">Users</MudNavLink>
-    <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings">Settings</MudNavLink>
+    @if(_isAuthenticated)
+    {
+        <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+        <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+        <MudNavLink Href="/invoices" Icon="@Icons.Material.Filled.ReceiptLong">Invoices</MudNavLink>
+        <MudNavLink Href="/subscriptions" Icon="@Icons.Material.Filled.Subscriptions">Subscriptions</MudNavLink>
+        <MudNavLink Href="/users" Icon="@Icons.Material.Filled.Group">Users</MudNavLink>
+        <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings">Settings</MudNavLink>
+        <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="Logout">Logout</MudButton>
+    }
+    else
+    {
+        <MudNavLink Href="/login" Icon="@Icons.Material.Filled.Login">Login</MudNavLink>
+    }
 
     @if (_canSeeOps)
     {
@@ -35,5 +43,11 @@
         {
             _canSeeOps = false;
         }
+    }
+
+    private async Task Logout()
+    {
+        await Auth.ClearAsync();
+        Nav.NavigateTo("/login", forceLoad: false);
     }
 }
