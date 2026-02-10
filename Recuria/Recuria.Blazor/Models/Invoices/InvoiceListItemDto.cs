@@ -1,6 +1,7 @@
-﻿namespace Recuira.Blazor.Models.Invoices
+namespace Recuria.Blazor.Models.Invoices
 {
     public class InvoiceListItemDto
     {
     }
 }
+

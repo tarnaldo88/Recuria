@@ -1,6 +1,7 @@
-﻿namespace Recuira.Blazor.Models.Subscriptions
+namespace Recuria.Blazor.Models.Subscriptions
 {
     public class SubscriptionDetailsDto
     {
     }
 }
+

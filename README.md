@@ -381,7 +381,7 @@ Use this checklist before merging:
       `dotnet nswag run nswag.json`
 - [ ] Rebuild client and frontend:
   - `dotnet build Recuria/Recuria.Client/Recuria.Client.csproj`
-  - `dotnet build Recuria/Recuira.Blazor/Recuira.Blazor.csproj`
+  - `dotnet build Recuria/Recuria.Blazor/Recuria.Blazor.csproj`
 
 ---
 

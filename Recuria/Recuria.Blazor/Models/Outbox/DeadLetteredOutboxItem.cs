@@ -1,6 +1,7 @@
-﻿namespace Recuira.Blazor.Models.Outbox
+namespace Recuria.Blazor.Models.Outbox
 {
     public class DeadLetteredOutboxItem
     {
     }
 }
+

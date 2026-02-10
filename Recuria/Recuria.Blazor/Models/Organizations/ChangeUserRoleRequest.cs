@@ -1,6 +1,7 @@
-﻿namespace Recuira.Blazor.Models.Organizations
+namespace Recuria.Blazor.Models.Organizations
 {
     public class ChangeUserRoleRequest
     {
     }
 }
+
