@@ -2403,6 +2403,9 @@ namespace Recuria.Client
         [Newtonsoft.Json.JsonProperty("paidOnUtc", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.DateTimeOffset? PaidOnUtc { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("description", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? Description { get; set; } = default!;
+
         [Newtonsoft.Json.JsonProperty("subtotal", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public MoneyDto Subtotal { get; set; } = default!;
 

@@ -12,6 +12,7 @@ namespace Recuria.Application.Contracts.Invoice
         string InvoiceNumber,
         DateTime IssuedOnUtc,
         DateTime? PaidOnUtc,
+        string? Description,
         MoneyDto Subtotal,
         MoneyDto Tax,
         MoneyDto Total,

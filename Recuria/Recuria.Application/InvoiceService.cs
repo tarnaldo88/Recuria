@@ -1,4 +1,3 @@
-﻿using FluentValidation;
 using Recuria.Application.Contracts.Common;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
@@ -6,12 +5,6 @@ using Recuria.Application.Validation;
 using Recuria.Domain;
 using Recuria.Domain.Entities;
 using Recuria.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Recuria.Application
 {
@@ -34,6 +27,7 @@ namespace Recuria.Application
         public async Task<Guid> CreateInvoiceAsync(
             Guid subscriptionId,
             MoneyDto amount,
+            string? description,
             CancellationToken ct)
         {
             var subscription = await _subscriptions.GetByIdAsync(subscriptionId, ct);
@@ -44,7 +38,8 @@ namespace Recuria.Application
 
             var invoice = new Invoice(
                 subscriptionId,
-                amount.Amount);
+                amount.Amount,
+                description);
 
             await _invoices.AddAsync(invoice, ct);
 
@@ -58,17 +53,18 @@ namespace Recuria.Application
 
             decimal amount = default;
 
-            if(subscription.Plan == PlanType.Pro)
+            if (subscription.Plan == PlanType.Pro)
             {
                 amount = 25.0m;
-            } else if(subscription.Plan == PlanType.Enterprise)
+            }
+            else if (subscription.Plan == PlanType.Enterprise)
             {
                 amount = 100m;
             }
-                var invoice = new Invoice(
-                    subscription.Id,
-                    amount
-                );
+
+            var invoice = new Invoice(
+                subscription.Id,
+                amount);
 
             await _invoices.AddAsync(invoice, ct);
 
@@ -78,7 +74,7 @@ namespace Recuria.Application
         public async Task MarkPaidAsync(
             Guid invoiceId,
             CancellationToken ct)
-        {      
+        {
             var invoice = await _invoices.GetByIdAsync(invoiceId, ct);
             await _validator.ValidateAsync(invoice);
 
@@ -90,5 +86,4 @@ namespace Recuria.Application
             await _invoices.SaveChangesAsync(ct);
         }
     }
-
 }

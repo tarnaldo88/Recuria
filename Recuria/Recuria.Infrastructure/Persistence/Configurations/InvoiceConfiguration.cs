@@ -22,6 +22,9 @@ namespace Recuria.Infrastructure.Persistence.Configurations
 
             builder.Property(i => i.PaidOnUtc);
 
+            builder.Property(i => i.Description)
+                .HasMaxLength(500);
+
             builder.HasIndex(i => i.SubscriptionId);
             builder.HasIndex(i => i.InvoiceDate);
         }

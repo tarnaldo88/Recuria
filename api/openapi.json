@@ -1275,6 +1275,10 @@
             "format": "date-time",
             "nullable": true
           },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
           "subtotal": {
             "$ref": "#/components/schemas/MoneyDto"
           },
@@ -1702,7 +1706,7 @@
     },
     {
       "name": "Outbox",
-      "description": "Operational outbox endpoints (admin only)."
+      "description": "Operational outbox endpoints (admin or owner only)."
     },
     {
       "name": "Subscription",

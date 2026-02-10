@@ -60,6 +60,7 @@ namespace Recuria.Api.Invoices
             var invoiceId = await _invoiceService.CreateInvoiceAsync(
                 current.Subscription.Id,
                 new MoneyDto(request.Amount, "USD"),
+                request.Description,
                 ct);
 
             _audit.Log(HttpContext, "invoice.create", new

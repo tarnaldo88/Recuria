@@ -42,6 +42,7 @@ namespace Recuria.Infrastructure.Persistence.Queries
                     i.InvoiceDate,
                     i.Paid,
                     i.PaidOnUtc,
+                    i.Description,
                     i.Amount
                 })
                 .FirstOrDefaultAsync(ct);
@@ -54,6 +55,7 @@ namespace Recuria.Infrastructure.Persistence.Queries
                 result.Id.ToString()[..8],
                 result.InvoiceDate,
                 result.PaidOnUtc,
+                result.Description,
                 new MoneyDto(result.Amount, "USD"),
                 new MoneyDto(0, "USD"),
                 new MoneyDto(result.Amount, "USD"),

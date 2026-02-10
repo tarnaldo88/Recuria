@@ -135,6 +135,77 @@ Recuria enforces realistic SaaS constraints **in code**, not just the database:
 
 ---
 
+## Frontend Features Implemented
+
+The Blazor WebAssembly frontend is now actively implemented with a MudBlazor UI layer.
+
+### UI Foundation
+- MudBlazor integrated for layout, components, forms, tables, alerts, chips, skeleton loaders
+- Responsive app shell with:
+  - Top app bar
+  - Drawer navigation
+  - Recuria branding (title + logo)
+- Role-aware navigation:
+  - `Ops` nav item shown only to `Owner` / `Admin`
+- Scoped page styling via `.razor.css` where needed
+
+### Implemented Pages
+- **Home**
+  - Branded welcome surface with quick actions
+  <img src="screenshots/Home.png" alt="Home" width="600" />
+- **Bootstrap**
+  - Tenant bootstrap form (org + owner setup)
+  - Submits bootstrap request and stores auth context for local dev flow
+- **Dashboard**
+  - Organization + subscription summary cards
+  - Status chips and loading/error states
+  <img src="screenshots/dashboard.png" alt="Dashboard" width="600" />
+- **Subscriptions**
+  - View current plan/status/period
+  - Trial creation (where applicable)
+  - Plan upgrade/change
+  - Cancel subscription (including trial support)
+  - Refresh and action-state handling
+  <img src="screenshots/sub.png" alt="Subscriptions" width="600" />
+- **Invoices**
+  - Invoice list table by organization
+  - Create invoice flow
+  - View details navigation
+  <img src="screenshots/Invoices.png" alt="Invoices" width="600" />
+- **Invoice Details**
+  - Issued/paid timestamps
+  - Subtotal/tax/total
+  - Status display
+  - Description support (backend + contract dependent)
+  <img src="screenshots/InvoiceDetails.png" alt="Invoice Details" width="600" />
+- **Users**
+  - Add user form
+  - User table/search workflow (name/email)
+  - Role update and remove actions
+  <img src="screenshots/users.png" alt="Users" width="600" />
+- **Settings**
+  - Current auth/session context (`whoami`)
+  - Organization and subscription summary
+  <img src="screenshots/set.png" alt="Settings" width="600" />
+- **Ops**
+  - Dead-letter outbox inspection
+  - Retry action from UI for operational recovery
+  <img src="screenshots/ops.png" alt="Ops" width="600" />
+
+### UX / Interaction Improvements
+- Consistent loading, success, and error states across pages
+- Handling of API contract mismatches during transition (e.g., 200 vs 201/204)
+- Localized date/time display patterns using `CurrentCulture` where appropriate
+
+### Frontend Runtime Notes
+- Frontend is a browser-hosted Blazor WASM app, not a desktop executable
+- Production deployment requires:
+  - Static hosting for frontend
+  - Always-on API backend
+  - Correct `ApiBaseUrl` and CORS configuration
+
+---
+
 ## Observability
 
 ### Logging
@@ -205,7 +276,7 @@ Testing focuses on **business behavior**, not implementation details.
 - **ASP.NET Core Web API**
 - **Entity Framework Core 10**
 - **SQL Server**
-- **Blazor WebAssembly** (planned)
+- **Blazor WebAssembly** 
 - **OpenTelemetry** (Prometheus / OTLP)
 - **xUnit + FluentAssertions**
 

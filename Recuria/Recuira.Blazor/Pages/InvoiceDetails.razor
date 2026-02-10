@@ -8,7 +8,7 @@
 <MudStack Spacing="3">
     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
         <MudText Typo="Typo.h4" Style="color:#ffff">Invoice Details</MudText>
-        <MudButton Variant="Variant.Outlined"  OnClick="@(() => Nav.NavigateTo("/invoices"))">
+        <MudButton Variant="Variant.Filled"  OnClick="@(() => Nav.NavigateTo("/invoices"))">
             Back to Invoices
         </MudButton>
     </MudStack>
@@ -48,6 +48,7 @@
             <MudCardContent>
                 <MudGrid>
                     <MudItem xs="12" md="6">
+                    <MudText><b>Description:</b> @(_invoice.Description ?? "None")</MudText>
                         <MudText><b>Issued:</b> @_invoice.IssuedOnUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudText>
                         <MudText><b>Paid:</b> @(_invoice.PaidOnUtc?.ToLocalTime().ToString("g", CultureInfo.CurrentCulture) ?? "No date")</MudText>
                     </MudItem>

@@ -1,6 +1,30 @@
+:root {
+    --app-logo-bg-opacity: 0.06;
+    --app-logo-bg-size: min(60vw, 620px);
+}
+
 html, body {
     font-family: "Public Sans", "Segoe UI", sans-serif;
+    position: relative;
+    min-height: 100vh;
+    overflow-x: hidden;
     background: #f7f9fc;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+
+    background-image: url("/images/smallRecuriaLogo.png");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: var(--app-logo-bg-size);
+    opacity: var(--app-logo-bg-opacity);
+
+    /* filter: grayscale(100%); */
 }
 
 h1:focus {

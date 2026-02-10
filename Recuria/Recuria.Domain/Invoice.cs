@@ -13,11 +13,13 @@ namespace Recuria.Domain
         public bool Paid { get; private set; }
         public DateTime? PaidOnUtc { get; private set; }
         public string InvoiceNumber { get; private set; }
+        public string? Description { get; private set; }
 
-        public Invoice(Guid subscriptionId, decimal amount)
+        public Invoice(Guid subscriptionId, decimal amount, string? description = null)
         {
             SubscriptionId = subscriptionId;
             Amount = amount;
+            Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
             Paid = false;
             PaidOnUtc = null;
             InvoiceNumber = string.Empty;
