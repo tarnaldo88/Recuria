@@ -23,9 +23,9 @@
         "bootstrap"
     };
 
-    private async Task GuardNavigation(Microsoft.AspNetCore.Components.Routing.NavigationContext context)
+    private async Task GuardNavigation(Microsoft.AspNetCore.Components.Routing.NavigationContext _)
     {
-        var path = Nav.ToBaseRelativePath(context.TargetLocation).Trim('/');
+        var path = Nav.ToBaseRelativePath(Nav.Uri).Trim('/');
 
         if (PublicRoutes.Contains(path))
             return;
