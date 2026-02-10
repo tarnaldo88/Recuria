@@ -32,16 +32,24 @@
 
     protected override async Task OnInitializedAsync()
     {
+        _isAuthenticated = await Auth.IsAuthenticatedAsync();
+        if (!_isAuthenticated)
+        {
+            _canSeeOps = false;
+            return;
+        }
+
         try
         {
             var who = await Api.WhoamiAsync();
             var role = who?.Role?.Trim();
             _canSeeOps = role is "Owner" or "Admin";
-            _isAuthenticated = await Auth.IsAuthenticatedAsync();
         }
         catch
         {
             _canSeeOps = false;
+            _isAuthenticated = false;
+            await Auth.ClearAsync();
         }
     }
 
