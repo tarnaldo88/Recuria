@@ -5,6 +5,30 @@
 
 <PageTitle>Login</PageTitle>
 
+<MudStack Spacing="3" Style="max-width:560px;">
+    <MudText Typo="Typo.h4">Sign In</MudText>
+    <MudText Typo="Typo.body2">
+        Temporary development sign-in. Replace with real auth provider next.
+    </MudText>
+
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <MudAlert Severity="Severity.Error" Dense="true">@_error</MudAlert>
+    }
+
+    <MudPaper Class="pa-4">
+        <MudStack Spacing="2">
+            <MudTextField @bind-Value="_orgName" Label="Organization" Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="_ownerEmail" Label="Email" Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="_ownerName" Label="Display Name" Variant="Variant.Outlined" />
+
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_busy" OnClick="SignIn">
+                @(_busy ? "Signing in..." : "Sign In")
+            </MudButton>
+        </MudStack>
+    </MudPaper>
+    </MudStack>
+
 @code {
     [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
 
