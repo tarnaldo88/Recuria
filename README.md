@@ -339,6 +339,63 @@ dotnet test Recuria/Recuria.Tests/Recuria.Tests.csproj
 
 ---
 
+## Quality Gates
+
+Recuria uses explicit quality gates so changes are not considered complete unless they pass build, tests, and contract consistency checks.
+
+### Required Gates (PR / main branch)
+
+1. **Build must pass**
+- API, Application, Domain, Infrastructure, and Tests compile without errors.
+
+2. **Tests must pass**
+- Unit + integration tests pass on CI.
+- New behavior requires new/updated tests.
+
+3. **Migrations must be valid**
+- EF migration files compile.
+- Database update path is verified for new schema changes.
+
+4. **API contract must stay in sync**
+- OpenAPI document reflects current API behavior.
+- NSwag client is regenerated when API contracts change (status codes, DTOs, routes).
+
+5. **Security constraints must remain enforced**
+- Authorization policies remain covered by tests (Owner/Admin/Member boundaries).
+- Org-scoped endpoints enforce `org_id` claim checks.
+
+---
+
+## CI Checklist
+
+Use this checklist before merging:
+
+- [ ] `dotnet restore`
+- [ ] `dotnet build Recuria/Recuria.Api/Recuria.Api.csproj`
+- [ ] `dotnet test Recuria/Recuria.Tests/Recuria.Tests.csproj`
+- [ ] `dotnet ef migrations add <Name> --project Recuria/Recuria.Infrastructure/Recuria.Infrastructure.csproj --startup-project Recuria/Recuria.Api/Recuria.Api.csproj` (only when schema changes)
+- [ ] `dotnet ef database update --project Recuria/Recuria.Infrastructure/Recuria.Infrastructure.csproj --startup-project Recuria/Recuria.Api/Recuria.Api.csproj` (validate migration path)
+- [ ] Refresh OpenAPI:  
+      `Invoke-WebRequest http://localhost:5132/swagger/v1/swagger.json -OutFile api/openapi.json`
+- [ ] Regenerate client:  
+      `dotnet nswag run nswag.json`
+- [ ] Rebuild client and frontend:
+  - `dotnet build Recuria/Recuria.Client/Recuria.Client.csproj`
+  - `dotnet build Recuria/Recuira.Blazor/Recuira.Blazor.csproj`
+
+---
+
+## Definition of Done (Engineering)
+
+A change is done when:
+
+- Behavior is implemented and reviewed
+- Relevant tests are added/updated and passing
+- API/NSwag contracts are synchronized
+- Documentation (README and screenshots when applicable) is updated
+- No known regression is introduced in authorization, tenancy boundaries, or billing/subscription invariants
+---
+
 ## Technology Stack
 
 - **.NET 8 / C# 12**
