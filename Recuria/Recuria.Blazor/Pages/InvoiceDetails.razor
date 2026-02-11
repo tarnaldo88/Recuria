@@ -1,14 +1,14 @@
-﻿@page "/invoices/{InvoiceId:guid}"
-@inject Recuria.Client.IRecuriaApiClient Api
+@page "/invoices/{InvoiceId:guid}"
+@inject Recuria.Blazor.Services.App.IInvoiceAppService InvoicesApi
 @inject NavigationManager Nav
-@using System.Globalization;
+@using System.Globalization
 
 <PageTitle>Invoice Details</PageTitle>
 
 <MudStack Spacing="3">
     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
         <MudText Typo="Typo.h4" Style="color:#ffff">Invoice Details</MudText>
-        <MudButton Variant="Variant.Filled"  OnClick="@(() => Nav.NavigateTo("/invoices"))">
+        <MudButton Variant="Variant.Filled" OnClick="@(() => Nav.NavigateTo("/invoices"))">
             Back to Invoices
         </MudButton>
     </MudStack>
@@ -48,7 +48,7 @@
             <MudCardContent>
                 <MudGrid>
                     <MudItem xs="12" md="6">
-                    <MudText><b>Description:</b> @(_invoice.Description ?? "None")</MudText>
+                        <MudText><b>Description:</b> @(_invoice.Description ?? "None")</MudText>
                         <MudText><b>Issued:</b> @_invoice.IssuedOnUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudText>
                         <MudText><b>Paid:</b> @(_invoice.PaidOnUtc?.ToLocalTime().ToString("g", CultureInfo.CurrentCulture) ?? "No date")</MudText>
                     </MudItem>
@@ -61,7 +61,7 @@
             </MudCardContent>
         </MudCard>
     }
-    </MudStack>
+</MudStack>
 
 @code {
     [Parameter] public Guid InvoiceId { get; set; }
@@ -77,7 +77,15 @@
 
         try
         {
-            _invoice = await Api.InvoicesGETAsync(InvoiceId);
+            var result = await InvoicesApi.GetByIdAsync(InvoiceId);
+            if (!result.Success)
+            {
+                _error = result.Error;
+                _invoice = null;
+                return;
+            }
+
+            _invoice = result.Data;
         }
         catch (Exception ex)
         {
