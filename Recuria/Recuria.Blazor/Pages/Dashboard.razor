@@ -1,6 +1,7 @@
 @page "/dashboard"
 @inject Recuria.Blazor.Services.AuthState Auth
-@inject Recuria.Client.IRecuriaApiClient Api
+@inject Recuria.Blazor.Services.App.IOrganizationAppService Organizations
+@inject Recuria.Blazor.Services.App.ISubscriptionAppService Subscriptions
 
 <PageTitle>Dashboard</PageTitle>
 
@@ -75,8 +76,22 @@
             }
 
             var parsedOrgId = Guid.Parse(orgId);
-            _org = await Api.OrganizationsGETAsync(parsedOrgId);
-            _subscription = await Api.CurrentAsync(parsedOrgId);
+            var orgResult = await Organizations.GetByIdAsync(parsedOrgId);
+            if (!orgResult.Success || orgResult.Data is null)
+            {
+                _error = orgResult.Error ?? "Unable to load organization.";
+                return;
+            }
+
+            var subResult = await Subscriptions.GetCurrentAsync(parsedOrgId);
+            if (!subResult.Success || subResult.Data is null)
+            {
+                _error = subResult.Error ?? "Unable to load subscription.";
+                return;
+            }
+
+            _org = orgResult.Data;
+            _subscription = subResult.Data;
             orgName = _org.Name ?? "unknown";
         }
         catch(Exception ex)
