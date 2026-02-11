@@ -132,18 +132,11 @@
             _orgId = Guid.Parse(orgIdRaw);
             var results = await InvoicesApi.GetByOrganizationAsync(_orgId);
             if (!results.Success || results.Data is null)
-            {
-                _error = results.Error ?? "Unable to load invoices.";
                 return;
-            }
 
             _invoices = results.Data
                 .OrderByDescending(x => x.IssuedOnUtc)
                 .ToList();
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
         }
         finally
         {
@@ -170,16 +163,9 @@
                 Description = string.IsNullOrWhiteSpace(_newDescription) ? null : _newDescription.Trim()
             });
             if (!createResult.Success)
-            {
-                _error = createResult.Error ?? "Unable to create invoice.";
                 return;
-            }
 
             await LoadInvoices();
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
         }
         finally
         {
