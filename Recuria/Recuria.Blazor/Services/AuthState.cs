@@ -7,6 +7,7 @@ namespace Recuria.Blazor.Services
     public sealed class AuthState
     {
         private readonly TokenStorage _storage;
+        private static readonly TimeSpan RefreshWindow = TimeSpan.FromMinutes(2);
 
         public event Action? AuthStateChanged;
 
@@ -20,6 +21,15 @@ namespace Recuria.Blazor.Services
             var token = await GetTokenAsync();
 
             return !string.IsNullOrWhiteSpace(token) && !IsExpired(token);
+        }
+
+        public bool ShouldRefresh(string jwt)
+        {
+            var exp = GetExpiryUtc(jwt);
+            if (exp is null)
+                return false;
+
+            return exp <= DateTimeOffset.UtcNow.Add(RefreshWindow);
         }
 
         public async Task SetAuthAsync(string token, string orgId)
@@ -38,6 +48,15 @@ namespace Recuria.Blazor.Services
 
         private static bool IsExpired(string jwt)
         {
+            var exp = GetExpiryUtc(jwt);
+            if (exp is null)
+                return true;
+
+            return exp <= DateTimeOffset.UtcNow;
+        }
+
+        private static DateTimeOffset? GetExpiryUtc(string jwt)
+        {
             try
             {
                 var parts = jwt.Split('.');
@@ -50,16 +69,15 @@ namespace Recuria.Blazor.Services
                 var json = Encoding.UTF8.GetString(Convert.FromBase64String(payload));
                 using var doc = JsonDocument.Parse(json);
 
-                if (!doc.RootElement.TryGetProperty("exp", out var expElement)) return true;
+                if (!doc.RootElement.TryGetProperty("exp", out var expElement))
+                    return null;
 
                 var exp = expElement.GetInt64();
-                var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
-                return exp <= now;
+                return DateTimeOffset.FromUnixTimeSeconds(exp);
             }
             catch
             {
-                return true;
+                return null;
             }
         }
     }
