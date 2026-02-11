@@ -18,7 +18,7 @@
         </MudAlert>
     }
 
-    <MudPaper Class="pa-5 bootstrap-shell" e;Elevation="0" Style="border:1px solid #E2E8F0; max-width: 760px;">
+    <MudPaper Class="pa-5 bootstrap-shell" Elevation="0" Style="border:1px solid #E2E8F0; max-width: 760px;">
         <MudGrid>
             <MudItem xs="12">
                 <MudTextField @bind-Value="_orgName"
@@ -74,6 +74,11 @@
 
     private async Task RunBootstrap()
     {
+        if (!System.Net.Mail.MailAddress.TryCreate(_email, out _))
+        {
+            _validationMessage = "Enter a valid email address.";
+            return;
+        }
         _validationMessage = null;
 
         if (string.IsNullOrWhiteSpace(_orgName) ||
@@ -81,6 +86,12 @@
             string.IsNullOrWhiteSpace(_email))
         {
             _validationMessage = "Organization name, owner name, and email are required.";
+            return;
+        }
+
+        if (!System.Net.Mail.MailAddress.TryCreate(_email, out _))
+        {
+            _validationMessage = "Enter a valid email address.";
             return;
         }
 

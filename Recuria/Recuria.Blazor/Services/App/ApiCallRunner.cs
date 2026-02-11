@@ -106,6 +106,10 @@ namespace Recuria.Blazor.Services.App
 
         private static string ExtractApiMessage(Recuria.Client.ApiException ex)
         {
+            if(ex.StatusCode == 401)
+            {
+                return "Unauthorized. Please sign in again.";
+            }
             if (!string.IsNullOrWhiteSpace(ex.Response))
             {
                 try

@@ -9,9 +9,9 @@
     <MudText Typo="Typo.h4">Sign In</MudText>
     <MudText Typo="Typo.body2">Use your organization ID, email, and password.</MudText>
 
-    @if (!string.IsNullOrWhiteSpace(_error))
+    @if (!string.IsNullOrWhiteSpace(_validationMessage))
     {
-        <MudAlert Severity="Severity.Error" Dense="true">@_error</MudAlert>
+        <MudAlert Severity="Severity.Error" Dense="true">@_validationMessage</MudAlert>
     }
 
     <MudPaper Class="pa-4">
@@ -44,17 +44,17 @@
 
     private async Task SignIn()
     {
-        _error = null;
+        _validationMessage = null;
 
         if (!Guid.TryParse(_organizationIdText, out var organizationId))
         {
-            _error = "Organization ID must be a valid GUID.";
+            _validationMessage = "Organization ID must be a valid GUID.";
             return;
         }
 
         if (string.IsNullOrWhiteSpace(_email) || string.IsNullOrWhiteSpace(_password))
         {
-            _error = "Email and password are required.";
+            _validationMessage = "Email and password are required.";
             return;
         }
 
@@ -71,7 +71,6 @@
 
             if (!result.Success || result.Data is null)
             {
-                _error = result.Error ?? "Sign in failed.";
                 return;
             }
 
@@ -79,10 +78,6 @@
 
             var target = NormalizeReturnUrl(ReturnUrl);
             Nav.NavigateTo(target, forceLoad: false);
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
         }
         finally
         {

@@ -2,7 +2,6 @@
 @inject Recuria.Blazor.Services.AuthState Auth
 @inject Recuria.Blazor.Services.App.IOrganizationAppService OrganizationsApi
 @inject Recuria.Blazor.Services.App.IUserAppService UsersApi
-@using System.Globalization
 
 <PageTitle>Users</PageTitle>
 
@@ -96,11 +95,10 @@
     }
 </MudStack>
 
-@code {
+    @code {
     private bool _busy;
     private string? _blockingMessage;
     private Guid _orgId;
-    private Recuria.Client.OrganizationDto? _org;
 
     private string? _search;
     private string? _newName;
@@ -128,10 +126,14 @@
         }
 
         _orgId = Guid.Parse(orgIdRaw);
-        await LoadContext();
+        if(!await EnsureOrgContextAsync())
+        {
+            return;
+        }
+        await LoadUsers();
     }
 
-    private async Task LoadContext()
+    private async Task<bool> EnsureOrgContextAsync()
     {
         _blockingMessage = null;
         var orgIdRaw = await Auth.GetOrgIdAsync();
@@ -139,17 +141,13 @@
         if(string.IsNullOrWhiteSpace(orgIdRaw))
         {
             _blockingMessage = "No organization id found. Go to /bootstrap first.";
-            return;
+            return false;
         }
 
         _orgId = Guid.Parse(orgIdRaw);
-        var result = await OrganizationsApi.GetMineAsync();
-        if (!result.Success)
-        {
-            return;
-        }
+        var orgResult = await OrganizationsApi.GetMineAsync();
 
-        _org = result.Data;
+        return orgResult.Success;
     }
 
     private async Task AddUser()
@@ -168,7 +166,10 @@
             if (!result.Success)
                 return;
 
-            await LoadContext();
+            await LoadUsers();
+            _newName = null;
+            _newEmail = null;
+            _newRole = Recuria.Client.UserRole.Member;
         }
         finally { _busy = false; }
     }
@@ -212,19 +213,20 @@
     }
 
     private async Task RemoveUser(Guid userId)
-    {
-        if (_selectedUser is null)
-            return;
-
+    {       
         _busy = true;
 
         try
         {
-            var result = await UsersApi.RemoveAsync(_orgId, _selectedUser.Id);
+            var result = await UsersApi.RemoveAsync(_orgId, userId);
             if (!result.Success)
                 return;
-            _selectedUser = null;
-            await LoadContext();
+
+            if (_selectedUser?.Id == userId )
+            {
+                _selectedUser = null;
+            }
+            await LoadUsers();
         }
         finally
         {

@@ -37,7 +37,7 @@
                     <MudCardHeader>
                         <CardHeaderContent>
                             <MudText Typo="Typo.h6">Organization</MudText>
-                            <MudText>@orgName</MudText>
+                            <MudText>@_organizationName</MudText>
                         </CardHeaderContent>
                     </MudCardHeader>
                     <MudCardContent>
@@ -60,9 +60,8 @@
 @code {
     private bool _loading = true;
     private string? _blockingMessage;
-    private Recuria.Client.OrganizationDto? _org;
     private Recuria.Client.SubscriptionDetailsDto? _subscription;
-    private string? orgName = string.Empty;
+    private string _organizationName = "unknown";
 
     protected override async Task OnInitializedAsync()
     {
@@ -78,15 +77,19 @@
             var parsedOrgId = Guid.Parse(orgId);
             var orgResult = await Organizations.GetByIdAsync(parsedOrgId);
             if (!orgResult.Success || orgResult.Data is null)
+            {
+                _blockingMessage = "Unable to load organization.";
                 return;
+            }
 
             var subResult = await Subscriptions.GetCurrentAsync(parsedOrgId);
-            if (!subResult.Success || subResult.Data is null)
+            if (!subResult.Success || subResult.Data is null){
+                _blockingMessage = "Unable to load subscription.";
                 return;
-
-            _org = orgResult.Data;
+            }
+           
             _subscription = subResult.Data;
-            orgName = _org.Name ?? "unknown";
+            _organizationName = orgResult.Data.Name ?? "unknown";
         }
         finally
         {
