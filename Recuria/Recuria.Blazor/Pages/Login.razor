@@ -36,6 +36,12 @@
     private bool _busy;
     private string? _error;
 
+    protected override async Task OnInitializedAsync()
+    {
+        if (await Auth.IsAuthenticatedAsync())
+            Nav.NavigateTo("/dashboard", forceLoad: false);
+    }
+
     private async Task SignIn()
     {             
         _error = null;
@@ -67,6 +73,10 @@
 
             var target = NormalizeReturnUrl(ReturnUrl);
             Nav.NavigateTo(target, forceLoad: false);
+        }
+        catch (Recuria.Client.ApiException ex) when (ex.StatusCode == 401)
+        {
+            _error = "Invalid credentials. Check organization ID, email, and password.";
         }
         catch (Exception ex)
         {
