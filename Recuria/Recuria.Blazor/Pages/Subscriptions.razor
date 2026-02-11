@@ -1,6 +1,6 @@
 @page "/subscriptions"
 @inject Recuria.Blazor.Services.AuthState Auth
-@inject Recuria.Client.IRecuriaApiClient Api
+@inject Recuria.Blazor.Services.App.ISubscriptionAppService SubscriptionsApi
 @using System.Globalization
 @using Recuria.Client
 
@@ -146,19 +146,26 @@
             }
 
             _orgId = Guid.Parse(orgIdRaw);
-            _details = await Api.CurrentAsync(_orgId);
+            var result = await SubscriptionsApi.GetCurrentAsync(_orgId, notifyError: false);
+            if (!result.Success)
+            {
+                _details = null;
+                _canCancel = false;
+                _canUpgrade = false;
+                _error = result.Error ?? "No active/trial/past-due subscription found.";
+                return;
+            }
+
+            _details = result.Data;
+            if (_details is null)
+            {
+                _error = "No active/trial/past-due subscription found.";
+                return;
+            }
 
             _selectedPlan = _details.Subscription.PlanCode;
             _canCancel = _details.Actions.CanCancel;
             _canUpgrade = _details.Actions.CanUpgrade;
-        }
-        catch (ApiException ex) when (ex.StatusCode == 404)
-        {
-            // No active/trial/past-due subscription after cancel
-            _details = null;
-            _canCancel = false;
-            _canUpgrade = false;
-            _error = "No active/trial/past-due subscription found."; 
         }
         catch (Exception ex)
         {
@@ -182,10 +189,15 @@
 
         try
         {
-            await Api.UpgradeAsync(_details.Subscription.Id, new Recuria.Client.UpgradeSubscriptionRequest
+            var result = await SubscriptionsApi.UpgradeAsync(_details.Subscription.Id, new Recuria.Client.UpgradeSubscriptionRequest
             {
                 NewPlan = _selectedPlan
             });
+            if (!result.Success)
+            {
+                _error = result.Error ?? "Unable to update subscription.";
+                return;
+            }
 
             await LoadData();
         }
@@ -209,7 +221,12 @@
 
         try
         {
-            await Api.CancelAsync(_details.Subscription.Id);
+            var result = await SubscriptionsApi.CancelAsync(_details.Subscription.Id);
+            if (!result.Success)
+            {
+                _error = result.Error ?? "Unable to cancel subscription.";
+                return;
+            }
             await LoadData();
         }
         catch (Exception ex)
@@ -229,7 +246,12 @@
 
         try
         {
-            await Api.TrialAsync(_orgId);
+            var result = await SubscriptionsApi.CreateTrialAsync(_orgId);
+            if (!result.Success)
+            {
+                _error = result.Error ?? "Unable to start trial.";
+                return;
+            }
             await LoadData();
         }
         catch (Exception ex)
