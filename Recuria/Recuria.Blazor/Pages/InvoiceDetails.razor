@@ -13,13 +13,7 @@
         </MudButton>
     </MudStack>
 
-    @if(!string.IsNullOrWhiteSpace(_error))
-    {
-        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Dense="true">
-            @_error
-        </MudAlert>
-    }
-    else if(_loading)
+    @if(_loading)
     {
         <MudSkeleton Height="220px" Width="100%"/>
     }
@@ -66,30 +60,20 @@
 @code {
     [Parameter] public Guid InvoiceId { get; set; }
 
-    private string? _error;
     private bool _loading;
     private Recuria.Client.InvoiceDetailsDto? _invoice;
 
     protected override async Task OnParametersSetAsync()
     {
         _loading = true;
-        _error = null;
 
         try
         {
             var result = await InvoicesApi.GetByIdAsync(InvoiceId);
             if (!result.Success)
-            {
-                _error = result.Error;
-                _invoice = null;
                 return;
-            }
 
             _invoice = result.Data;
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
         }
         finally
         {
