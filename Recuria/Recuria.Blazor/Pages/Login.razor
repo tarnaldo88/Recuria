@@ -1,5 +1,5 @@
-﻿@page "/login"
-@inject Recuria.Client.IRecuriaApiClient Api
+@page "/login"
+@inject Recuria.Blazor.Services.App.IAuthAppService AuthApi
 @inject Recuria.Blazor.Services.AuthState Auth
 @inject NavigationManager Nav
 
@@ -43,16 +43,16 @@
     }
 
     private async Task SignIn()
-    {             
+    {
         _error = null;
 
-        if(!Guid.TryParse(_organizationIdText, out var organizationId))
+        if (!Guid.TryParse(_organizationIdText, out var organizationId))
         {
             _error = "Organization ID must be a valid GUID.";
             return;
         }
 
-        if(string.IsNullOrWhiteSpace(_email) || string.IsNullOrWhiteSpace(_password))
+        if (string.IsNullOrWhiteSpace(_email) || string.IsNullOrWhiteSpace(_password))
         {
             _error = "Email and password are required.";
             return;
@@ -62,21 +62,23 @@
 
         try
         {
-            var result = await Api.LoginAsync(new Recuria.Client.LoginRequest
+            var result = await AuthApi.LoginAsync(new Recuria.Client.LoginRequest
             {
                 OrganizationId = organizationId,
                 Email = _email.Trim(),
                 Password = _password
             });
 
-            await Auth.SetAuthAsync(result.AccessToken!, result.OrganizationId.ToString());
+            if (!result.Success || result.Data is null)
+            {
+                _error = result.Error ?? "Sign in failed.";
+                return;
+            }
+
+            await Auth.SetAuthAsync(result.Data.AccessToken!, result.Data.OrganizationId.ToString());
 
             var target = NormalizeReturnUrl(ReturnUrl);
             Nav.NavigateTo(target, forceLoad: false);
-        }
-        catch (Recuria.Client.ApiException ex) when (ex.StatusCode == 401)
-        {
-            _error = "Invalid credentials. Check organization ID, email, and password.";
         }
         catch (Exception ex)
         {
