@@ -2,6 +2,8 @@
 @inject Recuria.Client.IRecuriaApiClient Api
 @inject Recuria.Blazor.Services.AuthState Auth
 @inject NavigationManager Nav
+@implements IDisposable
+
 
 
 <MudNavMenu Class="pa-2">
@@ -32,7 +34,20 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Auth.AuthStateChanged += HandleAuthStateChanged;
+        await RefreshAuthUiAsync();
+    }
+
+    private async void HandleAuthStateChanged()
+    {
+        await RefreshAuthUiAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task RefreshAuthUiAsync()
+    {
         _isAuthenticated = await Auth.IsAuthenticatedAsync();
+
         if (!_isAuthenticated)
         {
             _canSeeOps = false;
@@ -51,6 +66,11 @@
             _isAuthenticated = false;
             await Auth.ClearAsync();
         }
+    }
+
+    public void Dispose()
+    {
+        Auth.AuthStateChanged -= HandleAuthStateChanged;
     }
 
     private async Task Logout()

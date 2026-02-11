@@ -8,6 +8,8 @@ namespace Recuria.Blazor.Services
     {
         private readonly TokenStorage _storage;
 
+        public event Action? AuthStateChanged;
+
         public AuthState(TokenStorage storage) => _storage = storage;
 
         public async Task<string?> GetTokenAsync() => await _storage.GetTokenAsync().AsTask();
@@ -24,12 +26,14 @@ namespace Recuria.Blazor.Services
         {
             await _storage.SetTokenAsync(token);
             await _storage.SetOrgIdAsync(orgId);
+            AuthStateChanged?.Invoke();
         }
 
         public async Task ClearAsync()
         {
             await _storage.ClearTokenAsync();
             await _storage.ClearOrgIdAsync();
+            AuthStateChanged?.Invoke();
         }
 
         private static bool IsExpired(string jwt)
