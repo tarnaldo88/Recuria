@@ -1,0 +1,40 @@
+namespace Recuria.Blazor.Services.App
+{
+    public interface IOpsAppService
+    {
+        Task<AppResult<ICollection<Recuria.Client.DeadLetteredOutboxItem>>> GetDeadLetteredAsync(int take, bool notifyError = true);
+        Task<AppResult> RetryAsync(Guid id, bool notifySuccess = true);
+    }
+
+    public sealed class OpsAppService : IOpsAppService
+    {
+        private readonly Recuria.Client.IRecuriaApiClient _api;
+        private readonly ApiCallRunner _runner;
+
+        public OpsAppService(Recuria.Client.IRecuriaApiClient api, ApiCallRunner runner)
+        {
+            _api = api;
+            _runner = runner;
+        }
+
+        public Task<AppResult<ICollection<Recuria.Client.DeadLetteredOutboxItem>>> GetDeadLetteredAsync(int take, bool notifyError = true) =>
+            _runner.RunAsync(() => _api.DeadLetteredAsync(take), errorPrefix: "Unable to load dead-letter queue", notifyError: notifyError);
+
+        public async Task<AppResult> RetryAsync(Guid id, bool notifySuccess = true)
+        {
+            try
+            {
+                await _api.RetryAsync(id);
+                return _runner.Ok("Message requeued.", notifySuccess);
+            }
+            catch (Recuria.Client.ApiException ex) when (ex.StatusCode == 204)
+            {
+                return _runner.Ok("Message requeued.", notifySuccess);
+            }
+            catch (Exception ex)
+            {
+                return _runner.Fail(ex, "Unable to retry message", notifyError: true);
+            }
+        }
+    }
+}
