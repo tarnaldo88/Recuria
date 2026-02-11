@@ -1,6 +1,8 @@
 @page "/settings"
 @inject Recuria.Blazor.Services.AuthState Auth
-@inject Recuria.Client.IRecuriaApiClient Api
+@inject Recuria.Blazor.Services.App.IAuthAppService AuthApi
+@inject Recuria.Blazor.Services.App.IOrganizationAppService OrganizationsApi
+@inject Recuria.Blazor.Services.App.ISubscriptionAppService SubscriptionsApi
 @using System.Globalization
 
 <PageTitle>Settings</PageTitle>
@@ -90,8 +92,14 @@
 
         try
         {
-            _whoami = await Api.WhoamiAsync();
-            _org = await Api.MeAsync();
+            var whoResult = await AuthApi.WhoAmIAsync(notifyError: false);
+            if (whoResult.Success)
+                _whoami = whoResult.Data;
+
+            var orgResult = await OrganizationsApi.GetMineAsync(notifyError: false);
+            if (orgResult.Success)
+                _org = orgResult.Data;
+
             var orgIdRaw = await Auth.GetOrgIdAsync();
             if (string.IsNullOrWhiteSpace(orgIdRaw))
             {
@@ -100,12 +108,9 @@
             else
             {
                 var orgId = Guid.Parse(orgIdRaw);
-                _subscription = await Api.CurrentAsync(orgId);
+                var subResult = await SubscriptionsApi.GetCurrentAsync(orgId, notifyError: false);
+                _subscription = subResult.Success ? subResult.Data : null;
             }
-        }
-        catch(Recuria.Client.ApiException ex) when (ex.StatusCode == 404)
-        {
-            _subscription = null;
         }
         catch(Exception ex)
         {
