@@ -118,18 +118,15 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var orgIdRaw = await Auth.GetOrgIdAsync();
-        if(string.IsNullOrWhiteSpace(orgIdRaw))
-        {
-            _blockingMessage = "No organization id found. Go to /bootstrap first.";
+        var orgId = await GetOrganizationIdAsync();
+        if (orgId is null)
             return;
-        }
 
-        _orgId = Guid.Parse(orgIdRaw);
-        if(!await EnsureOrgContextAsync())
-        {
-            return;
-        }
+        _orgId = orgId.Value;
+        // if(!await EnsureOrgContextAsync())
+        // {
+        //     return;
+        // }
         await LoadUsers();
     }
 
@@ -233,5 +230,25 @@
             _busy = false;
         }
     }
+
+    private async Task<Guid?> GetOrganizationIdAsync()
+    {
+        var orgIdRaw = await Auth.GetOrgIdAsync();
+
+        if (string.IsNullOrWhiteSpace(orgIdRaw))
+        {
+            _blockingMessage = "No organization id found. Go to /bootstrap first.";
+            return null;
+        }
+
+        if (!Guid.TryParse(orgIdRaw, out var orgId))
+        {
+            _blockingMessage = "Organization id is invalid. Re-bootstrap your session.";
+            return null;
+        }
+
+        return orgId;
+    }
+
 }
 

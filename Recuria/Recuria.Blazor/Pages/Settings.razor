@@ -73,6 +73,7 @@
 
 @code {
     private bool _loading;
+    private string? _blockingMessage;
     private Recuria.Client.WhoAmIResponse? _whoami;
     private Recuria.Client.OrganizationDto? _org;
     private Recuria.Client.SubscriptionDetailsDto? _subscription;
@@ -93,15 +94,14 @@
             if (orgResult.Success)
                 _org = orgResult.Data;
 
-            var orgIdRaw = await Auth.GetOrgIdAsync();
-            if (string.IsNullOrWhiteSpace(orgIdRaw))
+            var orgId = await GetOrganizationIdAsync();
+            if (orgId is null)
             {
                 _subscription = null;
             }
             else
             {
-                var orgId = Guid.Parse(orgIdRaw);
-                var subResult = await SubscriptionsApi.GetCurrentAsync(orgId, notifyError: false);
+                var subResult = await SubscriptionsApi.GetCurrentAsync(orgId.Value, notifyError: false);
                 _subscription = subResult.Success ? subResult.Data : null;
             }
         }
@@ -110,5 +110,25 @@
             _loading = false;
         }
     }
+
+    private async Task<Guid?> GetOrganizationIdAsync()
+    {
+        var orgIdRaw = await Auth.GetOrgIdAsync();
+
+        if (string.IsNullOrWhiteSpace(orgIdRaw))
+        {
+            _blockingMessage = "No organization id found. Go to /bootstrap first.";
+            return null;
+        }
+
+        if (!Guid.TryParse(orgIdRaw, out var orgId))
+        {
+            _blockingMessage = "Organization id is invalid. Re-bootstrap your session.";
+            return null;
+        }
+
+        return orgId;
+    }
+
 }
 

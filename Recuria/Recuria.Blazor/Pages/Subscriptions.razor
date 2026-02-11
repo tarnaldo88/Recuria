@@ -137,14 +137,13 @@
 
         try
         {
-            var orgIdRaw = await Auth.GetOrgIdAsync();
-            if(string.IsNullOrWhiteSpace(orgIdRaw))
-            {
-                _blockingMessage = "No organization id found. Go to /bootstrap first.";
+            var orgId = await GetOrganizationIdAsync();
+            if(orgId is null)
+            {                
                 return;
             }
 
-            _orgId = Guid.Parse(orgIdRaw);
+            _orgId = orgId.Value;
             var result = await SubscriptionsApi.GetCurrentAsync(_orgId, notifyError: false);
             if (!result.Success)
             {
@@ -232,6 +231,26 @@
             _busy = false;
         }
     }
+
+    private async Task<Guid?> GetOrganizationIdAsync()
+    {
+        var orgIdRaw = await Auth.GetOrgIdAsync();
+
+        if (string.IsNullOrWhiteSpace(orgIdRaw))
+        {
+            _blockingMessage = "No organization id found. Go to /bootstrap first.";
+            return null;
+        }
+
+        if (!Guid.TryParse(orgIdRaw, out var orgId))
+        {
+            _blockingMessage = "Organization id is invalid. Re-bootstrap your session.";
+            return null;
+        }
+
+        return orgId;
+    }
+
 
     private static string PlanLabel(Recuria.Client.PlanType plan) =>
         plan switch

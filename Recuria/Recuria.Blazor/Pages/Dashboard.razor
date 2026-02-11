@@ -67,14 +67,11 @@
     {
         try
         {
-            var orgId = await Auth.GetOrgIdAsync();
-            if(string.IsNullOrWhiteSpace(orgId))
-            {
-                _blockingMessage = "No org id. Go to /bootstrap.";
+            var orgId = await GetOrganizationIdAsync();
+            if (orgId is null)
                 return;
-            }
 
-            var parsedOrgId = Guid.Parse(orgId);
+            var parsedOrgId = orgId.Value;
             var orgResult = await Organizations.GetByIdAsync(parsedOrgId);
             if (!orgResult.Success || orgResult.Data is null)
             {
@@ -96,6 +93,26 @@
             _loading = false;
         }
     }
+
+    private async Task<Guid?> GetOrganizationIdAsync()
+    {
+        var orgIdRaw = await Auth.GetOrgIdAsync();
+
+        if (string.IsNullOrWhiteSpace(orgIdRaw))
+        {
+            _blockingMessage = "No organization id found. Go to /bootstrap first.";
+            return null;
+        }
+
+        if (!Guid.TryParse(orgIdRaw, out var orgId))
+        {
+            _blockingMessage = "Organization id is invalid. Re-bootstrap your session.";
+            return null;
+        }
+
+        return orgId;
+    }
+
 
     private static Color GetStatusColor(Recuria.Client.SubscriptionStatus? status) =>
      status switch

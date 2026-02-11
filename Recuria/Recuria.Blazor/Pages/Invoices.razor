@@ -9,10 +9,10 @@
 <MudStack Spacing="3">
     <MudText Typo="Typo.h4" Style="color:#ffff">Invoices</MudText>
 
-    @if (!string.IsNullOrWhiteSpace(_error))
+    @if (!string.IsNullOrWhiteSpace(_blockingMessage))
     {
         <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Dense="true">
-            @_error
+            @_blockingMessage
         </MudAlert>
     }
 
@@ -102,7 +102,7 @@
     @code {
     private bool _loading = true;
     private bool _busy;
-    private string? _error;
+    private string? _blockingMessage;
     private Guid _orgId;
 
     private double _newAmount = 49.00;
@@ -118,18 +118,17 @@
     private async Task LoadInvoices()
     {
         _loading = true;
-        _error = null;
+        _blockingMessage = null;
 
         try
         {
-            var orgIdRaw = await Auth.GetOrgIdAsync();
-            if (string.IsNullOrWhiteSpace(orgIdRaw))
-            {
-                _error = "No organization id found. Go to /bootstrap first.";
+            var orgId = await GetOrganizationIdAsync();
+            if (orgId is null)
+            {                
                 return;
             }
 
-            _orgId = Guid.Parse(orgIdRaw);
+            _orgId = orgId.Value;
             var results = await InvoicesApi.GetByOrganizationAsync(_orgId);
             if (!results.Success || results.Data is null)
                 return;
@@ -148,11 +147,11 @@
     {
         if(_newAmount <= 0)
         {
-            _error = "Amount must be greater than 0.";
+            _blockingMessage = "Amount must be greater than 0.";
             return;
         }
         _busy = true;
-        _error = null;
+        _blockingMessage = null;
 
         try
         {
@@ -172,6 +171,26 @@
             _busy = false;
         }
     }
+
+    private async Task<Guid?> GetOrganizationIdAsync()
+    {
+        var orgIdRaw = await Auth.GetOrgIdAsync();
+
+        if (string.IsNullOrWhiteSpace(orgIdRaw))
+        {
+            _blockingMessage = "No organization id found. Go to /bootstrap first.";
+            return null;
+        }
+
+        if (!Guid.TryParse(orgIdRaw, out var orgId))
+        {
+            _blockingMessage = "Organization id is invalid. Re-bootstrap your session.";
+            return null;
+        }
+
+        return orgId;
+    }
+
 
     private void OpenDetails(Guid id) => Nav.NavigateTo($"/invoices/{id}");
 
