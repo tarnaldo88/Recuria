@@ -9,9 +9,9 @@
 <MudStack Spacing="3">
     <MudText Typo="Typo.h4" Style="color:#ffff">Users</MudText>
 
-    @if (!string.IsNullOrWhiteSpace(_error))
+    @if (!string.IsNullOrWhiteSpace(_blockingMessage))
     {
-        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Dense="true">@_error</MudAlert>
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Dense="true">@_blockingMessage</MudAlert>
     }
 
     <MudCard>
@@ -98,7 +98,7 @@
 
 @code {
     private bool _busy;
-    private string? _error;
+    private string? _blockingMessage;
     private Guid _orgId;
     private Recuria.Client.OrganizationDto? _org;
 
@@ -123,7 +123,7 @@
         var orgIdRaw = await Auth.GetOrgIdAsync();
         if(string.IsNullOrWhiteSpace(orgIdRaw))
         {
-            _error = "No organization id found. Go to /bootstrap first.";
+            _blockingMessage = "No organization id found. Go to /bootstrap first.";
             return;
         }
 
@@ -133,20 +133,19 @@
 
     private async Task LoadContext()
     {
-        _error = null;
+        _blockingMessage = null;
         var orgIdRaw = await Auth.GetOrgIdAsync();
 
         if(string.IsNullOrWhiteSpace(orgIdRaw))
         {
-            _error = "No organization id found. Go to /bootstrap first.";
+            _blockingMessage = "No organization id found. Go to /bootstrap first.";
             return;
         }
 
         _orgId = Guid.Parse(orgIdRaw);
-        var result = await OrganizationsApi.GetMineAsync(notifyError: false);
+        var result = await OrganizationsApi.GetMineAsync();
         if (!result.Success)
         {
-            _error = result.Error ?? "Unable to load organization.";
             return;
         }
 
@@ -156,7 +155,6 @@
     private async Task AddUser()
     {
         _busy = true;
-        _error = null;
 
         try
         {
@@ -168,32 +166,24 @@
                 Role = _newRole
             });
             if (!result.Success)
-            {
-                _error = result.Error ?? "Unable to add user.";
                 return;
-            }
 
             await LoadContext();
         }
-        catch (Exception ex) { _error = ex.Message; }
         finally { _busy = false; }
     }
 
     private async Task LoadUsers()
     {
-        _busy = true; _error = null;
+        _busy = true;
         try
         {
             var result = await UsersApi.GetAllAsync(_orgId);
             if (!result.Success || result.Data is null)
-            {
-                _error = result.Error ?? "Unable to load users.";
                 return;
-            }
 
             _users = result.Data.ToList();
         }
-        catch (Exception ex) { _error = ex.Message; }
         finally { _busy = false; }
     }
 
@@ -207,7 +197,7 @@
     {
         if (_selectedUser is null) return;
 
-        _busy = true; _error = null;
+        _busy = true;
         try
         {
             var result = await UsersApi.ChangeRoleAsync(_orgId, _selectedUser.Id, new Recuria.Client.ChangeUserRoleRequest
@@ -215,13 +205,9 @@
                 NewRole = _selectedRole
             });
             if (!result.Success)
-            {
-                _error = result.Error ?? "Unable to update role.";
                 return;
-            }
             await LoadUsers();
         }
-        catch (Exception ex) { _error = ex.Message; }
         finally { _busy = false; }
     }
 
@@ -231,22 +217,14 @@
             return;
 
         _busy = true;
-        _error = null;
 
         try
         {
             var result = await UsersApi.RemoveAsync(_orgId, _selectedUser.Id);
             if (!result.Success)
-            {
-                _error = result.Error ?? "Unable to remove user.";
                 return;
-            }
             _selectedUser = null;
             await LoadContext();
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
         }
         finally
         {
