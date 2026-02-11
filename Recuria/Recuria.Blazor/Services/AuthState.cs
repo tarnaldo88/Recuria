@@ -60,7 +60,7 @@ namespace Recuria.Blazor.Services
             try
             {
                 var parts = jwt.Split('.');
-                if (parts.Length < 2) { return true; }
+                if (parts.Length < 2) { return null; }
 
                 var payload = parts[1].Replace('-', '+').Replace('_', '/');
 
