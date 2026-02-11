@@ -7,6 +7,13 @@
 
 <PageTitle>Settings</PageTitle>
 
+@if(!string.IsNullOrWhiteSpace(_blockingMessage))
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Dense="true">
+        @_blockingMessage
+    </MudAlert>
+}
+
 <MudStack Spacing="3">
     <MudText Typo="Typo.h4" Style="color:#ffff">Settings</MudText>
 
