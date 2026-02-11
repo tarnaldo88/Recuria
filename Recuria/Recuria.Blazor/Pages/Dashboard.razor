@@ -19,10 +19,10 @@
             </MudItem>
         </MudGrid>
     }
-    else if (_error is not null)
+    else if (_blockingMessage is not null)
     {
-        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Dense="true">
-            @_error
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Dense="true">
+            @_blockingMessage
         </MudAlert>
 
         <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="/bootstrap" StartIcon="@Icons.Material.Filled.RocketLaunch">
@@ -59,7 +59,7 @@
 
 @code {
     private bool _loading = true;
-    private string? _error;
+    private string? _blockingMessage;
     private Recuria.Client.OrganizationDto? _org;
     private Recuria.Client.SubscriptionDetailsDto? _subscription;
     private string? orgName = string.Empty;
@@ -71,32 +71,22 @@
             var orgId = await Auth.GetOrgIdAsync();
             if(string.IsNullOrWhiteSpace(orgId))
             {
-                _error = "No org id. Go to /bootstrap.";
+                _blockingMessage = "No org id. Go to /bootstrap.";
                 return;
             }
 
             var parsedOrgId = Guid.Parse(orgId);
             var orgResult = await Organizations.GetByIdAsync(parsedOrgId);
             if (!orgResult.Success || orgResult.Data is null)
-            {
-                _error = orgResult.Error ?? "Unable to load organization.";
                 return;
-            }
 
             var subResult = await Subscriptions.GetCurrentAsync(parsedOrgId);
             if (!subResult.Success || subResult.Data is null)
-            {
-                _error = subResult.Error ?? "Unable to load subscription.";
                 return;
-            }
 
             _org = orgResult.Data;
             _subscription = subResult.Data;
             orgName = _org.Name ?? "unknown";
-        }
-        catch(Exception ex)
-        {
-            _error = ex.Message;
         }
         finally
         {

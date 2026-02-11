@@ -11,10 +11,10 @@
         Create a tenant and seed your first owner account.
     </MudText>
 
-    @if (!string.IsNullOrEmpty(_error))
+    @if (!string.IsNullOrEmpty(_validationMessage))
     {
         <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Dense="true">
-            @_error
+            @_validationMessage
         </MudAlert>
     }
 
@@ -69,18 +69,18 @@
     private string _orgName = "Acme Inc";
     private string _email = "owner@recuria.local";
     private string _ownerName = "Owner One";
-    private string? _error;
+    private string? _validationMessage;
     private bool _submitting;
 
     private async Task RunBootstrap()
     {
-        _error = null;
+        _validationMessage = null;
 
         if (string.IsNullOrWhiteSpace(_orgName) ||
             string.IsNullOrWhiteSpace(_ownerName) ||
             string.IsNullOrWhiteSpace(_email))
         {
-            _error = "Organization name, owner name, and email are required.";
+            _validationMessage = "Organization name, owner name, and email are required.";
             return;
         }
 
@@ -96,23 +96,18 @@
             });
 
             if (!result.Success || result.Data is null)
-            {
-                _error = result.Error ?? "Bootstrap failed.";
+            {                
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(result.Data.Token) || result.Data.OrganizationId == Guid.Empty)
             {
-                _error = "Bootstrap failed: missing token or org id.";
+                _validationMessage = "Bootstrap failed: missing token or org id.";
                 return;
             }
 
             await Auth.SetAuthAsync(result.Data.Token, result.Data.OrganizationId.ToString());
             Nav.NavigateTo("/dashboard");
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
         }
         finally
         {
