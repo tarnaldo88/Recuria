@@ -1,5 +1,5 @@
-﻿@page "/ops"
-@inject Recuria.Client.IRecuriaApiClient Api
+@page "/ops"
+@inject Recuria.Blazor.Services.App.IOpsAppService OpsApi
 @using System.Globalization
 
 <PageTitle>Ops</PageTitle>
@@ -10,11 +10,6 @@
     @if(!string.IsNullOrWhiteSpace(_error))
     {
         <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Dense="true">@_error</MudAlert>
-    }
-
-    @if (!string.IsNullOrWhiteSpace(_info))
-    {
-        <MudAlert Severity="Severity.Success" Dense="true">@_info</MudAlert>
     }
 
     <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
@@ -63,7 +58,6 @@
     private bool _busy;
     private int _take = 50;
     private string? _error;
-    private string? _info;
     private List<Recuria.Client.DeadLetteredOutboxItem> _items = new();
 
     protected override async Task OnInitializedAsync() => await LoadDeadLettered();
@@ -72,12 +66,17 @@
     {
         _loading = true;
         _error = null;
-        _info = null;
 
         try
         {
-            var result = await Api.DeadLetteredAsync(_take);
-            _items = result.OrderByDescending(XAxisLabelPosition => XAxisLabelPosition.DeadLetteredOnUtc).ToList();
+            var result = await OpsApi.GetDeadLetteredAsync(_take);
+            if (!result.Success || result.Data is null)
+            {
+                _error = result.Error ?? "Unable to load dead-letter queue.";
+                return;
+            }
+
+            _items = result.Data.OrderByDescending(x => x.DeadLetteredOnUtc).ToList();
         }
         catch (Exception ex)
         {
@@ -93,19 +92,25 @@
     {
         _busy = true;
         _error = null;
-        _info = null;
+
         try
         {
-            await Api.RetryAsync(id);
-            _info = "Message requeued.";
+            var result = await OpsApi.RetryAsync(id);
+            if (!result.Success)
+            {
+                _error = result.Error ?? "Unable to retry message.";
+                return;
+            }
+
             await LoadDeadLettered();
         }
-        catch (Recuria.Client.ApiException ex) when (ex.StatusCode == 204) // stale client expecting 200
+        catch (Exception ex)
         {
-            _info = "Message requeued.";
-            await LoadDeadLettered();
+            _error = ex.Message;
         }
-        catch (Exception ex) { _error = ex.Message; }
-        finally { _busy = false; }
+        finally
+        {
+            _busy = false;
+        }
     }
 }
