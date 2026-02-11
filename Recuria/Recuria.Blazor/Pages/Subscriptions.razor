@@ -8,11 +8,10 @@
 
 <MudStack Spacing="3" Class="subs-page">
     <MudText Typo="Typo.h4" Style="color:#ffff">Subscriptions</MudText>
-
-    @if (!string.IsNullOrWhiteSpace(_error))
+    @if (!string.IsNullOrWhiteSpace(_blockingMessage))
     {
-        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Dense="true">
-            @_error
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Dense="true">
+            @_blockingMessage
         </MudAlert>
     }
 
@@ -117,7 +116,7 @@
 
 </MudStack>
 @code {
-    private string? _error;
+    private string? _blockingMessage;
     private bool _loading;
     private bool _busy;
     private Guid _orgId;
@@ -134,14 +133,14 @@
     private async Task LoadData()
     {
         _loading = true;
-        _error = null;
+        _blockingMessage = null;
 
         try
         {
             var orgIdRaw = await Auth.GetOrgIdAsync();
             if(string.IsNullOrWhiteSpace(orgIdRaw))
             {
-                _error = "No organization id found. Go to /bootstrap first.";
+                _blockingMessage = "No organization id found. Go to /bootstrap first.";
                 return;
             }
 
@@ -152,24 +151,18 @@
                 _details = null;
                 _canCancel = false;
                 _canUpgrade = false;
-                _error = result.Error ?? "No active/trial/past-due subscription found.";
                 return;
             }
 
             _details = result.Data;
             if (_details is null)
             {
-                _error = "No active/trial/past-due subscription found.";
                 return;
             }
 
             _selectedPlan = _details.Subscription.PlanCode;
             _canCancel = _details.Actions.CanCancel;
             _canUpgrade = _details.Actions.CanUpgrade;
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
         }
         finally
         {
@@ -185,7 +178,6 @@
         }
 
         _busy = true;
-        _error = null;
 
         try
         {
@@ -194,16 +186,9 @@
                 NewPlan = _selectedPlan
             });
             if (!result.Success)
-            {
-                _error = result.Error ?? "Unable to update subscription.";
                 return;
-            }
 
             await LoadData();
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
         }
         finally
         {
@@ -217,21 +202,13 @@
             return;
 
         _busy = true;
-        _error = null;
 
         try
         {
             var result = await SubscriptionsApi.CancelAsync(_details.Subscription.Id);
             if (!result.Success)
-            {
-                _error = result.Error ?? "Unable to cancel subscription.";
                 return;
-            }
             await LoadData();
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
         }
         finally
         {
@@ -242,21 +219,13 @@
     private async Task CreateTrial()
     {
         _busy = true;
-        _error = null;
 
         try
         {
             var result = await SubscriptionsApi.CreateTrialAsync(_orgId);
             if (!result.Success)
-            {
-                _error = result.Error ?? "Unable to start trial.";
                 return;
-            }
             await LoadData();
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
         }
         finally
         {
