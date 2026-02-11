@@ -1,10 +1,8 @@
-﻿@using MudBlazor
-@inject Recuria.Client.IRecuriaApiClient Api
+@using MudBlazor
+@inject Recuria.Blazor.Services.App.IAuthAppService AuthApi
 @inject Recuria.Blazor.Services.AuthState Auth
 @inject NavigationManager Nav
 @implements IDisposable
-
-
 
 <MudNavMenu Class="pa-2">
     @if(_isAuthenticated)
@@ -28,8 +26,8 @@
     }
 </MudNavMenu>
 
-    @code {
-    private bool _canSeeOps = false;
+@code {
+    private bool _canSeeOps;
     private bool _isAuthenticated;
 
     protected override async Task OnInitializedAsync()
@@ -47,25 +45,23 @@
     private async Task RefreshAuthUiAsync()
     {
         _isAuthenticated = await Auth.IsAuthenticatedAsync();
-
         if (!_isAuthenticated)
         {
             _canSeeOps = false;
             return;
         }
 
-        try
-        {
-            var who = await Api.WhoamiAsync();
-            var role = who?.Role?.Trim();
-            _canSeeOps = role is "Owner" or "Admin";
-        }
-        catch
+        var whoResult = await AuthApi.WhoAmIAsync(notifyError: false);
+        if (!whoResult.Success || whoResult.Data is null)
         {
             _canSeeOps = false;
             _isAuthenticated = false;
             await Auth.ClearAsync();
+            return;
         }
+
+        var role = whoResult.Data.Role?.Trim();
+        _canSeeOps = role is "Owner" or "Admin";
     }
 
     public void Dispose()
@@ -75,16 +71,8 @@
 
     private async Task Logout()
     {
-        try
-        {
-            await Api.LogoutAsync();
-        }
-        catch
-        {
-            // Ignore API logout failures; still clear local session.
-        }
-
+        await AuthApi.LogoutAsync(notifySuccess: true, notifyError: false);
         await Auth.ClearAsync();
         Nav.NavigateTo("/login", forceLoad: false);
-    }    
+    }
 }
