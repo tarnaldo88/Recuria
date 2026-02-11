@@ -1,6 +1,6 @@
 @page "/bootstrap"
 @inject Recuria.Blazor.Services.AuthState Auth
-@inject Recuria.Client.IRecuriaApiClient Api
+@inject Recuria.Blazor.Services.App.IBootstrapAppService BootstrapService
 @inject NavigationManager Nav
 
 <PageTitle>Dev Bootstrap</PageTitle>
@@ -88,20 +88,26 @@
 
         try
         {
-            var result = await Api.BootstrapAsync(new Recuria.Client.BootstrapRequest
+            var result = await BootstrapService.BootstrapAsync(new Recuria.Client.BootstrapRequest
             {
                 OrganizationName = _orgName.Trim(),
                 OwnerEmail = _email.Trim(),
                 OwnerName = _ownerName.Trim()
             });
 
-            if (string.IsNullOrWhiteSpace(result.Token) || result.OrganizationId == Guid.Empty)
+            if (!result.Success || result.Data is null)
+            {
+                _error = result.Error ?? "Bootstrap failed.";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(result.Data.Token) || result.Data.OrganizationId == Guid.Empty)
             {
                 _error = "Bootstrap failed: missing token or org id.";
                 return;
             }
 
-            await Auth.SetAuthAsync(result.Token, result.OrganizationId.ToString());
+            await Auth.SetAuthAsync(result.Data.Token, result.Data.OrganizationId.ToString());
             Nav.NavigateTo("/dashboard");
         }
         catch (Exception ex)
