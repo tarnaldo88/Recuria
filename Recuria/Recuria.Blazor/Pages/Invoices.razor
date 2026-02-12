@@ -1,6 +1,7 @@
 @page "/invoices"
 @inject Recuria.Blazor.Services.AuthState Auth
 @inject Recuria.Blazor.Services.App.IInvoiceAppService InvoicesApi
+@inject Recuria.Blazor.Services.App.IUserContextService UserContextService
 @inject NavigationManager Nav
 @using System.Globalization
 
@@ -22,33 +23,42 @@
                 <MudText Typo="Typo.h6">Create Invoice</MudText>
             </CardHeaderContent>
         </MudCardHeader>
-        <MudCardContent>
-            <MudGrid>
-                <MudItem xs="12" md="4">
-                    <MudNumericField T="double"
-                            Label="Amount"
-                            Variant="Variant.Filled"
-                            Margin="Margin.Dense"
-                            Min="0.01"
-                            @bind-Value="_newAmount" />
-                </MudItem>
-                <MudItem xs="12" md="4">
-                    <MudTextField Label="Description"
-                            Variant="Variant.Outlined"
-                            Margin="Margin.Dense"
-                            @bind-Value="_newDescription" />
-                </MudItem>
-                <MudItem xs="12" md="2" Class="invoice-actions">
-                    <MudButton Variant="Variant.Filled"
-                        Color="Color.Primary"
-                        FullWidth="true"
-                        Disabled="@(_busy || _newAmount <= 0)"
-                        OnClick="CreateInvoice">
-                        Create
-                    </MudButton>
-                </MudItem>
-            </MudGrid>
-        </MudCardContent>
+        @if (_canManageBilling)
+        {
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12" md="4">
+                        <MudNumericField T="double"
+                                Label="Amount"
+                                Variant="Variant.Filled"
+                                Margin="Margin.Dense"
+                                Min="0.01"
+                                @bind-Value="_newAmount" />
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudTextField Label="Description"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                @bind-Value="_newDescription" />
+                    </MudItem>
+                    <MudItem xs="12" md="2" Class="invoice-actions">
+                        <MudButton Variant="Variant.Filled"
+                            Color="Color.Primary"
+                            FullWidth="true"
+                            Disabled="@(_busy || _newAmount <= 0)"
+                            OnClick="CreateInvoice">
+                            Create
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Info" Dense="true">
+                Creating invoices requires Admin or Owner role.
+            </MudAlert>
+        }        
     </MudCard>
 
     <MudCard Class="invoice-card">
@@ -99,7 +109,8 @@
     </MudCard>
 </MudStack>
 
-    @code {
+@code {
+    private bool _canManageBilling;
     private bool _loading = true;
     private bool _busy;
     private string? _blockingMessage;
@@ -112,6 +123,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var ctx = await UserContextService.GetAsync();
+        _canManageBilling = ctx.CanManageBilling;
         await LoadInvoices();
     }
 

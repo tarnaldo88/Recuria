@@ -1,0 +1,19 @@
+<MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Dense="true">
+    @Message
+</MudAlert>
+
+<MudStack Row="true" Spacing="2" Class="mt-2">
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="@PrimaryHref">@PrimaryText</MudButton>
+    @if (!string.IsNullOrWhiteSpace(SecondaryHref))
+    {
+        <MudButton Variant="Variant.Outlined" Href="@SecondaryHref">@SecondaryText</MudButton>
+    }
+</MudStack>
+
+@code {
+    [Parameter] public string Message { get; set; } = "You do not have permission to view this page.";
+    [Parameter] public string PrimaryText { get; set; } = "Go to Dashboard";
+    [Parameter] public string PrimaryHref { get; set; } = "/dashboard";
+    [Parameter] public string? SecondaryText { get; set; } = "Go to Settings";
+    [Parameter] public string? SecondaryHref { get; set; } = "/settings";
+}

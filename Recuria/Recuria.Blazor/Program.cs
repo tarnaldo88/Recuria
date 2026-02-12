@@ -21,6 +21,7 @@ builder.Services.AddScoped<ISubscriptionAppService, SubscriptionAppService>();
 builder.Services.AddScoped<IInvoiceAppService, InvoiceAppService>();
 builder.Services.AddScoped<IUserAppService, UserAppService>();
 builder.Services.AddScoped<IOpsAppService, OpsAppService>();
+builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddMudServices();
 
 var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5132/";

@@ -1,60 +1,78 @@
 @page "/ops"
 @inject Recuria.Blazor.Services.App.IOpsAppService OpsApi
+@inject Recuria.Blazor.Services.App.IUserContextService UserContextService
 @using System.Globalization
 
 <PageTitle>Ops</PageTitle>
+@if (_isForbidden)
+{
+    <ForbiddenState Message="Ops is restricted to Admin or Owner." />
+}
+else
+{
+    <MudStack Spacing="3">
+        <MudText Typo="Typo.h4" Style="color:#ffff">Ops</MudText>
 
-<MudStack Spacing="3">
-    <MudText Typo="Typo.h4" Style="color:#ffff">Ops</MudText>
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+            <MudNumericField T="int" @bind-Value="_take" Min="1" Max="200" Label="Rows" Variant="Variant.Filled" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoadDeadLettered" Disabled="_busy">Load</MudButton>
+        </MudStack>
 
-    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
-        <MudNumericField T="int" @bind-Value="_take" Min="1" Max="200" Label="Rows" Variant="Variant.Filled" />
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoadDeadLettered" Disabled="_busy">Load</MudButton>
+        <MudCard>
+            <MudCardContent>
+                @if (_loading)
+                {
+                    <MudSkeleton Height="160px" Width="100%" />
+                }
+                else
+                {
+                    <MudTable T="Recuria.Client.DeadLetteredOutboxItem" Items="_items" Dense="true" Hover="true">
+                        <HeaderContent>
+                            <MudTh>Dead-Lettered</MudTh>
+                            <MudTh>Type</MudTh>
+                            <MudTh>Retries</MudTh>
+                            <MudTh>Error</MudTh>
+                            <MudTh></MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@context.DeadLetteredOnUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudTd>
+                            <MudTd>@context.Type</MudTd>
+                            <MudTd>@context.RetryCount</MudTd>
+                            <MudTd>@context.Error</MudTd>
+                            <MudTd>
+                                <MudButton Variant="Variant.Text" Color="Color.Primary" Disabled="_busy" OnClick="@(() => Retry(context.Id))">
+                                    Retry
+                                </MudButton>
+                            </MudTd>
+                        </RowTemplate>
+                        <NoRecordsContent>
+                            <MudText Typo="Typo.body2">No dead-lettered messages.</MudText>
+                        </NoRecordsContent>
+                    </MudTable>
+                }
+            </MudCardContent>
+        </MudCard>
     </MudStack>
-
-    <MudCard>
-        <MudCardContent>
-            @if (_loading)
-            {
-                <MudSkeleton Height="160px" Width="100%" />
-            }
-            else
-            {
-                <MudTable T="Recuria.Client.DeadLetteredOutboxItem" Items="_items" Dense="true" Hover="true">
-                    <HeaderContent>
-                        <MudTh>Dead-Lettered</MudTh>
-                        <MudTh>Type</MudTh>
-                        <MudTh>Retries</MudTh>
-                        <MudTh>Error</MudTh>
-                        <MudTh></MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd>@context.DeadLetteredOnUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudTd>
-                        <MudTd>@context.Type</MudTd>
-                        <MudTd>@context.RetryCount</MudTd>
-                        <MudTd>@context.Error</MudTd>
-                        <MudTd>
-                            <MudButton Variant="Variant.Text" Color="Color.Primary" Disabled="_busy" OnClick="@(() => Retry(context.Id))">
-                                Retry
-                            </MudButton>
-                        </MudTd>
-                    </RowTemplate>
-                    <NoRecordsContent>
-                        <MudText Typo="Typo.body2">No dead-lettered messages.</MudText>
-                    </NoRecordsContent>
-                </MudTable>
-            }
-        </MudCardContent>
-    </MudCard>
- </MudStack>
+}
 
 @code {
+
     private bool _loading = true;
+    private bool _isForbidden;
     private bool _busy;
     private int _take = 50;
     private List<Recuria.Client.DeadLetteredOutboxItem> _items = new();
 
-    protected override async Task OnInitializedAsync() => await LoadDeadLettered();
+    protected override async Task OnInitializedAsync() 
+    {        
+        var ctx = await UserContextService.GetAsync();
+        if (!ctx.CanViewOps)
+        {
+            _isForbidden = true;
+            return;
+        }
+        await LoadDeadLettered();
+    }
 
     private async Task LoadDeadLettered()
     {

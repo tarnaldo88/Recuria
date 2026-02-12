@@ -1,6 +1,7 @@
 @using MudBlazor
 @inject Recuria.Blazor.Services.App.IAuthAppService AuthApi
 @inject Recuria.Blazor.Services.AuthState Auth
+@inject Recuria.Blazor.Services.App.IUserContextService UserContextService
 @inject NavigationManager Nav
 @implements IDisposable
 
@@ -11,7 +12,9 @@
         <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
         <MudNavLink Href="/invoices" Icon="@Icons.Material.Filled.ReceiptLong">Invoices</MudNavLink>
         <MudNavLink Href="/subscriptions" Icon="@Icons.Material.Filled.Subscriptions">Subscriptions</MudNavLink>
-        <MudNavLink Href="/users" Icon="@Icons.Material.Filled.Group">Users</MudNavLink>
+        @if(_canManageUsers) {
+            <MudNavLink Href="/users" Icon="@Icons.Material.Filled.Group">Users</MudNavLink>
+        }        
         <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings">Settings</MudNavLink>
         <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="Logout">Logout</MudButton>
     }
@@ -29,6 +32,7 @@
 @code {
     private bool _canSeeOps;
     private bool _isAuthenticated;
+    private bool _canManageUsers;
 
     protected override async Task OnInitializedAsync()
     {
@@ -48,20 +52,22 @@
         if (!_isAuthenticated)
         {
             _canSeeOps = false;
+            _canManageUsers = false;
             return;
         }
 
-        var whoResult = await AuthApi.WhoAmIAsync(notifyError: false);
-        if (!whoResult.Success || whoResult.Data is null)
+        var ctx = await UserContextService.GetAsync(forceRefresh: true);
+        if (!ctx.IsAuthenticated)
         {
             _canSeeOps = false;
+            _canManageUsers = false;
             _isAuthenticated = false;
             await Auth.ClearAsync();
             return;
         }
 
-        var role = whoResult.Data.Role?.Trim();
-        _canSeeOps = role is "Owner" or "Admin";
+        _canSeeOps = ctx.CanViewOps;
+        _canManageUsers = ctx.CanManageUsers;
     }
 
     public void Dispose()

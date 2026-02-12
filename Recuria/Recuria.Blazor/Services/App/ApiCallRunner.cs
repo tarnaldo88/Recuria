@@ -107,7 +107,7 @@ namespace Recuria.Blazor.Services.App
         private static string ExtractApiMessage(Recuria.Client.ApiException ex)
         {
             if(ex.StatusCode == 401) return "Unauthorized. Please sign in again.";            
-            if (ex.StatusCode == 403) return "Forbidden. You do not have permission for this action.";
+            if (ex.StatusCode == 403) return "Forbidden. You do not have permission for this action. Contact an Admin/Owner if access is required.";
             if (ex.StatusCode == 404) return "Resource not found.";
             if (ex.StatusCode == 409) return "Conflict detected. Refresh and try again.";
             if (ex.StatusCode >= 500) return "Server error. Please try again.";

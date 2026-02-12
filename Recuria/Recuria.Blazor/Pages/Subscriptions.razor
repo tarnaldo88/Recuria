@@ -1,6 +1,7 @@
 @page "/subscriptions"
 @inject Recuria.Blazor.Services.AuthState Auth
 @inject Recuria.Blazor.Services.App.ISubscriptionAppService SubscriptionsApi
+@inject Recuria.Blazor.Services.App.IUserContextService UserContextService
 @using System.Globalization
 @using Recuria.Client
 
@@ -24,12 +25,21 @@
         <MudAlert Severity="Severity.Warning" Dense="true">
             No subscription data available.
         </MudAlert>
-        <MudButton Variant="Variant.Filled"
-           Color="Color.Primary"
-           Disabled="_busy"
-           OnClick="CreateTrial">
-            Start Trial
-        </MudButton>
+        @if (_canManageBilling)
+        {
+            <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               Disabled="_busy"
+               OnClick="CreateTrial">
+                Start Trial
+            </MudButton>
+        }
+        else
+        {
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                Starting a trial requires Admin or Owner role.
+            </MudText>
+        }
     }
     else
     {
@@ -80,26 +90,35 @@
                                 <MudSelectItem Value="Recuria.Client.PlanType.Enterprise">Enterprise</MudSelectItem>
                             </MudSelect>
 
-                            <MudButton Variant="Variant.Filled"
+                            @if (!_canManageBilling)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    Plan changes require Admin or Owner role.
+                                </MudText>
+                            }
+                            else
+                            {
+                                <MudButton Variant="Variant.Filled"
                                     Color="Color.Primary"
                                     Disabled="@(!_canUpgrade || _busy || _selectedPlan == _details.Subscription.PlanCode)"
                                     OnClick="UpgradePlan">
                                 Upgrade / Change Plan
-                            </MudButton>
+                                </MudButton>
 
-                            <MudButton Variant="Variant.Outlined"
-                                    Color="Color.Error"
-                                    Disabled="@(!_canCancel || _busy)"
-                                    OnClick="CancelSubscription">
-                                @(_details?.Subscription.Status == Recuria.Client.SubscriptionStatus.Trial
-                                    ? "End Trial"
-                                    : "Cancel Subscription")
-                            </MudButton>
-                            @if (!_canCancel)
-                            {
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                    Cancellation is only available for trial, active, or past-due subscriptions.
-                                </MudText>
+                                <MudButton Variant="Variant.Outlined"
+                                        Color="Color.Error"
+                                        Disabled="@(!_canCancel || _busy)"
+                                        OnClick="CancelSubscription">
+                                    @(_details?.Subscription.Status == Recuria.Client.SubscriptionStatus.Trial
+                                        ? "End Trial"
+                                        : "Cancel Subscription")
+                                </MudButton>
+                                @if (!_canCancel)
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        Cancellation is only available for trial, active, or past-due subscriptions.
+                                    </MudText>
+                                }
                             }
                             <MudButton Variant="Variant.Text"
                                        Color="Color.Default"
@@ -107,6 +126,7 @@
                                        OnClick="LoadData">
                                 Refresh
                             </MudButton>
+                            
                         </MudStack>
                     </MudCardContent>
                 </MudCard>
@@ -117,6 +137,7 @@
 </MudStack>
 @code {
     private string? _blockingMessage;
+    private bool _canManageBilling;
     private bool _loading;
     private bool _busy;
     private Guid _orgId;
@@ -127,6 +148,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var ctx = await UserContextService.GetAsync();
+        _canManageBilling = ctx.CanManageBilling;
         await LoadData();
     }
 
@@ -217,6 +240,9 @@
 
     private async Task CreateTrial()
     {
+        if (!_canManageBilling)
+            return;
+
         _busy = true;
 
         try
