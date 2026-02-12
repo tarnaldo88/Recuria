@@ -204,6 +204,15 @@
 
         try
         {
+            var confirmed = await DialogService.ShowMessageBox(
+                "Confirm Plan Change",
+                $"Change plan to {_selectedPlan}?",
+                yesText: "Confirm",
+                cancelText: "Cancel");
+
+            if (confirmed != true)
+                return;
+
             var result = await SubscriptionsApi.UpgradeAsync(_details.Subscription.Id, new Recuria.Client.UpgradeSubscriptionRequest
             {
                 NewPlan = _selectedPlan
