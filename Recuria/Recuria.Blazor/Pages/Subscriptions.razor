@@ -2,6 +2,7 @@
 @inject Recuria.Blazor.Services.AuthState Auth
 @inject Recuria.Blazor.Services.App.ISubscriptionAppService SubscriptionsApi
 @inject Recuria.Blazor.Services.App.IUserContextService UserContextService
+@inject IDialogService DialogService
 @using System.Globalization
 @using Recuria.Client
 
@@ -220,6 +221,14 @@
 
     private async Task CancelSubscription()
     {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Confirm Cancellation",
+            "This will end billing access for this subscription. Continue?",
+            yesText: "Yes, cancel",
+            cancelText: "Keep subscription");
+
+        if (confirmed != true)
+            return;
         if (_details is null)
             return;
 
