@@ -242,6 +242,9 @@
 
     private async Task CancelSubscription()
     {
+        if (_details is null || !_canManageBilling)
+            return;
+
         var confirmed = await DialogService.ShowMessageBox(
             "Confirm Cancellation",
             "This will end billing access for this subscription. Continue?",
@@ -250,23 +253,27 @@
 
         if (confirmed != true)
             return;
-        if (_details is null)
-            return;
 
         _busy = true;
+        _serverValidationMessage = null;
 
         try
         {
             var result = await SubscriptionsApi.CancelAsync(_details.Subscription.Id);
             if (!result.Success)
+            {
+                _serverValidationMessage = MapServerError(result.Error);
                 return;
+            }
+
             await LoadData();
         }
         finally
         {
             _busy = false;
         }
-    }    
+    }
+
 
     private async Task CreateTrial()
     {
