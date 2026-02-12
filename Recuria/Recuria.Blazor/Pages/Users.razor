@@ -183,7 +183,10 @@ else
                 Role = _newRole
             });
             if (!result.Success)
+            {
+                _serverValidationMessage = MapServerError(result.Error);
                 return;
+            }
 
             await LoadUsers();
             _newName = null;
