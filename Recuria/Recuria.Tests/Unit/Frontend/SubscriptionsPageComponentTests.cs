@@ -12,6 +12,11 @@ namespace Recuria.Tests.Unit.Frontend
 {
     public sealed class SubscriptionsPageComponentTests : TestContext
     {
+        public SubscriptionsPageComponentTests()
+        {
+            JSInterop.Mode = JSRuntimeMode.Loose;
+        }
+
         [Fact]
         public void Render_Should_Show_ReadOnly_Billing_Message_For_Member()
         {
