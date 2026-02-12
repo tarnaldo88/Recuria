@@ -3,6 +3,7 @@
 @inject Recuria.Blazor.Services.App.IOrganizationAppService OrganizationsApi
 @inject Recuria.Blazor.Services.App.IUserAppService UsersApi
 @inject Recuria.Blazor.Services.App.IUserContextService UserContextService
+@inject IDialogService DialogService
 
 <PageTitle>Users</PageTitle>
 
@@ -102,7 +103,7 @@ else
         }
     </MudStack>
 }
-    @code {
+@code {
     private bool _busy;
     private bool _isForbidden;
     private string? _blockingMessage;
@@ -112,6 +113,10 @@ else
     private string? _newName;
     private string? _newEmail;
     private Recuria.Client.UserRole _newRole = Recuria.Client.UserRole.Member;
+
+    private MudForm? _addUserForm;
+    private MudForm? _roleForm;
+    private string? _serverValidationMessage;
 
     private List<Recuria.Client.UserSummaryDto> _users = new();
     private Recuria.Client.UserSummaryDto? _selectedUser;
@@ -247,5 +252,30 @@ else
         return orgId;
     }
 
+    private static string? ValidateRequired(string? value, string fieldName) => 
+        string.IsNullOrWhiteSpace(value) ? $"{fieldName} is required." : null;
+
+    private static string? ValidateEmail(string? value)
+    {
+        if(string.IsNullOrWhiteSpace(value))
+        {
+            return "Email is required.";
+        }
+
+        return System.Net.Mail.MailAddress.TryCreate(value, out _) ? null : "Email is invalid.";
+    }
+
+    private static string MapServerError(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return "Request failed.";
+
+        if (raw.Contains("validation", StringComparison.OrdinalIgnoreCase))
+            return "Some values are invalid. Please review highlighted fields.";
+
+        if (raw.Contains("already exists", StringComparison.OrdinalIgnoreCase))
+            return "A user with that email already exists.";
+
+        return raw;
+    }
 }
 
