@@ -21,41 +21,53 @@ else
             <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Dense="true">@_blockingMessage</MudAlert>
         }
 
-        <MudCard>
-            <MudCardContent>
-                <MudGrid>
-                    <MudItem xs="12" md="4">
-                        <MudTextField @bind-Value="_search"
-                                      Label="Search name or email"
-                                      Variant="Variant.Outlined"
-                                      Immediate="true" />
-                    </MudItem>
+        <MudForm @ref="_addUserForm">
+            <MudGrid>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="_search"
+                                Label="Search name or email"
+                                Variant="Variant.Outlined"
+                                Immediate="true" />
+                </MudItem>
 
-                    <MudItem xs="12" md="3">
-                        <MudTextField @bind-Value="_newName" Label="Name" Variant="Variant.Outlined" />
-                    </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudTextField @bind-Value="_newName"
+                                Label="Name"
+                                Variant="Variant.Outlined"
+                                Validation="@(v => ValidateRequired(v, \"Name\"))" />
+                </MudItem>
 
-                    <MudItem xs="12" md="3">
-                        <MudTextField @bind-Value="_newEmail" Label="Email" Variant="Variant.Outlined" />
-                    </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudTextField @bind-Value="_newEmail"
+                                Label="Email"
+                                Variant="Variant.Outlined"
+                                Validation="ValidateEmail" />
+                </MudItem>
 
-                    <MudItem xs="12" md="2">
-                        <MudSelect T="Recuria.Client.UserRole" @bind-Value="_newRole" Label="Role" Variant="Variant.Outlined">
-                            <MudSelectItem Value="Recuria.Client.UserRole.Owner">Owner</MudSelectItem>
-                            <MudSelectItem Value="Recuria.Client.UserRole.Admin">Admin</MudSelectItem>
-                            <MudSelectItem Value="Recuria.Client.UserRole.Member">Member</MudSelectItem>
-                        </MudSelect>
-                    </MudItem>
+                <MudItem xs="12" md="2">
+                    <MudSelect T="Recuria.Client.UserRole"
+                            @bind-Value="_newRole"
+                            Label="Role"
+                            Variant="Variant.Outlined">
+                        <MudSelectItem Value="Recuria.Client.UserRole.Owner">Owner</MudSelectItem>
+                        <MudSelectItem Value="Recuria.Client.UserRole.Admin">Admin</MudSelectItem>
+                        <MudSelectItem Value="Recuria.Client.UserRole.Member">Member</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
 
-                    <MudItem xs="12">
-                        <MudStack Row="true" Spacing="2">
-                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_busy" OnClick="AddUser">Add User</MudButton>
-                            <MudButton Variant="Variant.Outlined" Disabled="_busy" OnClick="LoadUsers">Refresh</MudButton>
-                        </MudStack>
-                    </MudItem>
-                </MudGrid>
-            </MudCardContent>
-        </MudCard>
+                <MudItem xs="12">
+                    @if (!string.IsNullOrWhiteSpace(_serverValidationMessage))
+                    {
+                        <MudAlert Severity="Severity.Warning" Dense="true">@_serverValidationMessage</MudAlert>
+                    }
+
+                    <MudStack Row="true" Spacing="2">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_busy" OnClick="AddUser">Add User</MudButton>
+                        <MudButton Variant="Variant.Outlined" Disabled="_busy" OnClick="LoadUsers">Refresh</MudButton>
+                    </MudStack>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
 
         <MudTable T="Recuria.Client.UserSummaryDto" Items="FilteredUsers" Dense="true" Hover="true">
             <HeaderContent>
