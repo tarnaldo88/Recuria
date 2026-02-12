@@ -164,6 +164,14 @@ else
     private async Task AddUser()
     {
         _busy = true;
+        _serverValidationMessage = null;
+
+        if (_addUserForm is not null)
+        {
+            await _addUserForm.Validate();
+            if (!_addUserForm.IsValid)
+                return;
+        }
 
         try
         {
