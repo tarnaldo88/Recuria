@@ -3,6 +3,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Moq;
+using MudBlazor;
 using MudBlazor.Services;
 using Recuria.Blazor.Pages;
 using Recuria.Blazor.Services;
@@ -30,7 +31,7 @@ namespace Recuria.Tests.Unit.Frontend
             Services.AddSingleton(Mock.Of<IOrganizationAppService>());
             Services.AddSingleton(Mock.Of<IUserAppService>());
 
-            var cut = RenderComponent<Users>();
+            var cut = Render(@<div><MudPopoverProvider /><Users /></div>);
 
             cut.Markup.Should().Contain("Users management requires Admin or Owner role.");
         }
@@ -62,7 +63,7 @@ namespace Recuria.Tests.Unit.Frontend
             Services.AddSingleton(Mock.Of<IOrganizationAppService>());
             Services.AddSingleton(usersApi.Object);
 
-            var cut = RenderComponent<Users>();
+            var cut = Render(@<div><MudPopoverProvider /><Users /></div>);
 
             cut.WaitForAssertion(() =>
             {
