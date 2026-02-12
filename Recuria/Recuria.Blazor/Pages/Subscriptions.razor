@@ -109,7 +109,7 @@
                                     Color="Color.Primary"
                                     Disabled="@(!_canUpgrade || _busy || _selectedPlan == _details.Subscription.PlanCode)"
                                     OnClick="UpgradePlan">
-                                Upgrade / Change Plan
+                                @(_busy ? "Working..." : "Upgrade / Change Plan")
                                 </MudButton>
 
                                 <MudButton Variant="Variant.Outlined"
@@ -281,12 +281,17 @@
             return;
 
         _busy = true;
+        _serverValidationMessage = null;
 
         try
         {
             var result = await SubscriptionsApi.CreateTrialAsync(_orgId);
             if (!result.Success)
+            {
+                _serverValidationMessage = MapServerError(result.Error);
                 return;
+            }
+
             await LoadData();
         }
         finally
@@ -294,6 +299,7 @@
             _busy = false;
         }
     }
+
 
     private async Task<Guid?> GetOrganizationIdAsync()
     {
