@@ -12,6 +12,11 @@ namespace Recuria.Tests.Unit.Frontend
 {
     public sealed class UsersPageComponentTests : TestContext
     {
+        public UsersPageComponentTests()
+        {
+            JSInterop.Mode = JSRuntimeMode.Loose;
+        }
+
         [Fact]
         public void Render_Should_Show_ForbiddenState_When_User_Cannot_Manage_Users()
         {
