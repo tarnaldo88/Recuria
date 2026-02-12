@@ -34,14 +34,14 @@ else
                     <MudTextField @bind-Value="_newName"
                                 Label="Name"
                                 Variant="Variant.Outlined"
-                                Validation="@(v => ValidateRequired(v, \"Name\"))" />
+                                  Validation="@(new Func<string?, string?>(ValidateName))" />
                 </MudItem>
 
                 <MudItem xs="12" md="3">
                     <MudTextField @bind-Value="_newEmail"
                                 Label="Email"
                                 Variant="Variant.Outlined"
-                                Validation="ValidateEmail" />
+                                Validation="@(new Func<string?, string?>(ValidateEmail))" />
                 </MudItem>
 
                 <MudItem xs="12" md="2">
@@ -127,7 +127,7 @@ else
     private Recuria.Client.UserRole _newRole = Recuria.Client.UserRole.Member;
 
     private MudForm? _addUserForm;
-    private MudForm? _roleForm;
+    // private MudForm? _roleForm;
     private string? _serverValidationMessage;
 
     private List<Recuria.Client.UserSummaryDto> _users = new();
@@ -312,5 +312,7 @@ else
 
         return raw;
     }
+
+    private static string? ValidateName(string? value) => ValidateRequired(value, "Name");
 }
 
