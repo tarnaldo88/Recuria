@@ -224,19 +224,31 @@ else
     }
 
     private async Task RemoveUser(Guid userId)
-    {       
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Confirm Remove",
+            "Remove this user from the organization?",
+            yesText: "Remove",
+            cancelText: "Cancel");
+
+        if (confirmed != true)
+            return;
+
         _busy = true;
+        _serverValidationMessage = null;
 
         try
         {
             var result = await UsersApi.RemoveAsync(_orgId, userId);
             if (!result.Success)
-                return;
-
-            if (_selectedUser?.Id == userId )
             {
-                _selectedUser = null;
+                _serverValidationMessage = MapServerError(result.Error);
+                return;
             }
+
+            if (_selectedUser?.Id == userId)
+                _selectedUser = null;
+
             await LoadUsers();
         }
         finally
