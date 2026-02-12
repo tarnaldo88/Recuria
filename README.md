@@ -196,6 +196,12 @@ The Blazor WebAssembly frontend is now actively implemented with a MudBlazor UI 
 - Consistent loading, success, and error states across pages
 - Handling of API contract mismatches during transition (e.g., 200 vs 201/204)
 - Localized date/time display patterns using `CurrentCulture` where appropriate
+- Typed frontend app-service layer (`Services/App`) to avoid page-direct API calls
+- Centralized notification + error mapping via `ApiCallRunner`
+- Role-aware UI authorization across nav, pages, and sensitive actions
+- Graceful forbidden states with actionable messaging (`ForbiddenState`)
+- MudForm-driven field validation + server validation mapping on key forms
+- Confirmation dialogs for destructive operations (cancel/remove/retry flows)
 
 ### Frontend Runtime Notes
 - Frontend is a browser-hosted Blazor WASM app, not a desktop executable
@@ -266,6 +272,21 @@ Testing focuses on **business behavior**, not implementation details.
   - Container wiring and handler registration checks
   - File:
     - `Recuria/Recuria.Tests/DI/DiWiringDiagnosticsTests.cs`
+
+- **Frontend service layer and UX orchestration**
+  - App-service success/failure mapping for auth, users, org, subscriptions, invoices, ops
+  - 204-compat contract handling tests (role change/remove/retry/logout)
+  - User context role-capability mapping and cache behavior
+  - Centralized API error mapping coverage (`401/403/404/409/500`)
+  - Files:
+    - `Recuria/Recuria.Tests/Unit/Frontend/ApiCallRunnerTests.cs`
+    - `Recuria/Recuria.Tests/Unit/Frontend/AuthAppServiceTests.cs`
+    - `Recuria/Recuria.Tests/Unit/Frontend/UserAppServiceTests.cs`
+    - `Recuria/Recuria.Tests/Unit/Frontend/OrganizationAppServiceTests.cs`
+    - `Recuria/Recuria.Tests/Unit/Frontend/SubscriptionAppServiceTests.cs`
+    - `Recuria/Recuria.Tests/Unit/Frontend/InvoiceAppServiceTests.cs`
+    - `Recuria/Recuria.Tests/Unit/Frontend/OpsAppServiceTests.cs`
+    - `Recuria/Recuria.Tests/Unit/Frontend/UserContextServiceTests.cs`
 
 ### Integration Test Coverage
 
