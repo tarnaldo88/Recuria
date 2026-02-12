@@ -192,7 +192,11 @@
                 Description = string.IsNullOrWhiteSpace(_newDescription) ? null : _newDescription.Trim()
             });
             if (!createResult.Success)
-                return;
+            {
+                _serverValidationMessage = createResult.Error;
+                return;    
+            }
+            
 
             await LoadInvoices();
         }
