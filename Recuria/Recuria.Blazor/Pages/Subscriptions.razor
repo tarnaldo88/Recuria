@@ -10,6 +10,12 @@
 
 <MudStack Spacing="3" Class="subs-page">
     <MudText Typo="Typo.h4" Style="color:#ffff">Subscriptions</MudText>
+    @if (!string.IsNullOrWhiteSpace(_serverValidationMessage))
+    {
+        <MudAlert Severity="Severity.Warning" Dense="true">
+            @_serverValidationMessage
+        </MudAlert>
+    }
     @if (!string.IsNullOrWhiteSpace(_blockingMessage))
     {
         <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Dense="true">
@@ -138,6 +144,7 @@
 </MudStack>
 @code {
     private string? _blockingMessage;
+    private string? _serverValidationMessage;
     private bool _canManageBilling;
     private bool _loading;
     private bool _busy;
@@ -158,6 +165,7 @@
     {
         _loading = true;
         _blockingMessage = null;
+        _serverValidationMessage = null;
 
         try
         {
@@ -195,30 +203,33 @@
 
     private async Task UpgradePlan()
     {
-        if(_details is null)
-        {
+        if (_details is null || !_canManageBilling)
             return;
-        }
+
+        var confirmed = await DialogService.ShowMessageBox(
+            "Confirm Plan Change",
+            $"Change plan to {_selectedPlan}?",
+            yesText: "Confirm",
+            cancelText: "Cancel");
+
+        if (confirmed != true)
+            return;
 
         _busy = true;
+        _serverValidationMessage = null;
 
         try
         {
-            var confirmed = await DialogService.ShowMessageBox(
-                "Confirm Plan Change",
-                $"Change plan to {_selectedPlan}?",
-                yesText: "Confirm",
-                cancelText: "Cancel");
-
-            if (confirmed != true)
-                return;
-
             var result = await SubscriptionsApi.UpgradeAsync(_details.Subscription.Id, new Recuria.Client.UpgradeSubscriptionRequest
             {
                 NewPlan = _selectedPlan
             });
+
             if (!result.Success)
+            {
+                _serverValidationMessage = MapServerError(result.Error);
                 return;
+            }
 
             await LoadData();
         }
@@ -227,6 +238,7 @@
             _busy = false;
         }
     }
+
 
     private async Task CancelSubscription()
     {
@@ -294,6 +306,21 @@
 
         return orgId;
     }
+
+    private static string MapServerError(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return "Request failed. Please try again.";
+
+        if (raw.Contains("forbidden", StringComparison.OrdinalIgnoreCase))
+            return "You do not have permission for this action.";
+
+        if (raw.Contains("validation", StringComparison.OrdinalIgnoreCase))
+            return "Some values are invalid. Please review and try again.";
+
+        return raw;
+    }
+
 
 
     private static string PlanLabel(Recuria.Client.PlanType plan) =>
