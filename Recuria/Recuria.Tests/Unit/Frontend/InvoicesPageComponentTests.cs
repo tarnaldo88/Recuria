@@ -12,6 +12,11 @@ namespace Recuria.Tests.Unit.Frontend
 {
     public sealed class InvoicesPageComponentTests : TestContext
     {
+        public InvoicesPageComponentTests()
+        {
+            JSInterop.Mode = JSRuntimeMode.Loose;
+        }
+
         [Fact]
         public void Render_Should_Show_ReadOnly_Invoice_Message_For_Member()
         {
