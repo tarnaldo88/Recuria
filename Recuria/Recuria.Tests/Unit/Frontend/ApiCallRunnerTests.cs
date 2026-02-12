@@ -49,6 +49,23 @@ namespace Recuria.Tests.Unit.Frontend
             result.Error.Should().Be("Load failed: Server error. Please try again.");
         }
 
+        [Theory]
+        [InlineData(403, "Forbidden. You do not have permission for this action. Contact an Admin/Owner if access is required.")]
+        [InlineData(404, "Resource not found.")]
+        [InlineData(409, "Conflict detected. Refresh and try again.")]
+        public async Task RunAsync_Generic_Should_Map_Common_Status_Codes(int statusCode, string expected)
+        {
+            var runner = new ApiCallRunner(_snackbar.Object);
+            var ex = CreateApiException(statusCode, "{\"title\":\"Ignored by mapper\"}");
+
+            var result = await runner.RunAsync<int>(
+                () => Task.FromException<int>(ex),
+                errorPrefix: "Request failed");
+
+            result.Success.Should().BeFalse();
+            result.Error.Should().Be($"Request failed: {expected}");
+        }
+
         private static Recuria.Client.ApiException CreateApiException(int statusCode, string response)
         {
             return new Recuria.Client.ApiException(
