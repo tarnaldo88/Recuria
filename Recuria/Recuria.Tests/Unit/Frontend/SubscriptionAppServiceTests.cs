@@ -60,7 +60,7 @@ namespace Recuria.Tests.Unit.Frontend
                     IsTrial = true,
                     IsPastDue = false
                 },
-                Actions = new Recuria.Client.SubscriptionActionsDto
+                Actions = new Recuria.Client.SubscriptionActionAvailabilityDto
                 {
                     CanActivate = true,
                     CanCancel = true,
