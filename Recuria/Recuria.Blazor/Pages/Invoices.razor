@@ -2,6 +2,7 @@
 @inject Recuria.Blazor.Services.AuthState Auth
 @inject Recuria.Blazor.Services.App.IInvoiceAppService InvoicesApi
 @inject Recuria.Blazor.Services.App.IUserContextService UserContextService
+@inject IDialogService DialogService
 @inject NavigationManager Nav
 @using System.Globalization
 
@@ -41,7 +42,13 @@
                                 Margin="Margin.Dense"
                                 @bind-Value="_newDescription" />
                     </MudItem>
-                    <MudItem xs="12" md="2" Class="invoice-actions">
+                    @if (!string.IsNullOrWhiteSpace(_serverValidationMessage))
+                    {
+                        <MudAlert Severity="Severity.Warning" Dense="true">@_serverValidationMessage</MudAlert>
+                    }
+                    else
+                    {
+                        <MudItem xs="12" md="2" Class="invoice-actions">
                         <MudButton Variant="Variant.Filled"
                             Color="Color.Primary"
                             FullWidth="true"
@@ -50,6 +57,7 @@
                             Create
                         </MudButton>
                     </MudItem>
+                    }                    
                 </MudGrid>
             </MudCardContent>
         }
@@ -114,6 +122,7 @@
     private bool _loading = true;
     private bool _busy;
     private string? _blockingMessage;
+    private string? _serverValidationMessage;
     private Guid _orgId;
 
     private double _newAmount = 49.00;
@@ -168,6 +177,14 @@
 
         try
         {
+            var confirmed = await DialogService.ShowMessageBox(
+                "Create Invoice",
+                $"Create invoice for {FormatMoney(_newAmount, "USD")}?",
+                yesText: "Create",
+                cancelText: "Cancel");
+
+            if (confirmed != true)
+                return;
             var createResult = await InvoicesApi.CreateAsync(new Recuria.Client.CreateInvoiceRequest
             {
                 OrganizationId = _orgId,
