@@ -87,10 +87,10 @@ public sealed class InvoiceIdempotencyTests : IntegrationTestBase
         using (var scope = Factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
-            var oldUtc = DateTime.UtcNow.AddDays(-2);
+            var record = await db.ApiIdempotencyRecords
+                .FirstAsync(x => x.OrganizationId == orgId && x.Operation == "invoice.create" && x.IdempotencyKey == idemKey);
 
-            var invoice = await db.Invoices.FirstAsync(i => i.Id == firstInvoiceId);
-            db.Entry(invoice).Property(i => i.InvoiceDate).CurrentValue = oldUtc;
+            record.CreatedOnUtc = DateTime.UtcNow.AddDays(-2);
             await db.SaveChangesAsync();
         }
 
