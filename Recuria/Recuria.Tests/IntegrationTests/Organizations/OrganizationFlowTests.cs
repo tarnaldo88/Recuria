@@ -32,8 +32,8 @@ namespace Recuria.Tests.IntegrationTests.Organizations
             // Bootstrap auth for create user/org (org id can be arbitrary here)
             SetAuthHeader(ownerId, bootstrapOrgId, UserRole.Owner);
 
-            await SeedUser(ownerId);
-            await SeedUser(userId);
+            await SeedUserDirectAsync(ownerId, $"{ownerId}@test.com", "Test User");
+            await SeedUserDirectAsync(userId, $"{userId}@test.com", "Test User");
 
             // Create organization
             var createOrg = new CreateOrganizationRequest
@@ -111,16 +111,15 @@ namespace Recuria.Tests.IntegrationTests.Organizations
             Assert.Equal(HttpStatusCode.NoContent, removeUserResponse.StatusCode);
         }
 
-        private async Task SeedUser(Guid userId)
+        private async Task SeedUserDirectAsync(Guid userId, string email, string name)
         {
-            var response = await Client.PostAsJsonAsync("/api/users", new
-            {
-                Id = userId,
-                Email = $"{userId}@test.com",
-                Name = "Test User"
-            }, JsonOptions);
+            using var scope = Factory.Services.CreateScope();
+            var users = scope.ServiceProvider.GetRequiredService<Recuria.Application.Interface.Abstractions.IUserRepository>();
+            var uow = scope.ServiceProvider.GetRequiredService<Recuria.Application.Interface.Abstractions.IUnitOfWork>();
 
-            response.EnsureSuccessStatusCode();
+            var user = new User(email, name) { Id = userId };
+            await users.AddAsync(user, CancellationToken.None);
+            await uow.CommitAsync(CancellationToken.None);
         }
     }
 }

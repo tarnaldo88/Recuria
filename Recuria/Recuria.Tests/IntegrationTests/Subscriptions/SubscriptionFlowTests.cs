@@ -111,17 +111,5 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             await users.AddAsync(user, CancellationToken.None);
             await uow.CommitAsync(CancellationToken.None);
         }
-
-        private async Task SeedUser(Guid userId)
-        {
-            var response = await Client.PostAsJsonAsync("/api/users", new
-            {
-                Id = userId,
-                Email = $"{userId}@test.com",
-                Name = "Test User"
-            }, JsonOptions);
-
-            response.EnsureSuccessStatusCode();
-        }
     }
 }
