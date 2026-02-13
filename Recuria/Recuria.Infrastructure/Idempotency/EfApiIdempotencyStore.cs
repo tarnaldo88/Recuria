@@ -58,6 +58,17 @@ namespace Recuria.Infrastructure.Idempotency
 
             _db.ApiIdempotencyRecords.Remove(row);
             await _db.SaveChangesAsync(ct);
+        }  
+        
+        public async Task<int> DeleteOlderThanAsync(DateTime cutoffUtc, CancellationToken ct)
+        {
+            var rows = await _db.ApiIdempotencyRecords.Where(x => x.CreatedOnUtc < cutoffUtc).ToListAsync(ct);
+
+            if (rows.Count == 0) return 0;
+
+            _db.ApiIdempotencyRecords.RemoveRange(rows);
+            await _db.SaveChangesAsync(ct);
+            return rows.Count;
         }
     }
 }
