@@ -53,7 +53,8 @@ namespace Recuria.Tests.Unit.Frontend
                 Role = "Member"
             }));
 
-            var cut = Render(@<div><MudPopoverProvider /><Subscriptions /></div>);
+            RenderComponent<MudPopoverProvider>();
+            var cut = RenderComponent<Subscriptions>();
 
             cut.WaitForAssertion(() =>
                 cut.Markup.Should().Contain("Plan changes require Admin or Owner role."));

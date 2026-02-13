@@ -4,6 +4,7 @@ using Recuria.Application.Contracts.Subscription;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
 using Recuria.Application.Requests;
+using Recuria.Api.Auth;
 using Recuria.Api.Logging;
 using Recuria.Domain.Enums;
 using Microsoft.Extensions.Caching.Memory;
@@ -140,8 +141,7 @@ namespace Recuria.Api.Controllers
 
         private bool IsSameOrganization(Guid organizationId)
         {
-            var orgClaim = User.FindFirst("org_id")?.Value;
-            return Guid.TryParse(orgClaim, out var orgId) && orgId == organizationId;
+            return User.IsInOrganization(organizationId);
         }
     }
 }

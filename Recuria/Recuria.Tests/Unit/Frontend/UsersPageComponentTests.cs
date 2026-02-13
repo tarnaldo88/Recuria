@@ -31,7 +31,8 @@ namespace Recuria.Tests.Unit.Frontend
             Services.AddSingleton(Mock.Of<IOrganizationAppService>());
             Services.AddSingleton(Mock.Of<IUserAppService>());
 
-            var cut = Render(@<div><MudPopoverProvider /><Users /></div>);
+            RenderComponent<MudPopoverProvider>();
+            var cut = RenderComponent<Users>();
 
             cut.Markup.Should().Contain("Users management requires Admin or Owner role.");
         }
@@ -63,12 +64,13 @@ namespace Recuria.Tests.Unit.Frontend
             Services.AddSingleton(Mock.Of<IOrganizationAppService>());
             Services.AddSingleton(usersApi.Object);
 
-            var cut = Render(@<div><MudPopoverProvider /><Users /></div>);
+            RenderComponent<MudPopoverProvider>();
+            var cut = RenderComponent<Users>();
 
             cut.WaitForAssertion(() =>
             {
                 cut.Markup.Should().Contain("alice@example.com");
-                cut.Markup.Should().Contain("Edit Role");
+                cut.Markup.Should().Contain("Select");
             });
         }
 

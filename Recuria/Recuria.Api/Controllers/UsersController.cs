@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Recuria.Api.Auth;
 using Recuria.Application.Interface.Abstractions;
 using Recuria.Domain;
+using Recuria.Domain.Enums;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,18 +19,28 @@ namespace Recuria.Api.Controllers
     public sealed class UsersController : ControllerBase
     {
         private readonly IUserRepository _users;
+        private readonly IOrganizationRepository _organizations;
         private readonly IUnitOfWork _uow;
 
-        public UsersController(IUserRepository users, IUnitOfWork uow)
+        public UsersController(
+            IUserRepository users,
+            IOrganizationRepository organizations,
+            IUnitOfWork uow)
         {
             _users = users;
+            _organizations = organizations;
             _uow = uow;
         }
 
         /// <summary>
         /// Request to create a user.
         /// </summary>
-        public sealed record CreateUserRequest(Guid Id, string Email, string? Name, string? Password);
+        public sealed record CreateUserRequest(
+            Guid Id,
+            Guid OrganizationId,
+            string Email,
+            string? Name,
+            string? Password);
 
         /// <summary>
         /// Create a user.
@@ -38,14 +50,22 @@ namespace Recuria.Api.Controllers
             [FromBody] CreateUserRequest request,
             CancellationToken ct)
         {
+            if (!User.IsInOrganization(request.OrganizationId))
+                return Forbid();
+
             if (request.Id == Guid.Empty)
                 return BadRequest("User id is required.");
 
             if (string.IsNullOrWhiteSpace(request.Email))
                 return BadRequest("Email is required.");
 
+            var organization = await _organizations.GetByIdAsync(request.OrganizationId, ct);
+            if (organization is null)
+                return BadRequest("Organization does not exist.");
+
             var name = string.IsNullOrWhiteSpace(request.Name) ? request.Email : request.Name;
             var user = new User(request.Email, name) { Id = request.Id };
+            user.AssignToOrganization(organization, UserRole.Member);
             if (!string.IsNullOrWhiteSpace(request.Password))
                 user.SetPassword(request.Password);
 
@@ -65,10 +85,7 @@ namespace Recuria.Api.Controllers
             if (user is null)
                 return NotFound();
 
-            var orgClaim = User.FindFirst("org_id")?.Value;
-            if (user.OrganizationId == null ||
-                !Guid.TryParse(orgClaim, out var orgId) ||
-                user.OrganizationId != orgId)
+            if (user.OrganizationId == null || !User.IsInOrganization(user.OrganizationId.Value))
             {
                 return Forbid();
             }

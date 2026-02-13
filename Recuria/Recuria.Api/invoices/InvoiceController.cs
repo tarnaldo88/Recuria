@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Recuria.Api.Auth;
 using Recuria.Api.Logging;
 using Recuria.Application.Contracts.Common;
 using Recuria.Application.Contracts.Invoice;
@@ -152,8 +153,7 @@ namespace Recuria.Api.Invoices
 
         private bool IsSameOrganization(Guid organizationId)
         {
-            var orgClaim = User.FindFirst("org_id")?.Value;
-            return Guid.TryParse(orgClaim, out var orgId) && orgId == organizationId;
+            return User.IsInOrganization(organizationId);
         }
     }
 }

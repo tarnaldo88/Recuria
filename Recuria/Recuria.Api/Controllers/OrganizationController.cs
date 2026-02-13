@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Recuria.Api.Auth;
 using Recuria.Application.Contracts.Organizations;
 using Recuria.Application.Interface;
 using Recuria.Application.Requests;
@@ -95,7 +96,8 @@ namespace Recuria.Api.Controllers
         public async Task<ActionResult<OrganizationDto>> GetMyOrganization(
             CancellationToken cancellationToken)
         {
-            var organizationId = GetOrganizationIdFromContext();
+            if (!User.TryGetOrganizationId(out var organizationId))
+                return Forbid();
 
             var cacheKey = $"org:{organizationId}";
             if (!_cache.TryGetValue(cacheKey, out OrganizationDto? org))
@@ -136,15 +138,6 @@ namespace Recuria.Api.Controllers
             _cache.Remove($"org:{id}");
 
             return NoContent();
-        }
-
-        // Temporary until auth exists
-        private Guid GetOrganizationIdFromContext()
-        {
-            // In next step replaced by auth claims
-            return Guid.Parse(
-                User.FindFirst("org_id")?.Value
-                ?? throw new InvalidOperationException("No organization in context"));
         }
 
         /// <summary>
@@ -224,8 +217,7 @@ namespace Recuria.Api.Controllers
         /// <returns>True if the user is in the same organization, false otherwise.</returns>
         private bool IsSameOrganization(Guid organizationId)
         {
-            var orgClaim = User.FindFirst("org_id")?.Value;
-            return Guid.TryParse(orgClaim, out var orgId) && orgId == organizationId;
+            return User.IsInOrganization(organizationId);
         }
     }
 }

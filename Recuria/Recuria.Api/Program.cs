@@ -80,6 +80,8 @@ if (requireJwt)
     var issuer = builder.Configuration["Jwt:Issuer"];
     var audience = builder.Configuration["Jwt:Audience"];
     var key = builder.Configuration["Jwt:SigningKey"];
+    var defaultConnection = builder.Configuration.GetConnectionString("DefaultConnection");
+    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
 
     if (string.IsNullOrWhiteSpace(issuer) ||
         string.IsNullOrWhiteSpace(audience) ||
@@ -87,6 +89,23 @@ if (requireJwt)
     {
         throw new InvalidOperationException(
             "JWT configuration is required in non-development environments (Jwt:Issuer, Jwt:Audience, Jwt:SigningKey).");
+    }
+
+    if (key.Length < 32)
+    {
+        throw new InvalidOperationException("Jwt:SigningKey must be at least 32 characters in non-development environments.");
+    }
+
+    if (string.IsNullOrWhiteSpace(defaultConnection) ||
+        defaultConnection.Contains("(localdb)", StringComparison.OrdinalIgnoreCase) ||
+        defaultConnection.Contains("Trusted_Connection=True", StringComparison.OrdinalIgnoreCase))
+    {
+        throw new InvalidOperationException("A non-local production database connection string is required in non-development environments.");
+    }
+
+    if (allowedOrigins.Length == 0)
+    {
+        throw new InvalidOperationException("Cors:AllowedOrigins must contain at least one origin in non-development environments.");
     }
 }
 
@@ -171,6 +190,17 @@ builder.Services.AddRateLimiter(options =>
             factory: _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit = 100,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+
+    options.AddPolicy("auth-login", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: $"{httpContext.Connection.RemoteIpAddress}:{httpContext.Request.Path}",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
                 Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0,
                 AutoReplenishment = true
@@ -462,7 +492,7 @@ app.UseStatusCodePages(async context =>
     await response.WriteAsJsonAsync(details);
 });
 
-app.MapControllers();
+app.MapControllers().RequireRateLimiting("default");
 
 app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
 {

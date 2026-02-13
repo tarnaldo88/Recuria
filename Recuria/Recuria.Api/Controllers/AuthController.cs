@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Recuria.Api.Auth;
 using Recuria.Api.Configuration;
 using Recuria.Application.Interface.Abstractions;
 using System.Security.Claims;
+using System.ComponentModel.DataAnnotations;
 
 namespace Recuria.Api.Controllers
 {
@@ -28,7 +30,20 @@ namespace Recuria.Api.Controllers
             _jwt = jwt.Value;
         }
 
-        public sealed record LoginRequest(Guid OrganizationId, string Email, string Password);
+        public sealed class LoginRequest
+        {
+            [Required]
+            public Guid OrganizationId { get; init; }
+
+            [Required]
+            [EmailAddress]
+            [StringLength(256)]
+            public string Email { get; init; } = string.Empty;
+
+            [Required]
+            [StringLength(256, MinimumLength = 8)]
+            public string Password { get; init; } = string.Empty;
+        }
 
         public sealed record AuthResponse(
             string AccessToken,
@@ -41,6 +56,7 @@ namespace Recuria.Api.Controllers
 
         [HttpPost("login")]
         [AllowAnonymous]
+        [EnableRateLimiting("auth-login")]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -48,9 +64,6 @@ namespace Recuria.Api.Controllers
         {
             if (request.OrganizationId == Guid.Empty)
                 return BadRequest("OrganizationId is required.");
-
-            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
-                return BadRequest("Email and password are required.");
 
             var normalizedEmail = request.Email.Trim().ToLowerInvariant();
             var user = await _users.GetByEmailInOrganizationAsync(request.OrganizationId, normalizedEmail, ct);
