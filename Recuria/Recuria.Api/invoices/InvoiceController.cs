@@ -79,10 +79,20 @@ namespace Recuria.Api.Invoices
             var existing = await _idempotency.GetAsync(request.OrganizationId, operation, idemKey, ct);
             if (existing is not null)
             {
-                if (!string.Equals(existing.RequestHash, requestHash, StringComparison.Ordinal))
-                    return Conflict("Idempotency-Key was already used with a different request payload.");
+                var ttl = TimeSpan.FromHours(_idempotencyOptions.InvoiceCreateTtlHours);
+                var isExpired = DateTime.UtcNow - existing.CreatedOnUtc > ttl;
 
-                return Ok(existing.ResourceId);
+                if (isExpired)
+                {
+                    await _idempotency.DeleteAsync(request.OrganizationId, operation, idemKey, ct);
+                }
+                else
+                {
+                    if (!string.Equals(existing.RequestHash, requestHash, StringComparison.Ordinal))
+                        return Conflict("Idempotency-Key was already used with a different request payload.");
+
+                    return Ok(existing.ResourceId);
+                }
             }
 
             var current = await _subscriptionQueries.GetCurrentAsync(request.OrganizationId, ct);
