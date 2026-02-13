@@ -28,7 +28,7 @@ namespace Recuria.Infrastructure.Idempotency
                     x.Operation == operation &&
                     x.IdempotencyKey == key, ct);
 
-            return row is null ? null : new ApiIdempotencyHit(row.ResourceId, row.RequestHash);
+            return row is null ? null : new ApiIdempotencyHit(row.ResourceId, row.RequestHash, row.CreatedOnUtc);
         }
 
         public async Task SaveAsync(
