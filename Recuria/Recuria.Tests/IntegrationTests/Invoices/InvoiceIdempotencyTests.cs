@@ -67,6 +67,50 @@ public sealed class InvoiceIdempotencyTests : IntegrationTestBase
         secondResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
+    [Fact]
+    public async Task CreateInvoice_WithExpiredIdempotencyKey_Should_AllowReuse_AsNewRequest()
+    {
+        var orgId = await SeedOrganizationWithActiveSubscriptionAsync();
+        SetAuthHeader(Guid.NewGuid(), orgId, UserRole.Owner);
+
+        var idemKey = $"invoice-create-{Guid.NewGuid():N}";
+        var firstDescription = $"ttl-first-{Guid.NewGuid():N}";
+        var secondDescription = $"ttl-second-{Guid.NewGuid():N}";
+
+        var firstRequest = BuildCreateInvoiceRequest(orgId, 49.00, firstDescription, idemKey);
+        var firstResponse = await Client.SendAsync(firstRequest);
+        firstResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var firstInvoiceId = await firstResponse.Content.ReadFromJsonAsync<Guid>(JsonOptions);
+
+        // Force invoice age older than default TTL (24h) so key is treated as expired.
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
+            var oldUtc = DateTime.UtcNow.AddDays(-2);
+
+            await db.Database.ExecuteSqlInterpolatedAsync(
+                $"UPDATE Invoices SET IssuedOnUtc = {oldUtc} WHERE Id = {firstInvoiceId}");
+        }
+
+        var secondRequest = BuildCreateInvoiceRequest(orgId, 79.00, secondDescription, idemKey);
+        var secondResponse = await Client.SendAsync(secondRequest);
+
+        secondResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        using var verifyScope = Factory.Services.CreateScope();
+        var verifyDb = verifyScope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
+
+        var createdCount = await verifyDb.Invoices
+            .AsNoTracking()
+            .Include(i => i.Subscription)
+            .CountAsync(i =>
+                i.Subscription.OrganizationId == orgId &&
+                (i.Description == firstDescription || i.Description == secondDescription));
+
+        createdCount.Should().Be(2);
+    }
+
     private static HttpRequestMessage BuildCreateInvoiceRequest(Guid orgId, double amount, string description, string idempotencyKey)
     {
         var message = new HttpRequestMessage(HttpMethod.Post, "/api/invoices")
@@ -109,4 +153,6 @@ public sealed class InvoiceIdempotencyTests : IntegrationTestBase
         await uow.CommitAsync(CancellationToken.None);
         return org.Id;
     }
+
+    
 }
