@@ -367,7 +367,11 @@ builder.Services.AddScoped<ITokenService, JwtTokenService>();
 builder.Services.AddScoped<IApiIdempotencyStore, EfApiIdempotencyStore>();
 //builder.Services.AddScoped<IDomainEventHandler<SubscriptionActivatedDomainEvent>, SubscriptionActivatedHandler>();
 
-
+builder.Services.AddOptions<IdempotencyOptions>()
+    .Bind(builder.Configuration.GetSection(IdempotencyOptions.SectionName))
+    .Validate(o => o.InvoiceCreateTtlHours > 0 && o.InvoiceCreateTtlHours <= 168,
+        "Idempotency.InvoiceCreateTtlHours must be between 1 and 168.")
+    .ValidateOnStart();
 
 builder.Services.Scan(scan => scan
     .FromAssemblies(

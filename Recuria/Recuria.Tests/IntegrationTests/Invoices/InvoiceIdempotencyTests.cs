@@ -112,6 +112,78 @@ public sealed class InvoiceIdempotencyTests : IntegrationTestBase
         createdCount.Should().Be(2);
     }
 
+    [Fact]
+    public async Task CreateInvoice_WithoutIdempotencyKey_Should_ReturnBadRequest()
+    {
+        var orgId = await SeedOrganizationWithActiveSubscriptionAsync();
+        SetAuthHeader(Guid.NewGuid(), orgId, UserRole.Owner);
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/invoices")
+        {
+            Content = JsonContent.Create(new
+            {
+                organizationId = orgId,
+                amount = 49.00,
+                description = "missing-key-test"
+            })
+        };
+
+        var response = await Client.SendAsync(request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("Idempotency-Key header is required.");
+    }
+
+    [Fact]
+    public async Task CreateInvoice_ConcurrentRequests_WithSameKeyAndPayload_Should_ReturnSingleResource()
+    {
+        var orgId = await SeedOrganizationWithActiveSubscriptionAsync();
+        SetAuthHeader(Guid.NewGuid(), orgId, UserRole.Owner);
+
+        var idemKey = $"invoice-create-{Guid.NewGuid():N}";
+        var description = $"race-{Guid.NewGuid():N}";
+        var amount = 49.00;
+
+        var request1 = BuildCreateInvoiceRequest(orgId, amount, description, idemKey);
+        var request2 = BuildCreateInvoiceRequest(orgId, amount, description, idemKey);
+
+        var task1 = Client.SendAsync(request1);
+        var task2 = Client.SendAsync(request2);
+
+        await Task.WhenAll(task1, task2);
+
+        var responses = new[] { task1.Result, task2.Result };
+
+        responses.Count(r => r.StatusCode == HttpStatusCode.Created || r.StatusCode == HttpStatusCode.OK)
+            .Should().Be(2);
+
+        responses.Should().Contain(r => r.StatusCode == HttpStatusCode.Created);
+        responses.Should().Contain(r => r.StatusCode == HttpStatusCode.OK);
+
+        var ids = new List<Guid>();
+        foreach (var response in responses)
+        {
+            var id = await response.Content.ReadFromJsonAsync<Guid>(JsonOptions);
+            ids.Add(id);
+        }
+
+        ids.Distinct().Should().HaveCount(1);
+
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
+
+        var count = await db.Invoices
+            .AsNoTracking()
+            .Include(i => i.Subscription)
+            .CountAsync(i =>
+                i.Subscription.OrganizationId == orgId &&
+                i.Description == description);
+
+        count.Should().Be(1);
+    }
+
+
     private static HttpRequestMessage BuildCreateInvoiceRequest(Guid orgId, double amount, string description, string idempotencyKey)
     {
         var message = new HttpRequestMessage(HttpMethod.Post, "/api/invoices")
