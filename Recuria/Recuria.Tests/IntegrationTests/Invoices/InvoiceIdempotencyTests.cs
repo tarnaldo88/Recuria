@@ -90,7 +90,7 @@ public sealed class InvoiceIdempotencyTests : IntegrationTestBase
             var oldUtc = DateTime.UtcNow.AddDays(-2);
 
             var invoice = await db.Invoices.FirstAsync(i => i.Id == firstInvoiceId);
-            db.Entry(invoice).Property("IssuedOnUtc").CurrentValue = oldUtc;
+            db.Entry(invoice).Property(i => i.InvoiceDate).CurrentValue = oldUtc;
             await db.SaveChangesAsync();
         }
 

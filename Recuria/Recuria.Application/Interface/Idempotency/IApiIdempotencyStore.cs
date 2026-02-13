@@ -10,7 +10,8 @@ namespace Recuria.Application.Interface.Idempotency
 
     public interface IApiIdempotencyStore
     {
-        Task<ApiIdempotencyHit?> GetAsync(Guid organizationId, string operation, string key, CancellationToken ct);
+        public sealed record ApiIdempotencyHit(Guid ResourceId, string RequestHash, DateTime CreatedOnUtc);
+
 
         Task SaveAsync(
             Guid organizationId,
