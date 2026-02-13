@@ -44,5 +44,20 @@ namespace Recuria.Infrastructure.Idempotency
 
             await _db.SaveChangesAsync(ct);
         }
+
+        public async Task DeleteAsync(Guid organizationId, string operation, string key, CancellationToken ct)
+        {
+            var row = await _db.ApiIdempotencyRecords
+                .FirstOrDefaultAsync(x =>
+                    x.OrganizationId == organizationId &&
+                    x.Operation == operation &&
+                    x.IdempotencyKey == key, ct);
+
+            if (row is null)
+                return;
+
+            _db.ApiIdempotencyRecords.Remove(row);
+            await _db.SaveChangesAsync(ct);
+        }
     }
 }
