@@ -21,6 +21,7 @@ This project is designed as a **industry-aligned system** emphasizing domain mod
 - Structured JSON logging (Serilog) + audit logging for sensitive actions
 - CI pipeline for build/test + migration script generation
 - Data integrity indexes + row‑version concurrency
+- Invoice create idempotency with key replay, conflict detection, TTL, and purge endpoint
 
 ---
 
@@ -132,6 +133,17 @@ Recuria enforces realistic SaaS constraints **in code**, not just the database:
   - Past-due handling
   - Cancellation after grace period
 - Domain events emitted for activation, expiration, and cancellation
+
+### Invoice Idempotency Contract
+
+`POST /api/invoices` now enforces idempotent create behavior using the `Idempotency-Key` header.
+
+- `Idempotency-Key` header is required
+- Same key + same payload within TTL returns `200 OK` with the existing `invoiceId`
+- Same key + different payload within TTL returns `409 Conflict`
+- New key or expired key returns `201 Created`
+- Idempotency keys are retained for a configurable TTL window (`Idempotency:InvoiceCreateTtlHours`)
+- Ops purge endpoint is available at `POST /api/outbox/idempotency/purge?olderThanHours=...`
 
 ---
 
@@ -325,9 +337,15 @@ Testing focuses on **business behavior**, not implementation details.
   - Details retrieval authorization and payload correctness
   - Description persistence and retrieval
   - Mark-as-paid endpoint behavior (`PaidOnUtc`)
+  - Idempotent invoice create behavior:
+    - Missing key returns `400`
+    - Same key and same payload replay behavior
+    - Same key and different payload conflict behavior
+    - Expired key reuse behavior
   - File:
     - `Recuria/Recuria.Tests/IntegrationTests/Invoices/InvoiceFlowTests.cs`
     - `Recuria/Recuria.Tests/IntegrationTests/Invoices/InvoiceContractTests.cs`
+    - `Recuria/Recuria.Tests/IntegrationTests/Invoices/InvoiceIdempotencyTests.cs`
 
 - **Ops/Outbox authorization**
   - Role-based access checks for dead-letter listing and retry
@@ -384,6 +402,7 @@ Recuria uses explicit quality gates so changes are not considered complete unles
 5. **Security constraints must remain enforced**
 - Authorization policies remain covered by tests (Owner/Admin/Member boundaries).
 - Org-scoped endpoints enforce `org_id` claim checks.
+- Invoice create idempotency contract remains enforced (`400/200/409/201` paths).
 
 ---
 
@@ -394,6 +413,10 @@ Use this checklist before merging:
 - [ ] `dotnet restore`
 - [ ] `dotnet build Recuria/Recuria.Api/Recuria.Api.csproj`
 - [ ] `dotnet test Recuria/Recuria.Tests/Recuria.Tests.csproj`
+- [ ] Verify invoice idempotency flows:
+  - Missing `Idempotency-Key` returns `400`
+  - Replayed same key and payload returns `200` with same `invoiceId`
+  - Replayed same key and different payload returns `409`
 - [ ] `dotnet ef migrations add <Name> --project Recuria/Recuria.Infrastructure/Recuria.Infrastructure.csproj --startup-project Recuria/Recuria.Api/Recuria.Api.csproj` (only when schema changes)
 - [ ] `dotnet ef database update --project Recuria/Recuria.Infrastructure/Recuria.Infrastructure.csproj --startup-project Recuria/Recuria.Api/Recuria.Api.csproj` (validate migration path)
 - [ ] Refresh OpenAPI:  
