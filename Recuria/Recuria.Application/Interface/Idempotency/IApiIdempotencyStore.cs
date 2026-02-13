@@ -19,5 +19,9 @@ namespace Recuria.Application.Interface.Idempotency
             string requestHash,
             Guid resourceId,
             CancellationToken ct);
+
+        Task DeleteAsync(Guid organizationId, string operation, string key, CancellationToken ct);
+
+        Task<int> DeleteOlderThanAsync(DateTime cutoffUtc, CancellationToken ct);
     }
 }
