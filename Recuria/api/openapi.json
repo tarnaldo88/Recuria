@@ -242,6 +242,19 @@
           "Invoice"
         ],
         "summary": "Create an invoice for the organization's current subscription.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key for safe request replay. Same key + same payload reuses existing invoice.",
+            "required": true,
+            "schema": {
+              "maxLength": 120,
+              "minLength": 8,
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -285,6 +298,29 @@
               }
             }
           },
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -307,6 +343,26 @@
           },
           "403": {
             "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "content": {
               "text/plain": {
                 "schema": {
@@ -849,6 +905,49 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/outbox/idempotency/purge": {
+      "post": {
+        "tags": [
+          "Outbox"
+        ],
+        "parameters": [
+          {
+            "name": "olderThanHours",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 168
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
           }
         }
       }
@@ -1409,6 +1508,10 @@
             "type": "string",
             "format": "uuid"
           },
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "email": {
             "type": "string",
             "nullable": true
@@ -1528,6 +1631,11 @@
         "additionalProperties": false
       },
       "LoginRequest": {
+        "required": [
+          "email",
+          "organizationId",
+          "password"
+        ],
         "type": "object",
         "properties": {
           "organizationId": {
@@ -1535,12 +1643,15 @@
             "format": "uuid"
           },
           "email": {
+            "maxLength": 256,
+            "minLength": 0,
             "type": "string",
-            "nullable": true
+            "format": "email"
           },
           "password": {
-            "type": "string",
-            "nullable": true
+            "maxLength": 256,
+            "minLength": 8,
+            "type": "string"
           }
         },
         "additionalProperties": false

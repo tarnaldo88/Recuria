@@ -48,6 +48,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.RateLimiting;
 using Microsoft.OpenApi.Models;
+using Recuria.Api.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -243,6 +244,8 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
+
+    options.OperationFilter<IdempotencyHeaderOperationFilter>();
 });
 
 builder.Services.AddDbContext<RecuriaDbContext>(options =>
