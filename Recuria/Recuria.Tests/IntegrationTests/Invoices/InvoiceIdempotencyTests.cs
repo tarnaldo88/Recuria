@@ -89,8 +89,9 @@ public sealed class InvoiceIdempotencyTests : IntegrationTestBase
             var db = scope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
             var oldUtc = DateTime.UtcNow.AddDays(-2);
 
-            await db.Database.ExecuteSqlInterpolatedAsync(
-                $"UPDATE Invoices SET IssuedOnUtc = {oldUtc} WHERE Id = {firstInvoiceId}");
+            var invoice = await db.Invoices.FirstAsync(i => i.Id == firstInvoiceId);
+            db.Entry(invoice).Property("IssuedOnUtc").CurrentValue = oldUtc;
+            await db.SaveChangesAsync();
         }
 
         var secondRequest = BuildCreateInvoiceRequest(orgId, 79.00, secondDescription, idemKey);
