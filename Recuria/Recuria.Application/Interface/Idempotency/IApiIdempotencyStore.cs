@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 
 namespace Recuria.Application.Interface.Idempotency
 {
-    public sealed record ApiIdempotencyHit(Guid ResourceId, string RequestHash);
+    public sealed record ApiIdempotencyHit(Guid ResourceId, string RequestHash, DateTime CreatedOnUtc);
 
     public interface IApiIdempotencyStore
     {
-        public sealed record ApiIdempotencyHit(Guid ResourceId, string RequestHash, DateTime CreatedOnUtc);
-
+        Task<ApiIdempotencyHit?> GetAsync(Guid organizationId, string operation, string key, CancellationToken ct);
 
         Task SaveAsync(
             Guid organizationId,

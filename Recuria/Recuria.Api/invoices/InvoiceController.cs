@@ -12,6 +12,9 @@ using Microsoft.Extensions.Primitives;
 using Recuria.Application.Interface.Idempotency;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Options;
+using Recuria.Api.Configuration;
+
 
 namespace Recuria.Api.Invoices
 {
@@ -29,6 +32,7 @@ namespace Recuria.Api.Invoices
         private readonly IAuditLogger _audit;
         private readonly RecuriaDbContext _db;
         private readonly IApiIdempotencyStore _idempotency;
+        private readonly IdempotencyOptions _idempotencyOptions;
 
         public InvoiceController(
             IInvoiceQueries invoiceQueries,
@@ -36,7 +40,8 @@ namespace Recuria.Api.Invoices
             IInvoiceService invoiceService,
             IAuditLogger audit,
             RecuriaDbContext db,
-            IApiIdempotencyStore idempotency)
+            IApiIdempotencyStore idempotency,
+            IOptions<IdempotencyOptions> idempotencyOptions)
         {
             _invoiceQueries = invoiceQueries;
             _subscriptionQueries = subscriptionQueries;
@@ -44,6 +49,7 @@ namespace Recuria.Api.Invoices
             _audit = audit;
             _db = db;
             _idempotency = idempotency;
+            _idempotencyOptions = idempotencyOptions.Value;
         }
 
         /// <summary>
