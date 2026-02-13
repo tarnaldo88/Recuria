@@ -86,5 +86,14 @@ namespace Recuria.Api.Controllers
 
             return NoContent();
         }
+
+        [HttpPost("idempotency/purge")]
+        public async Task<ActionResult<int>> PurgeIdempotency([FromQuery] int olderThanHours = 168, CancellationToken ct = default)
+        {
+            olderThanHours = Math.Clamp(olderThanHours, 1, 24 * 90);
+            var cutoff = DateTime.UtcNow.AddHours(-olderThanHours);
+            var deleted = await _idempotencyStore.DeleteOlderThanAsync(cutoff, ct);
+            return Ok(deleted);
+        }
     }
 }
