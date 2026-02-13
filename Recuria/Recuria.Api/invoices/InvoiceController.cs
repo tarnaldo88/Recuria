@@ -63,18 +63,27 @@ namespace Recuria.Api.Invoices
             if (!IsSameOrganization(request.OrganizationId))
                 return Forbid();
 
-            if(!IsSameOrganization(request.OrganizationId))
-            {
-                return Forbid();
-            }
-
-            if(!Request.Headers.TryGetValue("Idempotency-Key", out StringValues headerValue) || StringValues.IsNullOrEmpty(headerValue))
+            if (!Request.Headers.TryGetValue("Idempotency-Key", out StringValues headerValue) ||
+                StringValues.IsNullOrEmpty(headerValue))
             {
                 return BadRequest("Idempotency-Key header is required.");
             }
 
+            var idemKey = headerValue.ToString().Trim();
+            if (idemKey.Length is < 8 or > 120)
+                return BadRequest("Idempotency-Key must be between 8 and 120 characters.");
+
             const string operation = "invoice.create";
             var requestHash = ComputeInvoiceCreateHash(request);
+
+            var existing = await _idempotency.GetAsync(request.OrganizationId, operation, idemKey, ct);
+            if (existing is not null)
+            {
+                if (!string.Equals(existing.RequestHash, requestHash, StringComparison.Ordinal))
+                    return Conflict("Idempotency-Key was already used with a different request payload.");
+
+                return Ok(existing.ResourceId);
+            }
 
             var current = await _subscriptionQueries.GetCurrentAsync(request.OrganizationId, ct);
             if (current == null)
@@ -86,12 +95,33 @@ namespace Recuria.Api.Invoices
                 request.Description,
                 ct);
 
+            try
+            {
+                await _idempotency.SaveAsync(
+                    request.OrganizationId,
+                    operation,
+                    idemKey,
+                    requestHash,
+                    invoiceId,
+                    ct);
+            }
+            catch (DbUpdateException)
+            {
+                // Handles race condition where another request inserted same key first
+                var raced = await _idempotency.GetAsync(request.OrganizationId, operation, idemKey, ct);
+                if (raced is not null && string.Equals(raced.RequestHash, requestHash, StringComparison.Ordinal))
+                    return Ok(raced.ResourceId);
+
+                throw;
+            }
+
             _audit.Log(HttpContext, "invoice.create", new
             {
                 organizationId = request.OrganizationId,
                 amount = request.Amount,
                 description = request.Description,
-                invoiceId
+                invoiceId,
+                idempotencyKey = idemKey
             });
 
             return CreatedAtAction(nameof(GetDetails), new { invoiceId }, invoiceId);
