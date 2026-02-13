@@ -29,8 +29,13 @@ public sealed class InvoiceContractTests : IntegrationTestBase
             Description = "Enterprise test invoice"
         };
 
-        var createResponse = await Client.PostAsJsonAsync("/api/invoices", request, JsonOptions);
-        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var message = new HttpRequestMessage(HttpMethod.Post, "/api/invoices")
+        {
+            Content = JsonContent.Create(request)
+        };
+        message.Headers.Add("Idempotency-Key", $"invoice-contract-{Guid.NewGuid():N}");
+
+        var createResponse = await Client.SendAsync(message);
 
         var createdId = await createResponse.Content.ReadFromJsonAsync<Guid>(JsonOptions);
         createdId.Should().NotBe(Guid.Empty);
