@@ -26,6 +26,8 @@ namespace Recuria.Infrastructure.Persistence
         public DbSet<OutBoxMessage> OutBoxMessages => Set<OutBoxMessage>();
         public DbSet<BillingAttempt> BillingAttempts => Set<BillingAttempt>();
         public DbSet<ProcessedEvent> ProcessedEvents => Set<ProcessedEvent>();
+        public DbSet<ApiIdempotencyRecord> ApiIdempotencyRecords => Set<ApiIdempotencyRecord>();
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
