@@ -8,6 +8,10 @@ using Recuria.Application.Contracts.Invoice;
 using Recuria.Application.Interface;
 using Recuria.Application.Requests;
 using Recuria.Infrastructure.Persistence;
+using Microsoft.Extensions.Primitives;
+using Recuria.Application.Interface.Idempotency;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Recuria.Api.Invoices
 {
@@ -24,19 +28,22 @@ namespace Recuria.Api.Invoices
         private readonly IInvoiceService _invoiceService;
         private readonly IAuditLogger _audit;
         private readonly RecuriaDbContext _db;
+        private readonly IApiIdempotencyStore _idempotency;
 
         public InvoiceController(
             IInvoiceQueries invoiceQueries,
             ISubscriptionQueries subscriptionQueries,
             IInvoiceService invoiceService,
             IAuditLogger audit,
-            RecuriaDbContext db)
+            RecuriaDbContext db,
+            IApiIdempotencyStore idempotency)
         {
             _invoiceQueries = invoiceQueries;
             _subscriptionQueries = subscriptionQueries;
             _invoiceService = invoiceService;
             _audit = audit;
             _db = db;
+            _idempotency = idempotency;
         }
 
         /// <summary>
@@ -45,14 +52,29 @@ namespace Recuria.Api.Invoices
         [HttpPost]
         [Authorize(Policy = "AdminOrOwner")]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<Guid>> Create(
             [FromBody] CreateInvoiceRequest request,
             CancellationToken ct)
         {
             if (!IsSameOrganization(request.OrganizationId))
                 return Forbid();
+
+            if(!IsSameOrganization(request.OrganizationId))
+            {
+                return Forbid();
+            }
+
+            if(!Request.Headers.TryGetValue("Idempotency-Key", out StringValues headerValue) || StringValues.IsNullOrEmpty(headerValue))
+            {
+                return BadRequest("Idempotency-Key header is required.");
+            }
+
+            const string operation = "invoice.create";
+            var requestHash = ComputeInvoiceCreateHash(request);
 
             var current = await _subscriptionQueries.GetCurrentAsync(request.OrganizationId, ct);
             if (current == null)
@@ -154,6 +176,13 @@ namespace Recuria.Api.Invoices
         private bool IsSameOrganization(Guid organizationId)
         {
             return User.IsInOrganization(organizationId);
+        }
+        
+        private static string ComputeInvoiceCreateHash(CreateInvoiceRequest request)
+        {
+            var canonical = $"{request.OrganizationId:N}|{request.Amount:0.00}|{(request.Description ?? string.Empty).Trim()}";
+            var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(canonical));
+            return Convert.ToHexString(bytes);
         }
     }
 }
