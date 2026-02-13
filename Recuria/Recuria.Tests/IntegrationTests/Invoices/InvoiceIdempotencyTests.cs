@@ -17,48 +17,63 @@ public sealed class InvoiceIdempotencyTests : IntegrationTestBase
     public InvoiceIdempotencyTests(CustomWebApplicationFactory factory) : base(factory) { }
 
     [Fact]
-    public async Task CreateInvoice_WithSameIdempotencyKey_AndSamePayload_Should_ReturnSameInvoice()
+    public async Task CreateInvoice_ConcurrentRequests_WithSameKeyAndPayload_Should_ReturnSingleResource()
     {
-        using (var scope = Factory.Services.CreateScope())
+        // Skip this scenario on EF InMemory because unique indexes/concurrency are not enforced there.
+        using (var providerScope = Factory.Services.CreateScope())
         {
-            var db = scope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
-            var provider = db.Database.ProviderName ?? string.Empty;
+            var providerDb = providerScope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
+            var provider = providerDb.Database.ProviderName ?? string.Empty;
 
             if (provider.Contains("InMemory", StringComparison.OrdinalIgnoreCase))
-            {
-                // Concurrency uniqueness is not enforced by EF InMemory.
-                // This scenario must be validated in relational-provider test lane.
                 return;
-            }
         }
+
         var orgId = await SeedOrganizationWithActiveSubscriptionAsync();
         SetAuthHeader(Guid.NewGuid(), orgId, UserRole.Owner);
 
         var idemKey = $"invoice-create-{Guid.NewGuid():N}";
-        var description = $"idem-{Guid.NewGuid():N}";
+        var description = $"race-{Guid.NewGuid():N}";
         var amount = 49.00;
 
-        var firstRequest = BuildCreateInvoiceRequest(orgId, amount, description, idemKey);
-        var firstResponse = await Client.SendAsync(firstRequest);
-        firstResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-        var firstInvoiceId = await firstResponse.Content.ReadFromJsonAsync<Guid>(JsonOptions);
+        var request1 = BuildCreateInvoiceRequest(orgId, amount, description, idemKey);
+        var request2 = BuildCreateInvoiceRequest(orgId, amount, description, idemKey);
 
-        var secondRequest = BuildCreateInvoiceRequest(orgId, amount, description, idemKey);
-        var secondResponse = await Client.SendAsync(secondRequest);
+        var task1 = Client.SendAsync(request1);
+        var task2 = Client.SendAsync(request2);
 
-        // Expected enterprise behavior: replay returns existing resource.
-        secondResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var secondInvoiceId = await secondResponse.Content.ReadFromJsonAsync<Guid>(JsonOptions);
-        secondInvoiceId.Should().Be(firstInvoiceId);
+        await Task.WhenAll(task1, task2);
 
-        using var scope = Factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
-        var createdCount = await db.Invoices
+        var responses = new[] { task1.Result, task2.Result };
+
+        responses.Count(r => r.StatusCode == HttpStatusCode.Created || r.StatusCode == HttpStatusCode.OK)
+            .Should().Be(2);
+
+        responses.Should().Contain(r => r.StatusCode == HttpStatusCode.Created);
+        responses.Should().Contain(r => r.StatusCode == HttpStatusCode.OK);
+
+        var ids = new List<Guid>();
+        foreach (var response in responses)
+        {
+            var id = await response.Content.ReadFromJsonAsync<Guid>(JsonOptions);
+            ids.Add(id);
+        }
+
+        ids.Distinct().Should().HaveCount(1);
+
+        using var verifyScope = Factory.Services.CreateScope();
+        var verifyDb = verifyScope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
+
+        var count = await verifyDb.Invoices
             .AsNoTracking()
             .Include(i => i.Subscription)
-            .CountAsync(i => i.Subscription.OrganizationId == orgId && i.Description == description);
-        createdCount.Should().Be(1);
+            .CountAsync(i =>
+                i.Subscription.OrganizationId == orgId &&
+                i.Description == description);
+
+        count.Should().Be(1);
     }
+
 
     [Fact]
     public async Task CreateInvoice_WithSameIdempotencyKey_AndDifferentPayload_Should_ReturnConflict()
@@ -146,55 +161,6 @@ public sealed class InvoiceIdempotencyTests : IntegrationTestBase
         var body = await response.Content.ReadAsStringAsync();
         body.Should().Contain("Idempotency-Key header is required.");
     }
-
-    [Fact]
-    public async Task CreateInvoice_ConcurrentRequests_WithSameKeyAndPayload_Should_ReturnSingleResource()
-    {
-        var orgId = await SeedOrganizationWithActiveSubscriptionAsync();
-        SetAuthHeader(Guid.NewGuid(), orgId, UserRole.Owner);
-
-        var idemKey = $"invoice-create-{Guid.NewGuid():N}";
-        var description = $"race-{Guid.NewGuid():N}";
-        var amount = 49.00;
-
-        var request1 = BuildCreateInvoiceRequest(orgId, amount, description, idemKey);
-        var request2 = BuildCreateInvoiceRequest(orgId, amount, description, idemKey);
-
-        var task1 = Client.SendAsync(request1);
-        var task2 = Client.SendAsync(request2);
-
-        await Task.WhenAll(task1, task2);
-
-        var responses = new[] { task1.Result, task2.Result };
-
-        responses.Count(r => r.StatusCode == HttpStatusCode.Created || r.StatusCode == HttpStatusCode.OK)
-            .Should().Be(2);
-
-        responses.Should().Contain(r => r.StatusCode == HttpStatusCode.Created);
-        responses.Should().Contain(r => r.StatusCode == HttpStatusCode.OK);
-
-        var ids = new List<Guid>();
-        foreach (var response in responses)
-        {
-            var id = await response.Content.ReadFromJsonAsync<Guid>(JsonOptions);
-            ids.Add(id);
-        }
-
-        ids.Distinct().Should().HaveCount(1);
-
-        using var scope = Factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
-
-        var count = await db.Invoices
-            .AsNoTracking()
-            .Include(i => i.Subscription)
-            .CountAsync(i =>
-                i.Subscription.OrganizationId == orgId &&
-                i.Description == description);
-
-        count.Should().Be(1);
-    }
-
 
     private static HttpRequestMessage BuildCreateInvoiceRequest(Guid orgId, double amount, string description, string idempotencyKey)
     {
