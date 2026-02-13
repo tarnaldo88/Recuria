@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Recuria.Infrastructure.Outbox;
 using Recuria.Infrastructure.Persistence;
+using Recuria.Application.Interface.Idempotency;
 using Recuria.Api.Logging;
 
 namespace Recuria.Api.Controllers
@@ -17,11 +18,14 @@ namespace Recuria.Api.Controllers
     {
         private readonly RecuriaDbContext _db;
         private readonly IAuditLogger _audit;
+        private readonly IApiIdempotencyStore _idempotencyStore;
 
-        public OutboxController(RecuriaDbContext db, IAuditLogger audit)
+        public OutboxController(RecuriaDbContext db, IAuditLogger audit, IApiIdempotencyStore idempotencyStore  )
         {
             _db = db;
             _audit = audit;
+            _idempotencyStore = idempotencyStore;
+
         }
 
         public sealed record DeadLetteredOutboxItem(
