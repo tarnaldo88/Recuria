@@ -27,7 +27,7 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
             var ownerId = Guid.NewGuid();
             var bootstrapOrgId = Guid.NewGuid();
             SetAuthHeader(ownerId, bootstrapOrgId, UserRole.Owner);
-            await SeedUser(ownerId);
+            await SeedUserDirectAsync(ownerId, $"{ownerId}@test.com", "Test User");
 
             var createOrg = new CreateOrganizationRequest
             {
@@ -100,6 +100,16 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
                 Assert.NotNull(dbSub);
                 Assert.Equal(SubscriptionStatus.Trial, dbSub!.Status);
             }
+        }
+        private async Task SeedUserDirectAsync(Guid userId, string email, string name)
+        {
+            using var scope = Factory.Services.CreateScope();
+            var users = scope.ServiceProvider.GetRequiredService<Recuria.Application.Interface.Abstractions.IUserRepository>();
+            var uow = scope.ServiceProvider.GetRequiredService<Recuria.Application.Interface.Abstractions.IUnitOfWork>();
+
+            var user = new User(email, name) { Id = userId };
+            await users.AddAsync(user, CancellationToken.None);
+            await uow.CommitAsync(CancellationToken.None);
         }
 
         private async Task SeedUser(Guid userId)
