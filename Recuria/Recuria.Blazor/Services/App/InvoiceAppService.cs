@@ -54,6 +54,12 @@ namespace Recuria.Blazor.Services.App
                 errorPrefix: "Unable to load users",
                 notifyError: notifyError);
 
-
+        public Task<AppResult<Guid>> CreateAsync(Recuria.Client.CreateInvoiceRequest request, bool notifySuccess = true) =>
+            _runner.RunAsync(
+                () => _api.InvoicesPOSTAsync(Guid.NewGuid().ToString("N"), request),
+                successMessage: "Invoice created.",
+                errorPrefix: "Unable to create invoice",
+                notifySuccess: notifySuccess,
+                notifyError: true);
     }
 }
