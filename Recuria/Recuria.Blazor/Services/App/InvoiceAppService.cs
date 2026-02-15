@@ -41,49 +41,19 @@ namespace Recuria.Blazor.Services.App
         public Task<AppResult<Recuria.Client.InvoiceDetailsDto>> GetByIdAsync(Guid invoiceId, bool notifyError = true) =>
             _runner.RunAsync(() => _api.InvoicesGETAsync(invoiceId), errorPrefix: "Unable to load invoice", notifyError: notifyError);
 
-        public async Task<AppResult<ICollection<Recuria.Client.InvoiceListItemDto>>> GetPageAsync(
-            Guid organizationId,
+        public Task<AppResult<Recuria.Client.UserSummaryDtoPagedResult>> GetPageAsync(
+            Guid orgId,
             int page,
             int pageSize,
             string? search,
             string? sortBy,
             string? sortDir,
-            bool notifyError = true)
-        {
-            var result = await _runner.RunAsync(
-                () => _api.OrganizationAsync(organizationId),
-                errorPrefix: "Unable to load invoices",
+            bool notifyError = true) =>
+            _runner.RunAsync(
+                () => _api.UsersGETAsync(orgId, page, pageSize, search, sortBy, sortDir),
+                errorPrefix: "Unable to load users",
                 notifyError: notifyError);
 
-            if (!result.Success || result.Data is null)
-                return AppResult<ICollection<Recuria.Client.InvoiceListItemDto>>.Fail(result.Error ?? "Unable to load invoices");
-
-            IEnumerable<Recuria.Client.InvoiceListItemDto> query = result.Data;
-
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                var s = search.Trim();
-                query = query.Where(x =>
-                    (x.Status ?? string.Empty).Contains(s, StringComparison.OrdinalIgnoreCase));
-            }
-
-            query = (sortBy?.ToLowerInvariant(), sortDir?.ToLowerInvariant()) switch
-            {
-                ("total", "desc") => query.OrderByDescending(x => x.Total?.Amount ?? 0),
-                ("total", _) => query.OrderBy(x => x.Total?.Amount ?? 0),
-                ("status", "desc") => query.OrderByDescending(x => x.Status),
-                ("status", _) => query.OrderBy(x => x.Status),
-                ("issuedonutc", "desc") => query.OrderByDescending(x => x.IssuedOnUtc),
-                ("issuedonutc", _) => query.OrderBy(x => x.IssuedOnUtc),
-                _ => query.OrderByDescending(x => x.IssuedOnUtc)
-            };
-
-            var safePage = Math.Max(1, page);
-            var safePageSize = Math.Max(1, pageSize);
-            var paged = query.Skip((safePage - 1) * safePageSize).Take(safePageSize).ToList();
-
-            return AppResult<ICollection<Recuria.Client.InvoiceListItemDto>>.Ok(paged);
-        }
 
     }
 }
