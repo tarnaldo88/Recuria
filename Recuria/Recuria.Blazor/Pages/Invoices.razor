@@ -85,13 +85,30 @@
             }
             else
             {
-                <MudTable T="Recuria.Client.InvoiceListItemDto" Items="_invoices" Dense="true" Hover="true">
+                <MudTable T="Recuria.Client.InvoiceListItemDto"
+                          @ref="_table"
+                          ServerData="LoadServerInvoices"
+                          Dense="true"
+                          Hover="true"
+                          Loading="_tableLoading"
+                          RowsPerPage="10">
+
+                    <ToolBarContent>
+                        <MudTextField @bind-Value="_tableSearch"
+                                      Placeholder="Search by status"
+                                      Immediate="true"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      OnBlur="OnInvoiceSearchBlur" />
+                    </ToolBarContent>
+
                     <HeaderContent>
-                        <MudTh>Issued</MudTh>
-                        <MudTh>Total</MudTh>
-                        <MudTh>Status</MudTh>
+                        <MudTh><MudTableSortLabel T="Recuria.Client.InvoiceListItemDto" SortLabel="issuedOnUtc">Issued</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel T="Recuria.Client.InvoiceListItemDto" SortLabel="total">Total</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel T="Recuria.Client.InvoiceListItemDto" SortLabel="status">Status</MudTableSortLabel></MudTh>
                         <MudTh></MudTh>
                     </HeaderContent>
+
                     <RowTemplate>
                         <MudTd>@context.IssuedOnUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudTd>
                         <MudTd>@FormatMoney(context.Total?.Amount, context.Total?.Currency)</MudTd>
@@ -101,15 +118,14 @@
                             </MudChip>
                         </MudTd>
                         <MudTd>
-                            <MudButton Variant="Variant.Text"
-                                       Color="Color.Primary"
-                                       OnClick="@(() => OpenDetails(context.Id))">
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenDetails(context.Id))">
                                 View
                             </MudButton>
                         </MudTd>
                     </RowTemplate>
+
                     <NoRecordsContent>
-                        <MudText Typo="Typo.body2">No invoices found.</MudText>
+                        <StandardTableState Loading="_tableLoading" Error="_tableError" HasRows="false" EmptyText="No invoices found." />
                     </NoRecordsContent>
                 </MudTable>
             }
@@ -258,6 +274,14 @@
         }
 
         return orgId;
+    }
+
+    private Task OnInvoiceSearchBlur(FocusEventArgs _)
+    {
+        if (_table is null)
+            return Task.CompletedTask;
+
+        return _table.ReloadServerData();
     }
 
 
