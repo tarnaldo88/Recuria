@@ -4,6 +4,14 @@ namespace Recuria.Blazor.Services.App
     {
         Task<AppResult<ICollection<Recuria.Client.DeadLetteredOutboxItem>>> GetDeadLetteredAsync(int take, bool notifyError = true);
         Task<AppResult> RetryAsync(Guid id, bool notifySuccess = true);
+
+        Task<AppResult<Recuria.Client.PagedResultOfDeadLetteredOutboxItem>> GetDeadLetteredPageAsync(
+            int page,
+            int pageSize,
+            string? search,
+            string? sortBy,
+            string? sortDir,
+            bool notifyError = true);
     }
 
     public sealed class OpsAppService : IOpsAppService
@@ -36,5 +44,18 @@ namespace Recuria.Blazor.Services.App
                 return _runner.Fail(ex, "Unable to retry message", notifyError: true);
             }
         }
+
+        public Task<AppResult<Recuria.Client.PagedResultOfDeadLetteredOutboxItem>> GetDeadLetteredPageAsync(
+            int page,
+            int pageSize,
+            string? search,
+            string? sortBy,
+            string? sortDir,
+            bool notifyError = true) =>
+            _runner.RunAsync(
+                () => _api.DeadLetteredAsync(page, pageSize, search, sortBy, sortDir),
+                errorPrefix: "Unable to load dead-letter queue",
+                notifyError: notifyError);
+
     }
 }
