@@ -81,7 +81,7 @@ else
                               Immediate="true"
                               Adornment="Adornment.Start"
                               AdornmentIcon="@Icons.Material.Filled.Search"
-                              OnBlur="@(_ => _table?.ReloadServerData())" />
+                              OnBlur="OnSearchBlur" />
             </ToolBarContent>
             <HeaderContent>
                 <MudTableSortLabel T="Recuria.Client.UserSummaryDto" SortLabel="name">Name</MudTableSortLabel>
@@ -368,5 +368,13 @@ else
 
 
     private static string? ValidateName(string? value) => ValidateRequired(value, "Name");
+
+    private Task OnSearchBlur(FocusEventArgs _)
+    {
+        if (_table is null)
+            return Task.CompletedTask;
+
+        return _table.ReloadServerData();
+    }
 }
 
