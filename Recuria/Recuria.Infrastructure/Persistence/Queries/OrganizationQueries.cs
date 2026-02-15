@@ -124,7 +124,7 @@ namespace Recuria.Infrastructure.Persistence.Queries
                 .ToListAsync(ct);
         }
 
-        public Task<PagedResult<UserSummaryDto>> GetUsersPagedAsync(Guid orgId, TableQuery query, CancellationToken ct)
+        public async Task<PagedResult<UserSummaryDto>> GetUsersPagedAsync(Guid orgId, TableQuery query, CancellationToken ct)
         {
             var q = _db.Users.AsNoTracking().Where(x => x.OrganizationId == orgId);
 
@@ -146,7 +146,7 @@ namespace Recuria.Infrastructure.Persistence.Queries
 
             var total = await q.CountAsync(ct);
             var items = await q.Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)
-                .Select(x => new UserSummaryDto { /* map */ })
+                .Select(x => new UserSummaryDto {orgId })
                 .ToListAsync(ct);
 
             return new PagedResult<UserSummaryDto>

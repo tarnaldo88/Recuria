@@ -201,14 +201,27 @@ namespace Recuria.Api.Controllers
         /// </summary>
         [HttpGet("{id:guid}/users")]
         [Authorize(Policy = "AdminOrOwner")]
-        public async Task<ActionResult<IReadOnlyList<UserSummaryDto>>> GetUsers(Guid id, CancellationToken ct)
+        public async Task<ActionResult<PagedResult<UserSummaryDto>>> GetUsers(
+            Guid id,
+            [FromQuery] TableQuery query,
+            CancellationToken ct)
         {
             if (!IsSameOrganization(id))
                 return Forbid();
 
-            var users = await _queries.GetUsersAsync(id, ct);
-            return Ok(users);
+            var safe = new TableQuery
+            {
+                Page = Math.Max(1, query.Page),
+                PageSize = Math.Clamp(query.PageSize, 5, 100),
+                Search = query.Search,
+                SortBy = query.SortBy,
+                SortDir = string.Equals(query.SortDir, "desc", StringComparison.OrdinalIgnoreCase) ? "desc" : "asc"
+            };
+
+            var result = await _queries.GetUsersPagedAsync(id, safe, ct);
+            return Ok(result);
         }
+
 
         /// <summary>
         /// Check if the user is in the same organization.
