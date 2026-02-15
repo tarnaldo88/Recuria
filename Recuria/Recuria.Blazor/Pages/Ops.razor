@@ -96,6 +96,51 @@ else
         }
     }
 
+    private async Task<TableData<Recuria.Client.DeadLetteredOutboxItem>> LoadServerDeadLettered(TableState state, CancellationToken ct)
+    {
+        _tableLoading = true;
+        _tableError = null;
+
+        try
+        {
+            var page = state.Page + 1;
+            var pageSize = state.PageSize;
+
+            var pageResult = await OpsApi.GetDeadLetteredPageAsync(
+                page,
+                pageSize,
+                _search,
+                state.SortLabel,
+                state.SortDirection == SortDirection.Descending ? "desc" : "asc",
+                notifyError: false);
+
+            if (!pageResult.Success || pageResult.Data is null)
+            {
+                _tableError = pageResult.Error ?? "Unable to load dead-letter queue.";
+                return new TableData<Recuria.Client.DeadLetteredOutboxItem>
+                {
+                    Items = Array.Empty<Recuria.Client.DeadLetteredOutboxItem>(),
+                    TotalItems = 0
+                };
+            }
+
+            // Accurate total count (temporary extra call)
+            var totalResult = await OpsApi.GetDeadLetteredAsync(200, notifyError: false);
+            var total = totalResult.Success && totalResult.Data is not null ? totalResult.Data.Count : pageResult.Data.Count;
+
+            return new TableData<Recuria.Client.DeadLetteredOutboxItem>
+            {
+                Items = pageResult.Data,
+                TotalItems = total
+            };
+        }
+        finally
+        {
+            _tableLoading = false;
+        }
+    }
+
+
     private async Task Retry(Guid id)
     {
         _busy = true;
