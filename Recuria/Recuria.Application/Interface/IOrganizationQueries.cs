@@ -1,4 +1,5 @@
-﻿using Recuria.Application.Contracts.Organizations;
+﻿using Recuria.Application.Contracts.Common;
+using Recuria.Application.Contracts.Organizations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,5 +24,8 @@ namespace Recuria.Application.Interface
             CancellationToken cancellationToken);
 
         Task<IReadOnlyList<UserSummaryDto>> GetUsersAsync(Guid organizationId, CancellationToken ct);
+
+        Task<PagedResult<UserSummaryDto>> GetUsersPagedAsync(Guid orgId, TableQuery query, CancellationToken ct);
+
     }
 }
