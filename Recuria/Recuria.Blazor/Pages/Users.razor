@@ -359,14 +359,10 @@ else
                 };
             }
 
-            // Accurate total count (temporary extra call until paged DTO exists in NSwag)
-            var totalResult = await UsersApi.GetAllAsync(_orgId, notifyError: false);
-            var total = totalResult.Success && totalResult.Data is not null ? totalResult.Data.Count : pageResult.Data.Count;
-
             return new TableData<Recuria.Client.UserSummaryDto>
             {
-                Items = total.Data.Items ?? Array.Empty<Recuria.Client.UserSummaryDto>(),
-                TotalItems = total.Data.TotalCount
+                Items = pageResult.Data.Items ?? Array.Empty<Recuria.Client.UserSummaryDto>(),
+                TotalItems = pageResult.Data.TotalCount
             };
         }
         finally

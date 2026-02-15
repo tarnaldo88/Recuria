@@ -1,4 +1,6 @@
+using MudBlazor;
 using Recuria.Client;
+using System.Globalization;
 
 namespace Recuria.Blazor.Services.App
 {
@@ -10,13 +12,6 @@ namespace Recuria.Blazor.Services.App
         Task<AppResult> RemoveAsync(Guid orgId, Guid userId, bool notifySuccess = true);
 
         Task<AppResult<Recuria.Client.UserSummaryDtoPagedResult>> GetPageAsync(
-            Guid orgId,
-            int page,
-            int pageSize,
-            string? search,
-            string? sortBy,
-            string? sortDir,
-            bool notifyError = true); GetPageAsync(
             Guid orgId,
             int page,
             int pageSize,
@@ -54,8 +49,19 @@ namespace Recuria.Blazor.Services.App
             }
         }
 
-        public Task<AppResult<ICollection<Recuria.Client.UserSummaryDto>>> GetAllAsync(Guid orgId, bool notifyError = true) =>
-            _runner.RunAsync(() => _api.UsersAllAsync(orgId), errorPrefix: "Unable to load users", notifyError: notifyError);
+        public async Task<AppResult<ICollection<Recuria.Client.UserSummaryDto>>> GetAllAsync(Guid orgId, bool notifyError = true)
+        {
+            var result = await _runner.RunAsync(
+                () => _api.UsersGETAsync(orgId, null, null, null, null, null),
+                errorPrefix: "Unable to load users",
+                notifyError: notifyError);
+
+            if (!result.Success || result.Data is null)
+                return AppResult<ICollection<Recuria.Client.UserSummaryDto>>.Fail(result.Error ?? "Unable to load users");
+
+            return AppResult<ICollection<Recuria.Client.UserSummaryDto>>.Ok(
+                result.Data.Items ?? Array.Empty<Recuria.Client.UserSummaryDto>());
+        }
 
         public async Task<AppResult> ChangeRoleAsync(Guid orgId, Guid userId, Recuria.Client.ChangeUserRoleRequest request, bool notifySuccess = true)
         {

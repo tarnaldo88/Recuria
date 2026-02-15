@@ -53,13 +53,20 @@ namespace Recuria.Tests.Unit.Frontend
         [Fact]
         public async Task GetAllAsync_Should_Return_Data_When_Api_Succeeds()
         {
+            var orgId = Guid.NewGuid();
             var users = new List<Recuria.Client.UserSummaryDto>
             {
                 new() { Id = Guid.NewGuid(), Email = "a@recuria.local", Name = "A", Role = Recuria.Client.UserRole.Member }
             };
 
-            _api.Setup(x => x.UsersAllAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(users);
+            _api.Setup(x => x.UsersGETAsync(
+                orgId,
+                It.IsAny<int?>(),
+                It.IsAny<int?>(),
+                It.IsAny<string?>(),
+                It.IsAny<string?>(),
+                It.IsAny<string?>(),
+                It.IsAny<CancellationToken>()));
 
             var service = new UserAppService(_api.Object, _runner);
             var result = await service.GetAllAsync(Guid.NewGuid());
