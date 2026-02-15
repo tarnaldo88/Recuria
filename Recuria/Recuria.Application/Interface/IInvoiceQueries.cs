@@ -1,4 +1,5 @@
-﻿using Recuria.Application.Contracts.Invoice;
+﻿using Recuria.Application.Contracts.Common;
+using Recuria.Application.Contracts.Invoice;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,5 +13,8 @@ namespace Recuria.Application.Interface
         Task<IReadOnlyList<InvoiceListItemDto>> GetForOrganizationAsync( Guid organizationId, CancellationToken ct);
 
         Task<InvoiceDetailsDto?> GetDetailsAsync(Guid invoiceId, CancellationToken ct);
+
+        Task<PagedResult<InvoiceListItemDto>> GetForOrganizationPagedAsync(Guid orgId, TableQuery query, CancellationToken ct);
+
     }
 }
