@@ -124,6 +124,10 @@
     private string? _blockingMessage;
     private string? _serverValidationMessage;
     private Guid _orgId;
+    private MudTable<Recuria.Client.InvoiceListItemDto>? _table;
+    private bool _tableLoading;
+    private string? _tableError;
+    private string? _tableSearch;
 
     private double _newAmount = 49.00;
     private string? _newDescription = "Monthly subscription";
@@ -138,32 +142,18 @@
     }
 
     private async Task LoadInvoices()
-    {
-        _loading = true;
-        _blockingMessage = null;
+{
+    _blockingMessage = null;
 
-        try
-        {
-            var orgId = await GetOrganizationIdAsync();
-            if (orgId is null)
-            {                
-                return;
-            }
+    var orgId = await GetOrganizationIdAsync();
+    if (orgId is null)
+        return;
 
-            _orgId = orgId.Value;
-            var results = await InvoicesApi.GetByOrganizationAsync(_orgId);
-            if (!results.Success || results.Data is null)
-                return;
+    _orgId = orgId.Value;
 
-            _invoices = results.Data
-                .OrderByDescending(x => x.IssuedOnUtc)
-                .ToList();
-        }
-        finally
-        {
-            _loading = false;
-        }
-    }
+    if (_table is not null)
+        await _table.ReloadServerData();
+}
 
     private async Task CreateInvoice()
     {
@@ -203,6 +193,51 @@
         finally
         {
             _busy = false;
+        }
+    }
+
+    private async Task<TableData<Recuria.Client.InvoiceListItemDto>> LoadServerInvoices(TableState state, CancellationToken ct)
+    {
+        _tableLoading = true;
+        _tableError = null;
+
+        try
+        {
+            var page = state.Page + 1;
+            var pageSize = state.PageSize;
+
+            var pageResult = await InvoicesApi.GetPageAsync(
+                _orgId,
+                page,
+                pageSize,
+                _tableSearch,
+                state.SortLabel,
+                state.SortDirection == SortDirection.Descending ? "desc" : "asc",
+                notifyError: false);
+
+            if (!pageResult.Success || pageResult.Data is null)
+            {
+                _tableError = pageResult.Error ?? "Unable to load invoices.";
+                return new TableData<Recuria.Client.InvoiceListItemDto>
+                {
+                    Items = Array.Empty<Recuria.Client.InvoiceListItemDto>(),
+                    TotalItems = 0
+                };
+            }
+
+            // Accurate total count (temporary extra call)
+            var totalResult = await InvoicesApi.GetByOrganizationAsync(_orgId, notifyError: false);
+            var total = totalResult.Success && totalResult.Data is not null ? totalResult.Data.Count : pageResult.Data.Count;
+
+            return new TableData<Recuria.Client.InvoiceListItemDto>
+            {
+                Items = pageResult.Data,
+                TotalItems = total
+            };
+        }
+        finally
+        {
+            _tableLoading = false;
         }
     }
 
