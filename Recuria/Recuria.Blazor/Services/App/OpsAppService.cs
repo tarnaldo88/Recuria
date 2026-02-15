@@ -45,17 +45,50 @@ namespace Recuria.Blazor.Services.App
             }
         }
 
-        public Task<AppResult<Recuria.Client.PagedResultOfDeadLetteredOutboxItem>> GetDeadLetteredPageAsync(
+        public async Task<AppResult<ICollection<Recuria.Client.DeadLetteredOutboxItem>>> GetDeadLetteredPageAsync(
             int page,
             int pageSize,
             string? search,
             string? sortBy,
             string? sortDir,
-            bool notifyError = true) =>
-            _runner.RunAsync(
-                () => _api.DeadLetteredAsync(page, pageSize, search, sortBy, sortDir),
+            bool notifyError = true)
+        {
+            var result = await _runner.RunAsync(
+                () => _api.DeadLetteredAsync(take: 200),
                 errorPrefix: "Unable to load dead-letter queue",
                 notifyError: notifyError);
+
+            if (!result.Success || result.Data is null)
+                return AppResult<ICollection<Recuria.Client.DeadLetteredOutboxItem>>.Fail(result.Error ?? "Unable to load dead-letter queue");
+
+            IEnumerable<Recuria.Client.DeadLetteredOutboxItem> query = result.Data;
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.Trim();
+                query = query.Where(x =>
+                    (x.Type ?? string.Empty).Contains(s, StringComparison.OrdinalIgnoreCase) ||
+                    (x.Error ?? string.Empty).Contains(s, StringComparison.OrdinalIgnoreCase));
+            }
+
+            query = (sortBy?.ToLowerInvariant(), sortDir?.ToLowerInvariant()) switch
+            {
+                ("type", "desc") => query.OrderByDescending(x => x.Type),
+                ("type", _) => query.OrderBy(x => x.Type),
+                ("retrycount", "desc") => query.OrderByDescending(x => x.RetryCount),
+                ("retrycount", _) => query.OrderBy(x => x.RetryCount),
+                ("deadletteredonutc", "desc") => query.OrderByDescending(x => x.DeadLetteredOnUtc),
+                ("deadletteredonutc", _) => query.OrderBy(x => x.DeadLetteredOnUtc),
+                _ => query.OrderByDescending(x => x.DeadLetteredOnUtc)
+            };
+
+            var safePage = Math.Max(1, page);
+            var safePageSize = Math.Max(1, pageSize);
+            var paged = query.Skip((safePage - 1) * safePageSize).Take(safePageSize).ToList();
+
+            return AppResult<ICollection<Recuria.Client.DeadLetteredOutboxItem>>.Ok(paged);
+        }
+
 
     }
 }
