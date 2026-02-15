@@ -6,6 +6,15 @@ namespace Recuria.Blazor.Services.App
         Task<AppResult<ICollection<Recuria.Client.UserSummaryDto>>> GetAllAsync(Guid orgId, bool notifyError = true);
         Task<AppResult> ChangeRoleAsync(Guid orgId, Guid userId, Recuria.Client.ChangeUserRoleRequest request, bool notifySuccess = true);
         Task<AppResult> RemoveAsync(Guid orgId, Guid userId, bool notifySuccess = true);
+
+        Task<AppResult<Recuria.Client.PagedResultOfUserSummaryDto>> GetPageAsync(
+            Guid orgId,
+            int page,
+            int pageSize,
+            string? search,
+            string? sortBy,
+            string? sortDir,
+            bool notifyError = true);
     }
 
     public sealed class UserAppService : IUserAppService
@@ -72,5 +81,18 @@ namespace Recuria.Blazor.Services.App
                 return _runner.Fail(ex, "Unable to remove user", notifyError: true);
             }
         }
+
+        Task<AppResult<Recuria.Client.PagedResultOfUserSummaryDto>> GetPageAsync(
+            Guid orgId,
+            int page,
+            int pageSize,
+            string? search,
+            string? sortBy,
+            string? sortDir,
+            bool notifyError = true) =>
+            _runner.RunAsync(
+                () => _api.UsersAllAsync(orgId, page, pageSize, search, sortBy, sortDir),
+                errorPrefix: "Unable to load users",
+                notifyError: notifyError);
     }
 }
