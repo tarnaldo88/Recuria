@@ -175,14 +175,24 @@ namespace Recuria.Api.Invoices
         /// List invoices for an organization.
         /// </summary>
         [HttpGet("organization/{organizationId:guid}")]
-        public async Task<ActionResult<IReadOnlyList<InvoiceListItemDto>>> GetForOrganization(
+        public async Task<ActionResult<PagedResult<InvoiceListItemDto>>> GetForOrganization(
             Guid organizationId,
+            [FromQuery] TableQuery query,
             CancellationToken ct)
         {
             if (!IsSameOrganization(organizationId))
                 return Forbid();
 
-            var invoices = await _invoiceQueries.GetForOrganizationAsync(organizationId, ct);
+            var safe = new TableQuery
+            {
+                Page = Math.Max(1, query.Page),
+                PageSize = Math.Clamp(query.PageSize, 5, 100),
+                Search = query.Search,
+                SortBy = query.SortBy,
+                SortDir = string.Equals(query.SortDir, "desc", StringComparison.OrdinalIgnoreCase) ? "desc" : "asc"
+            };
+
+            var invoices = await _invoiceQueries.GetForOrganizationPagedAsync(organizationId, safe, ct);
             return Ok(invoices);
         }
 
