@@ -126,34 +126,52 @@ namespace Recuria.Infrastructure.Persistence.Queries
 
         public async Task<PagedResult<UserSummaryDto>> GetUsersPagedAsync(Guid orgId, TableQuery query, CancellationToken ct)
         {
-            var q = _db.Users.AsNoTracking().Where(x => x.OrganizationId == orgId);
+            var page = Math.Max(1, query.Page);
+            var pageSize = Math.Clamp(query.PageSize, 5, 100);
+
+            var q = _db.Users
+                .AsNoTracking()
+                .Where(x => x.OrganizationId == orgId);
 
             if (!string.IsNullOrWhiteSpace(query.Search))
             {
                 var s = query.Search.Trim();
-                q = q.Where(x => x.Name!.Contains(s) || x.Email!.Contains(s));
+                q = q.Where(x =>
+                    (x.Name ?? string.Empty).Contains(s) ||
+                    (x.Email ?? string.Empty).Contains(s));
             }
 
-            q = (query.SortBy?.ToLowerInvariant(), query.SortDir.ToLowerInvariant()) switch
+            q = (query.SortBy?.ToLowerInvariant(), query.SortDir?.ToLowerInvariant()) switch
             {
                 ("email", "desc") => q.OrderByDescending(x => x.Email),
                 ("email", _) => q.OrderBy(x => x.Email),
+
                 ("role", "desc") => q.OrderByDescending(x => x.Role),
                 ("role", _) => q.OrderBy(x => x.Role),
+
                 ("name", "desc") => q.OrderByDescending(x => x.Name),
                 _ => q.OrderBy(x => x.Name)
             };
 
             var total = await q.CountAsync(ct);
-            var items = await q.Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)
-                .Select(x => new UserSummaryDto {orgId })
+
+            var items = await q
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new UserSummaryDto(
+                    x.Id,
+                    x.Name,
+                    x.Email,
+                    x.Role,
+                    x.OrganizationId
+                ))
                 .ToListAsync(ct);
 
             return new PagedResult<UserSummaryDto>
             {
                 Items = items,
-                Page = query.Page,
-                PageSize = query.PageSize,
+                Page = page,
+                PageSize = pageSize,
                 TotalCount = total
             };
         }
