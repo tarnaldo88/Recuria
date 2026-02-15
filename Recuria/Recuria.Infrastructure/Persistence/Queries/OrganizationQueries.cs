@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Recuria.Domain.Enums;
+using Recuria.Application.Contracts.Common;
 
 namespace Recuria.Infrastructure.Persistence.Queries
 {
@@ -121,6 +122,40 @@ namespace Recuria.Infrastructure.Persistence.Queries
                     u.OrganizationId
                 ))
                 .ToListAsync(ct);
+        }
+
+        public Task<PagedResult<UserSummaryDto>> GetUsersPagedAsync(Guid orgId, TableQuery query, CancellationToken ct)
+        {
+            var q = _db.Users.AsNoTracking().Where(x => x.OrganizationId == orgId);
+
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                var s = query.Search.Trim();
+                q = q.Where(x => x.Name!.Contains(s) || x.Email!.Contains(s));
+            }
+
+            q = (query.SortBy?.ToLowerInvariant(), query.SortDir.ToLowerInvariant()) switch
+            {
+                ("email", "desc") => q.OrderByDescending(x => x.Email),
+                ("email", _) => q.OrderBy(x => x.Email),
+                ("role", "desc") => q.OrderByDescending(x => x.Role),
+                ("role", _) => q.OrderBy(x => x.Role),
+                ("name", "desc") => q.OrderByDescending(x => x.Name),
+                _ => q.OrderBy(x => x.Name)
+            };
+
+            var total = await q.CountAsync(ct);
+            var items = await q.Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)
+                .Select(x => new UserSummaryDto { /* map */ })
+                .ToListAsync(ct);
+
+            return new PagedResult<UserSummaryDto>
+            {
+                Items = items,
+                Page = query.Page,
+                PageSize = query.PageSize,
+                TotalCount = total
+            };
         }
     }
 

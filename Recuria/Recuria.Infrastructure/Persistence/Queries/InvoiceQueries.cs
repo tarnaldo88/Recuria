@@ -62,5 +62,10 @@ namespace Recuria.Infrastructure.Persistence.Queries
                 result.Paid ? "Paid" : "Unpaid"
             );
         }
+
+        public Task<PagedResult<InvoiceListItemDto>> GetForOrganizationPagedAsync(Guid orgId, TableQuery query, CancellationToken ct)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
