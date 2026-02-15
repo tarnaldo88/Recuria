@@ -4,6 +4,7 @@ using Recuria.Api.Auth;
 using Recuria.Application.Contracts.Organizations;
 using Recuria.Application.Interface;
 using Recuria.Application.Requests;
+using Recuria.Application.Contracts.Common;
 using Recuria.Api.Logging;
 using Recuria.Domain;
 using Recuria.Domain.Enums;
