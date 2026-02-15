@@ -343,11 +343,14 @@ else
                     TotalItems = 0
                 };
             }
+            var page = state.Page + 1;
+            var pageSize = state.PageSize;
+            var currentItems = result.Data.ToList();
 
             return new TableData<Recuria.Client.UserSummaryDto>
             {
-                Items = result.Data.Items,
-                TotalItems = result.Data.TotalCount
+                Items = currentItems,
+                TotalItems = ((page - 1) * pageSize) + currentItems.Count + (currentItems.Count == pageSize ? 1 : 0)
             };
         }
         finally
