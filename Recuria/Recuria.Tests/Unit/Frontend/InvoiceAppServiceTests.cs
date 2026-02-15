@@ -20,7 +20,10 @@ namespace Recuria.Tests.Unit.Frontend
         public async Task CreateAsync_Should_Return_Id_When_Api_Succeeds()
         {
             var createdId = Guid.NewGuid();
-            _api.Setup(x => x.InvoicesPOSTAsync(It.IsAny<Recuria.Client.CreateInvoiceRequest>(), It.IsAny<CancellationToken>()))
+            _api.Setup(x => x.InvoicesPOSTAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<Recuria.Client.CreateInvoiceRequest>(),
+                    It.IsAny<CancellationToken>()))
                 .ReturnsAsync(createdId);
 
             var service = new InvoiceAppService(_api.Object, _runner);
