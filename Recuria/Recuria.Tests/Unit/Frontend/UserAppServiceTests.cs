@@ -61,15 +61,18 @@ namespace Recuria.Tests.Unit.Frontend
 
             _api.Setup(x => x.UsersGETAsync(
                 orgId,
-                It.IsAny<int?>(),
-                It.IsAny<int?>(),
-                It.IsAny<string?>(),
-                It.IsAny<string?>(),
-                It.IsAny<string?>(),
-                It.IsAny<CancellationToken>()));
+                null, null, null, null, null,
+                It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Recuria.Client.UserSummaryDtoPagedResult
+                {
+                    Items = users,
+                    TotalCount = users.Count,
+                    Page = 1,
+                    PageSize = 10
+                });
 
             var service = new UserAppService(_api.Object, _runner);
-            var result = await service.GetAllAsync(Guid.NewGuid());
+            var result = await service.GetAllAsync(orgId);
 
             result.Success.Should().BeTrue();
             result.Data.Should().NotBeNull();

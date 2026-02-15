@@ -42,17 +42,33 @@ namespace Recuria.Tests.Unit.Frontend
         {
             var orgId = Guid.NewGuid();
             var usersApi = new Mock<IUserAppService>();
-            usersApi.Setup(x => x.GetAllAsync(orgId, It.IsAny<bool>()))
-                .ReturnsAsync(AppResult<ICollection<Recuria.Client.UserSummaryDto>>.Ok(new List<Recuria.Client.UserSummaryDto>
+            var items = new List<Recuria.Client.UserSummaryDto>
+            {
+                new()
                 {
-                    new()
+                    Id = Guid.NewGuid(),
+                    Name = "Alice",
+                    Email = "alice@example.com",
+                    Role = Recuria.Client.UserRole.Admin
+                }
+            };
+
+            usersApi.Setup(x => x.GetPageAsync(
+                    orgId,
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<bool>()))
+                .ReturnsAsync(AppResult<Recuria.Client.UserSummaryDtoPagedResult>.Ok(
+                    new Recuria.Client.UserSummaryDtoPagedResult
                     {
-                        Id = Guid.NewGuid(),
-                        Name = "Alice",
-                        Email = "alice@example.com",
-                        Role = Recuria.Client.UserRole.Admin
-                    }
-                }));
+                        Items = items,
+                        TotalCount = items.Count,
+                        Page = 1,
+                        PageSize = 10
+                    }));
 
             Services.AddMudServices();
             Services.AddSingleton(CreateAuthState(orgId));

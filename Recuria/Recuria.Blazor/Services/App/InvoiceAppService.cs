@@ -55,7 +55,7 @@ namespace Recuria.Blazor.Services.App
             string? sortDir,
             bool notifyError = true) =>
             _runner.RunAsync(
-                () => _api.UsersGETAsync(orgId, page, pageSize, search, sortBy, sortDir),
+                () => _api.OrganizationAsync(organizationId, page, pageSize, search, sortBy, sortDir),
                 errorPrefix: "Unable to load users",
                 notifyError: notifyError);
 

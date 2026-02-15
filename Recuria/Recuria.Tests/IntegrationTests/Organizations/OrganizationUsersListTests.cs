@@ -27,11 +27,13 @@ public sealed class OrganizationUsersListTests : IntegrationTestBase
         var response = await Client.GetAsync($"/api/organizations/{orgId}/users");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var users = await response.Content.ReadFromJsonAsync<List<UserSummaryDto>>(JsonOptions);
-        users.Should().NotBeNull();
-        users!.Should().HaveCount(2);
-        users.Should().Contain(u => u.Id == ownerId && u.Role == UserRole.Owner);
-        users.Should().Contain(u => u.Id == memberId && u.Role == UserRole.Member);
+        var page = await response.Content.ReadFromJsonAsync<Recuria.Application.Contracts.Common.PagedResult<UserSummaryDto>>(JsonOptions);
+        page.Should().NotBeNull();
+        page!.Items.Should().HaveCount(2);
+        page.TotalCount.Should().Be(2);
+        page.Items.Should().Contain(u => u.Id == ownerId && u.Role == UserRole.Owner);
+        page.Items.Should().Contain(u => u.Id == memberId && u.Role == UserRole.Member);
+
     }
 
     [Fact]
