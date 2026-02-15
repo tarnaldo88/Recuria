@@ -7,7 +7,7 @@ namespace Recuria.Blazor.Services.App
         Task<AppResult<Recuria.Client.InvoiceDetailsDto>> GetByIdAsync(Guid invoiceId, bool notifyError = true);
 
         Task<AppResult<Recuria.Client.InvoiceListItemDtoPagedResult>> GetPageAsync(
-            Guid organId,
+            Guid organizationId,
             int page,
             int pageSize,
             string? search,
@@ -34,7 +34,7 @@ namespace Recuria.Blazor.Services.App
             _runner.RunAsync(() => _api.InvoicesGETAsync(invoiceId), errorPrefix: "Unable to load invoice", notifyError: notifyError);
 
         public Task<AppResult<Recuria.Client.InvoiceListItemDtoPagedResult>> GetPageAsync(
-            Guid orgId,
+            Guid organizationId,
             int page,
             int pageSize,
             string? search,
