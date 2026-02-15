@@ -69,11 +69,24 @@ else
             </MudGrid>
         </MudForm>
 
-        <MudTable T="Recuria.Client.UserSummaryDto" Items="FilteredUsers" Dense="true" Hover="true">
+        <MudTable T="Recuria.Client.UserSummaryDto"
+          @ref="_table"
+          ServerData="LoadServerUsers"
+          Dense="true"
+          Hover="true"
+          Loading="_tableLoading">
+            <ToolBarContent>
+                <MudTextField @bind-Value="_search"
+                              Placeholder="Search name or email"
+                              Immediate="true"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              OnBlur="@(_ => _table?.ReloadServerData())" />
+            </ToolBarContent>
             <HeaderContent>
-                <MudTh>Name</MudTh>
-                <MudTh>Email</MudTh>
-                <MudTh>Role</MudTh>
+                <MudTh><MudTableSortLabel SortLabel="name">Name</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="email">Email</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="role">Role</MudTableSortLabel></MudTh>
                 <MudTh></MudTh>
             </HeaderContent>
             <RowTemplate>
@@ -88,7 +101,7 @@ else
                 </MudTd>
             </RowTemplate>
             <NoRecordsContent>
-                <MudText Typo="Typo.body2">No users found.</MudText>
+                <StandardTableState Loading="_tableLoading" Error="_tableError" HasRows="false" EmptyText="No users found." />
             </NoRecordsContent>
         </MudTable>
 
@@ -129,6 +142,10 @@ else
     private MudForm? _addUserForm;
     // private MudForm? _roleForm;
     private string? _serverValidationMessage;
+
+    private MudTable<Recuria.Client.UserSummaryDto>? _table;
+    private bool _tableLoading;
+    private string? _tableError;
 
     private List<Recuria.Client.UserSummaryDto> _users = new();
     private Recuria.Client.UserSummaryDto? _selectedUser;
@@ -196,19 +213,7 @@ else
         finally { _busy = false; }
     }
 
-    private async Task LoadUsers()
-    {
-        _busy = true;
-        try
-        {
-            var result = await UsersApi.GetAllAsync(_orgId);
-            if (!result.Success || result.Data is null)
-                return;
-
-            _users = result.Data.ToList();
-        }
-        finally { _busy = false; }
-    }
+    private async Task LoadUsers() => _table?.ReloadServerData() ?? Task.CompletedTask;
 
     private void SelectUser(Recuria.Client.UserSummaryDto user)
     {
@@ -312,6 +317,45 @@ else
 
         return raw;
     }
+
+    private async Task<TableData<Recuria.Client.UserSummaryDto>> LoadServerUsers(TableState state, CancellationToken ct)
+    {
+        _tableLoading = true;
+        _tableError = null;
+
+        try
+        {
+            var result = await UsersApi.GetPageAsync(
+                _orgId,
+                state.Page + 1,
+                state.PageSize,
+                _search,
+                state.SortLabel,
+                state.SortDirection == SortDirection.Descending ? "desc" : "asc",
+                notifyError: false);
+
+            if (!result.Success || result.Data is null)
+            {
+                _tableError = result.Error ?? "Unable to load users.";
+                return new TableData<Recuria.Client.UserSummaryDto>
+                {
+                    Items = Array.Empty<Recuria.Client.UserSummaryDto>(),
+                    TotalItems = 0
+                };
+            }
+
+            return new TableData<Recuria.Client.UserSummaryDto>
+            {
+                Items = result.Data.Items,
+                TotalItems = result.Data.TotalCount
+            };
+        }
+        finally
+        {
+            _tableLoading = false;
+        }
+    }
+
 
     private static string? ValidateName(string? value) => ValidateRequired(value, "Name");
 }
