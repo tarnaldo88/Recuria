@@ -84,9 +84,9 @@ else
                               OnBlur="@(_ => _table?.ReloadServerData())" />
             </ToolBarContent>
             <HeaderContent>
-                <MudTh><MudTableSortLabel SortLabel="name">Name</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="email">Email</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="role">Role</MudTableSortLabel></MudTh>
+                <MudTableSortLabel T="Recuria.Client.UserSummaryDto" SortLabel="name">Name</MudTableSortLabel>
+                <MudTableSortLabel T="Recuria.Client.UserSummaryDto" SortLabel="email">Email</MudTableSortLabel>
+                <MudTableSortLabel T="Recuria.Client.UserSummaryDto" SortLabel="role">Role</MudTableSortLabel>
                 <MudTh></MudTh>
             </HeaderContent>
             <RowTemplate>
