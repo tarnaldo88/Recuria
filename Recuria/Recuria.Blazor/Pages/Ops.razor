@@ -78,23 +78,14 @@ else
         await LoadDeadLettered();
     }
 
-    private async Task LoadDeadLettered()
+    private Task LoadDeadLettered()
     {
-        _loading = true;
+        if (_table is null)
+            return Task.CompletedTask;
 
-        try
-        {
-            var result = await OpsApi.GetDeadLetteredAsync(_take);
-            if (!result.Success || result.Data is null)
-                return;
-
-            _items = result.Data.OrderByDescending(x => x.DeadLetteredOnUtc).ToList();
-        }
-        finally
-        {
-            _loading = false;
-        }
+        return _table.ReloadServerData();
     }
+
 
     private async Task<TableData<Recuria.Client.DeadLetteredOutboxItem>> LoadServerDeadLettered(TableState state, CancellationToken ct)
     {
