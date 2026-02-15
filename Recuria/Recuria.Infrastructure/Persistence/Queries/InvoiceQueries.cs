@@ -63,9 +63,17 @@ namespace Recuria.Infrastructure.Persistence.Queries
             );
         }
 
-        public Task<PagedResult<InvoiceListItemDto>> GetForOrganizationPagedAsync(Guid orgId, TableQuery query, CancellationToken ct)
+        public async Task<PagedResult<InvoiceListItemDto>> GetForOrganizationPagedAsync(Guid orgId, TableQuery query, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            var page = Math.Max(1, query.Page);
+            var pageSize = Math.Clamp(query.PageSize, 5, 100);
+
+            var q = _db.Invoices.AsNoTracking().Where(i => i.Subscription.OrganizationId == orgId);
+
+            if(!string.IsNullOrWhiteSpace(query.Search))
+            {
+                var s = query.Search.Trim();
+            }
         }
     }
 }
