@@ -73,7 +73,44 @@ namespace Recuria.Infrastructure.Persistence.Queries
             if(!string.IsNullOrWhiteSpace(query.Search))
             {
                 var s = query.Search.Trim();
+
+                q = q.Where(i => i.InvoiceNumber.Contains(s) || (i.Description ?? string.Empty).Contains(s) || (i.Paid ? "Paid" : "Unpaid").Contains(s));
             }
+
+            q = (query.SortBy?.ToLowerInvariant(), query.SortDir?.ToLowerInvariant()) switch
+            { 
+                ("total", "desc") => q.OrderByDescending(i => i.Amount),
+                ("total", _) => q.OrderBy(i =>  i.Amount),
+
+                ("status", "desc") => q.OrderByDescending(i => i.Paid),
+                ("status", _) => q.OrderBy(i => i.Paid),
+
+                ("issuedonutc", "desc") => q.OrderByDescending(i => i.InvoiceDate),
+                ("issuedonutc", _) => q.OrderBy(i => i.InvoiceDate),
+
+                _ => q.OrderByDescending(i => i.InvoiceDate)
+            };
+
+            var total = await q.CountAsync(ct);
+
+            var items = await q
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(i => new InvoiceListItemDto(
+                    i.Id,
+                    i.InvoiceDate,
+                    new MoneyDto(i.Amount, "USD"),
+                    i.Paid ? "Paid" : "Unpaid"
+                    ))
+                .ToListAsync(ct);
+
+            return new PagedResult<InvoiceListItemDto>
+            {
+                Items = items,
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = total
+            };
         }
     }
 }
