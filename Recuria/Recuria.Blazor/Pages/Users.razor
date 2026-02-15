@@ -365,8 +365,8 @@ else
 
             return new TableData<Recuria.Client.UserSummaryDto>
             {
-                Items = pageResult.Data,
-                TotalItems = total
+                Items = total.Data.Items ?? Array.Empty<Recuria.Client.UserSummaryDto>(),
+                TotalItems = total.Data.TotalCount
             };
         }
         finally

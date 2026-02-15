@@ -241,14 +241,12 @@
                 };
             }
 
-            // Accurate total count (temporary extra call)
-            var totalResult = await InvoicesApi.GetByOrganizationAsync(_orgId, notifyError: false);
-            var total = totalResult.Success && totalResult.Data is not null ? totalResult.Data.Count : pageResult.Data.Count;
-
             return new TableData<Recuria.Client.InvoiceListItemDto>
             {
-                Items = pageResult.Data,
-                TotalItems = total
+                Items = pageResult.Data.Items is null
+                    ? Array.Empty<Recuria.Client.InvoiceListItemDto>()
+                    : pageResult.Data.Items.Cast<Recuria.Client.InvoiceListItemDto>(),
+                TotalItems = pageResult.Data.TotalCount
             };
         }
         finally
