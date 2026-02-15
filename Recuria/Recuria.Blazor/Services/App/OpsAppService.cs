@@ -5,7 +5,7 @@ namespace Recuria.Blazor.Services.App
         Task<AppResult<ICollection<Recuria.Client.DeadLetteredOutboxItem>>> GetDeadLetteredAsync(int take, bool notifyError = true);
         Task<AppResult> RetryAsync(Guid id, bool notifySuccess = true);
 
-        Task<AppResult<Recuria.Client.PagedResultOfDeadLetteredOutboxItem>> GetDeadLetteredPageAsync(
+        Task<AppResult<ICollection<Recuria.Client.DeadLetteredOutboxItem>>> GetDeadLetteredPageAsync(
             int page,
             int pageSize,
             string? search,
