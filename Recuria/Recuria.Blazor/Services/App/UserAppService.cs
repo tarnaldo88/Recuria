@@ -9,7 +9,14 @@ namespace Recuria.Blazor.Services.App
         Task<AppResult> ChangeRoleAsync(Guid orgId, Guid userId, Recuria.Client.ChangeUserRoleRequest request, bool notifySuccess = true);
         Task<AppResult> RemoveAsync(Guid orgId, Guid userId, bool notifySuccess = true);
 
-        Task<AppResult<ICollection<Recuria.Client.UserSummaryDto>>> GetPageAsync(
+        Task<AppResult<Recuria.Client.UserSummaryDtoPagedResult>> GetPageAsync(
+            Guid orgId,
+            int page,
+            int pageSize,
+            string? search,
+            string? sortBy,
+            string? sortDir,
+            bool notifyError = true); GetPageAsync(
             Guid orgId,
             int page,
             int pageSize,
@@ -84,14 +91,14 @@ namespace Recuria.Blazor.Services.App
             }
         }
 
-        public async Task<AppResult<ICollection<Recuria.Client.UserSummaryDto>>> GetPageAsync(
+        Task<AppResult<Recuria.Client.UserSummaryDtoPagedResult>> GetPageAsync(
             Guid orgId,
             int page,
             int pageSize,
             string? search,
             string? sortBy,
             string? sortDir,
-            bool notifyError = true)
+            bool notifyError)
         {
             var result = await _runner.RunAsync(
                 () => _api.UsersAllAsync(orgId),
