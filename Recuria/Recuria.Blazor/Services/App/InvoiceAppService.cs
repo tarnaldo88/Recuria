@@ -5,6 +5,15 @@ namespace Recuria.Blazor.Services.App
         Task<AppResult<ICollection<Recuria.Client.InvoiceListItemDto>>> GetByOrganizationAsync(Guid organizationId, bool notifyError = true);
         Task<AppResult<Guid>> CreateAsync(Recuria.Client.CreateInvoiceRequest request, bool notifySuccess = true);
         Task<AppResult<Recuria.Client.InvoiceDetailsDto>> GetByIdAsync(Guid invoiceId, bool notifyError = true);
+
+        Task<AppResult<Recuria.Client.PagedResultOfInvoiceListItemDto>> GetPageAsync(
+            Guid organizationId,
+            int page,
+            int pageSize,
+            string? search,
+            string? sortBy,
+            string? sortDir,
+            bool notifyError = true);
     }
 
     public sealed class InvoiceAppService : IInvoiceAppService
@@ -31,5 +40,18 @@ namespace Recuria.Blazor.Services.App
 
         public Task<AppResult<Recuria.Client.InvoiceDetailsDto>> GetByIdAsync(Guid invoiceId, bool notifyError = true) =>
             _runner.RunAsync(() => _api.InvoicesGETAsync(invoiceId), errorPrefix: "Unable to load invoice", notifyError: notifyError);
+
+        public Task<AppResult<Recuria.Client.PagedResultOfInvoiceListItemDto>> GetPageAsync(
+            Guid organizationId,
+            int page,
+            int pageSize,
+            string? search,
+            string? sortBy,
+            string? sortDir,
+            bool notifyError = true) =>
+            _runner.RunAsync(
+                () => _api.OrganizationAsync(organizationId, page, pageSize, search, sortBy, sortDir),
+                errorPrefix: "Unable to load invoices",
+                notifyError: notifyError);
     }
 }
