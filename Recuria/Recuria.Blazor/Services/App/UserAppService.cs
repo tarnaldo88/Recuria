@@ -11,14 +11,14 @@ namespace Recuria.Blazor.Services.App
         Task<AppResult> ChangeRoleAsync(Guid orgId, Guid userId, Recuria.Client.ChangeUserRoleRequest request, bool notifySuccess = true);
         Task<AppResult> RemoveAsync(Guid orgId, Guid userId, bool notifySuccess = true);
 
-        Task<AppResult<Recuria.Client.UserSummaryDtoPagedResult>> GetPageAsync(
+        public Task<AppResult<Recuria.Client.UserSummaryDtoPagedResult>> GetPageAsync(
             Guid orgId,
             int page,
             int pageSize,
             string? search,
             string? sortBy,
             string? sortDir,
-            bool notifyError = true);
+            bool notifyError = true) ;
     }
 
     public sealed class UserAppService : IUserAppService
@@ -109,6 +109,7 @@ namespace Recuria.Blazor.Services.App
                 () => _api.UsersGETAsync(orgId, page, pageSize, search, sortBy, sortDir),
                 errorPrefix: "Unable to load users",
                 notifyError: notifyError);
+
 
     }
 }

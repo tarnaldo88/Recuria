@@ -243,9 +243,7 @@
 
             return new TableData<Recuria.Client.InvoiceListItemDto>
             {
-                Items = pageResult.Data.Items is null
-                    ? Array.Empty<Recuria.Client.InvoiceListItemDto>()
-                    : pageResult.Data.Items.Cast<Recuria.Client.InvoiceListItemDto>(),
+                Items = pageResult.Data.Items ?? Array.Empty<Recuria.Client.InvoiceListItemDto>(),
                 TotalItems = pageResult.Data.TotalCount
             };
         }

@@ -152,11 +152,11 @@ namespace Recuria.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// List dead-lettered outbox messages.
+        /// List dead-lettered outbox messages (paged/sorted/filtered).
         /// </summary>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DeadLetteredOutboxItem>> DeadLetteredAsync(int? take = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<DeadLetteredOutboxItemPagedResult> DeadLetteredAsync(int? page = null, int? pageSize = null, string? search = null, string? sortBy = null, string? sortDir = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -1629,11 +1629,11 @@ namespace Recuria.Client
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// List dead-lettered outbox messages.
+        /// List dead-lettered outbox messages (paged/sorted/filtered).
         /// </summary>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DeadLetteredOutboxItem>> DeadLetteredAsync(int? take = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<DeadLetteredOutboxItemPagedResult> DeadLetteredAsync(int? page = null, int? pageSize = null, string? search = null, string? sortBy = null, string? sortDir = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -1649,9 +1649,25 @@ namespace Recuria.Client
                     // Operation Path: "api/outbox/dead-lettered"
                     urlBuilder_.Append("api/outbox/dead-lettered");
                     urlBuilder_.Append('?');
-                    if (take != null)
+                    if (page != null)
                     {
-                        urlBuilder_.Append(System.Uri.EscapeDataString("take")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(take, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                        urlBuilder_.Append(System.Uri.EscapeDataString("Page")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(page, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (pageSize != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("PageSize")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(pageSize, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (search != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("Search")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(search, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (sortBy != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("SortBy")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(sortBy, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (sortDir != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("SortDir")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(sortDir, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -1680,7 +1696,7 @@ namespace Recuria.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<DeadLetteredOutboxItem>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<DeadLetteredOutboxItemPagedResult>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -2832,6 +2848,24 @@ namespace Recuria.Client
 
         [Newtonsoft.Json.JsonProperty("retryCount", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public int RetryCount { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class DeadLetteredOutboxItemPagedResult
+    {
+
+        [Newtonsoft.Json.JsonProperty("items", Required = Newtonsoft.Json.Required.AllowNull)]
+        public System.Collections.Generic.ICollection<DeadLetteredOutboxItem>? Items { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("page", Required = Newtonsoft.Json.Required.Always)]
+        public int Page { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("pageSize", Required = Newtonsoft.Json.Required.Always)]
+        public int PageSize { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("totalCount", Required = Newtonsoft.Json.Required.Always)]
+        public int TotalCount { get; set; } = default!;
 
     }
 

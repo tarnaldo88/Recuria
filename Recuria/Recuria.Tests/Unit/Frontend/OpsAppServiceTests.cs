@@ -43,8 +43,20 @@ namespace Recuria.Tests.Unit.Frontend
                 }
             };
 
-            _api.Setup(x => x.DeadLetteredAsync(It.IsAny<int?>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(items);
+            _api.Setup(x => x.DeadLetteredAsync(
+                    It.IsAny<int?>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Recuria.Client.DeadLetteredOutboxItemPagedResult
+                {
+                    Items = items,
+                    Page = 1,
+                    PageSize = 50,
+                    TotalCount = items.Count
+                });
 
             var service = new OpsAppService(_api.Object, _runner);
             var result = await service.GetDeadLetteredAsync(50);

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Recuria.Infrastructure.Outbox;
 using Recuria.Infrastructure.Persistence;
 using Recuria.Application.Interface.Idempotency;
+using Recuria.Application.Contracts.Common;
 using Recuria.Api.Logging;
 
 namespace Recuria.Api.Controllers
@@ -37,20 +38,51 @@ namespace Recuria.Api.Controllers
             int RetryCount);
 
         /// <summary>
-        /// List dead-lettered outbox messages.
+        /// List dead-lettered outbox messages (paged/sorted/filtered).
         /// </summary>
         [HttpGet("dead-lettered")]
-        public async Task<ActionResult<IReadOnlyList<DeadLetteredOutboxItem>>> GetDeadLettered(
-            [FromQuery] int take = 50,
+        public async Task<ActionResult<PagedResult<DeadLetteredOutboxItem>>> GetDeadLettered(
+            [FromQuery] TableQuery query,
             CancellationToken ct = default)
         {
-            take = Math.Clamp(take, 1, 200);
+            var safe = new TableQuery
+            {
+                Page = Math.Max(1, query.Page),
+                PageSize = Math.Clamp(query.PageSize, 5, 200),
+                Search = query.Search,
+                SortBy = query.SortBy,
+                SortDir = string.Equals(query.SortDir, "desc", StringComparison.OrdinalIgnoreCase) ? "desc" : "asc"
+            };
 
-            var items = await _db.OutBoxMessages
+            var q = _db.OutBoxMessages
                 .AsNoTracking()
-                .Where(m => m.DeadLetteredOnUtc != null)
-                .OrderByDescending(m => m.DeadLetteredOnUtc)
-                .Take(take)
+                .Where(m => m.DeadLetteredOnUtc != null);
+
+            if (!string.IsNullOrWhiteSpace(safe.Search))
+            {
+                var s = safe.Search.Trim();
+                q = q.Where(m =>
+                    m.Type.Contains(s) ||
+                    (m.Error ?? string.Empty).Contains(s));
+            }
+
+            q = (safe.SortBy?.ToLowerInvariant(), safe.SortDir) switch
+            {
+                ("type", "desc") => q.OrderByDescending(m => m.Type),
+                ("type", _) => q.OrderBy(m => m.Type),
+
+                ("retrycount", "desc") => q.OrderByDescending(m => m.RetryCount),
+                ("retrycount", _) => q.OrderBy(m => m.RetryCount),
+
+                ("deadletteredonutc", "asc") => q.OrderBy(m => m.DeadLetteredOnUtc),
+                _ => q.OrderByDescending(m => m.DeadLetteredOnUtc)
+            };
+
+            var total = await q.CountAsync(ct);
+
+            var items = await q
+                .Skip((safe.Page - 1) * safe.PageSize)
+                .Take(safe.PageSize)
                 .Select(m => new DeadLetteredOutboxItem(
                     m.Id,
                     m.OccurredOnUtc,
@@ -60,7 +92,13 @@ namespace Recuria.Api.Controllers
                     m.RetryCount))
                 .ToListAsync(ct);
 
-            return Ok(items);
+            return Ok(new PagedResult<DeadLetteredOutboxItem>
+            {
+                Items = items,
+                Page = safe.Page,
+                PageSize = safe.PageSize,
+                TotalCount = total
+            });
         }
 
         /// <summary>
