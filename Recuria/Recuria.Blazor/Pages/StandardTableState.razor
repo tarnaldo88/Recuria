@@ -1,0 +1,21 @@
+﻿<h3>StandardTableState</h3>
+
+@if(Loading)
+{
+    <MudSkeleton Height="160px" Width="100%" />
+}
+else if (!string.IsNullOrWhiteSpace(Error))
+{
+    <MudAlert Severity="Severity.Error" Dense="true">@Error</MudAlert>
+}
+else if (!HasRows)
+{
+    <MudText Typo="Typo.body2">@EmptyText</MudText>
+}
+
+@code {
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool HasRows { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public string EmptyText { get; set; } = "No records found.";
+}
