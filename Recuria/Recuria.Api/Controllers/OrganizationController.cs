@@ -219,19 +219,14 @@ namespace Recuria.Api.Controllers
                 SortDir = string.Equals(query.SortDir, "desc", StringComparison.OrdinalIgnoreCase) ? "desc" : "asc"
             };
 
-            var result = await _queries.GetUsersPagedAsync(id, safe, ct);
-            return Ok(result);
+            var users = await _queries.GetUsersPagedAsync(id, safe, ct);
+            return Ok(users);
         }
 
-
-        /// <summary>
-        /// Check if the user is in the same organization.
-        /// </summary>
-        /// <param name="organizationId">The organization ID to check.</param>
-        /// <returns>True if the user is in the same organization, false otherwise.</returns>
         private bool IsSameOrganization(Guid organizationId)
         {
             return User.IsInOrganization(organizationId);
         }
+
     }
 }
