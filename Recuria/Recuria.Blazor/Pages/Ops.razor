@@ -26,14 +26,31 @@ else
                 }
                 else
                 {
-                    <MudTable T="Recuria.Client.DeadLetteredOutboxItem" Items="_items" Dense="true" Hover="true">
+                    <MudTable T="Recuria.Client.DeadLetteredOutboxItem"
+                              @ref="_table"
+                              ServerData="LoadServerDeadLettered"
+                              Dense="true"
+                              Hover="true"
+                              Loading="_tableLoading"
+                              RowsPerPage="10">
+
+                        <ToolBarContent>
+                            <MudTextField @bind-Value="_search"
+                                          Placeholder="Search type or error"
+                                          Immediate="true"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Search"
+                                          OnBlur="OnOpsSearchBlur" />
+                        </ToolBarContent>
+
                         <HeaderContent>
-                            <MudTh>Dead-Lettered</MudTh>
-                            <MudTh>Type</MudTh>
-                            <MudTh>Retries</MudTh>
+                            <MudTh><MudTableSortLabel T="Recuria.Client.DeadLetteredOutboxItem" SortLabel="deadLetteredOnUtc">Dead-Lettered</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel T="Recuria.Client.DeadLetteredOutboxItem" SortLabel="type">Type</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel T="Recuria.Client.DeadLetteredOutboxItem" SortLabel="retryCount">Retries</MudTableSortLabel></MudTh>
                             <MudTh>Error</MudTh>
                             <MudTh></MudTh>
                         </HeaderContent>
+
                         <RowTemplate>
                             <MudTd>@context.DeadLetteredOnUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudTd>
                             <MudTd>@context.Type</MudTd>
@@ -45,8 +62,9 @@ else
                                 </MudButton>
                             </MudTd>
                         </RowTemplate>
+
                         <NoRecordsContent>
-                            <MudText Typo="Typo.body2">No dead-lettered messages.</MudText>
+                            <StandardTableState Loading="_tableLoading" Error="_tableError" HasRows="false" EmptyText="No dead-lettered messages." />
                         </NoRecordsContent>
                     </MudTable>
                 }
@@ -129,6 +147,16 @@ else
         {
             _tableLoading = false;
         }
+    }
+
+    private Task OnOpsSearchBlur(FocusEventArgs _)
+    {
+        if(_table is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        return _table.ReloadServerData();
     }
 
 
