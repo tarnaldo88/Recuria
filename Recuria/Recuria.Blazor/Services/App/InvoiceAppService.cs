@@ -6,8 +6,8 @@ namespace Recuria.Blazor.Services.App
         Task<AppResult<Guid>> CreateAsync(Recuria.Client.CreateInvoiceRequest request, bool notifySuccess = true);
         Task<AppResult<Recuria.Client.InvoiceDetailsDto>> GetByIdAsync(Guid invoiceId, bool notifyError = true);
 
-        Task<AppResult<ICollection<Recuria.Client.InvoiceListItemDto>>> GetPageAsync(
-            Guid organizationId,
+        Task<AppResult<Recuria.Client.UserSummaryDtoPagedResult>> GetPageAsync(
+            Guid orgId,
             int page,
             int pageSize,
             string? search,
