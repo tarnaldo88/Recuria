@@ -213,7 +213,14 @@ else
         finally { _busy = false; }
     }
 
-    private async Task LoadUsers() => _table?.ReloadServerData() ?? Task.CompletedTask;
+    private Task LoadUsers()
+    {
+        if (_table is null)
+            return Task.CompletedTask;
+
+        return _table.ReloadServerData();
+    }
+
 
     private void SelectUser(Recuria.Client.UserSummaryDto user)
     {
