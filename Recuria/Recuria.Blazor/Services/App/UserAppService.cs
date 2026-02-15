@@ -91,49 +91,18 @@ namespace Recuria.Blazor.Services.App
             }
         }
 
-        Task<AppResult<Recuria.Client.UserSummaryDtoPagedResult>> GetPageAsync(
+        public Task<AppResult<Recuria.Client.UserSummaryDtoPagedResult>> GetPageAsync(
             Guid orgId,
             int page,
             int pageSize,
             string? search,
             string? sortBy,
             string? sortDir,
-            bool notifyError)
-        {
-            var result = await _runner.RunAsync(
-                () => _api.UsersAllAsync(orgId),
+            bool notifyError = true) =>
+            _runner.RunAsync(
+                () => _api.UsersGETAsync(orgId, page, pageSize, search, sortBy, sortDir),
                 errorPrefix: "Unable to load users",
                 notifyError: notifyError);
 
-            if (!result.Success || result.Data is null)
-                return AppResult<ICollection<Recuria.Client.UserSummaryDto>>.Fail(result.Error ?? "Unable to load users");
-
-            IEnumerable<Recuria.Client.UserSummaryDto> query = result.Data;
-
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                var s = search.Trim();
-                query = query.Where(x =>
-                    (x.Name ?? string.Empty).Contains(s, StringComparison.OrdinalIgnoreCase) ||
-                    (x.Email ?? string.Empty).Contains(s, StringComparison.OrdinalIgnoreCase));
-            }
-
-            query = (sortBy?.ToLowerInvariant(), sortDir?.ToLowerInvariant()) switch
-            {
-                ("email", "desc") => query.OrderByDescending(x => x.Email),
-                ("email", _) => query.OrderBy(x => x.Email),
-                ("role", "desc") => query.OrderByDescending(x => x.Role),
-                ("role", _) => query.OrderBy(x => x.Role),
-                ("name", "desc") => query.OrderByDescending(x => x.Name),
-                _ => query.OrderBy(x => x.Name)
-            };
-
-            var paged = query
-                .Skip((Math.Max(1, page) - 1) * Math.Max(1, pageSize))
-                .Take(Math.Max(1, pageSize))
-                .ToList();
-
-            return AppResult<ICollection<Recuria.Client.UserSummaryDto>>.Ok(paged);
-        }
     }
 }
