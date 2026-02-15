@@ -56,12 +56,16 @@ else
 }
 
 @code {
-
     private bool _loading = true;
     private bool _isForbidden;
     private bool _busy;
     private int _take = 50;
     private List<Recuria.Client.DeadLetteredOutboxItem> _items = new();
+
+    private MudTable<Recuria.Client.DeadLetteredOutboxItem>? _table;
+    private bool _tableLoading;
+    private string? _tableError;
+    private string? _search;
 
     protected override async Task OnInitializedAsync() 
     {        
