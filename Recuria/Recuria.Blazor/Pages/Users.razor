@@ -332,32 +332,36 @@ else
 
         try
         {
-            var result = await UsersApi.GetPageAsync(
+            var page = state.Page + 1;
+            var pageSize = state.PageSize;
+
+            var pageResult = await UsersApi.GetPageAsync(
                 _orgId,
-                state.Page + 1,
-                state.PageSize,
+                page,
+                pageSize,
                 _search,
                 state.SortLabel,
                 state.SortDirection == SortDirection.Descending ? "desc" : "asc",
                 notifyError: false);
 
-            if (!result.Success || result.Data is null)
+            if (!pageResult.Success || pageResult.Data is null)
             {
-                _tableError = result.Error ?? "Unable to load users.";
+                _tableError = pageResult.Error ?? "Unable to load users.";
                 return new TableData<Recuria.Client.UserSummaryDto>
                 {
                     Items = Array.Empty<Recuria.Client.UserSummaryDto>(),
                     TotalItems = 0
                 };
             }
-            var page = state.Page + 1;
-            var pageSize = state.PageSize;
-            var currentItems = result.Data.ToList();
+
+            // Accurate total count (temporary extra call until paged DTO exists in NSwag)
+            var totalResult = await UsersApi.GetAllAsync(_orgId, notifyError: false);
+            var total = totalResult.Success && totalResult.Data is not null ? totalResult.Data.Count : pageResult.Data.Count;
 
             return new TableData<Recuria.Client.UserSummaryDto>
             {
-                Items = currentItems,
-                TotalItems = ((page - 1) * pageSize) + currentItems.Count + (currentItems.Count == pageSize ? 1 : 0)
+                Items = pageResult.Data,
+                TotalItems = total
             };
         }
         finally
