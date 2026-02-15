@@ -70,11 +70,13 @@ else
         </MudForm>
 
         <MudTable T="Recuria.Client.UserSummaryDto"
-          @ref="_table"
-          ServerData="LoadServerUsers"
-          Dense="true"
-          Hover="true"
-          Loading="_tableLoading">
+                  @ref="_table"
+                  ServerData="LoadServerUsers"
+                  Dense="true"
+                  Hover="true"
+                  Loading="_tableLoading"
+                  RowsPerPage="10">
+
             <ToolBarContent>
                 <MudTextField @bind-Value="_search"
                               Placeholder="Search name or email"
@@ -83,12 +85,14 @@ else
                               AdornmentIcon="@Icons.Material.Filled.Search"
                               OnBlur="OnSearchBlur" />
             </ToolBarContent>
+
             <HeaderContent>
-                <MudTableSortLabel T="Recuria.Client.UserSummaryDto" SortLabel="name">Name</MudTableSortLabel>
-                <MudTableSortLabel T="Recuria.Client.UserSummaryDto" SortLabel="email">Email</MudTableSortLabel>
-                <MudTableSortLabel T="Recuria.Client.UserSummaryDto" SortLabel="role">Role</MudTableSortLabel>
+                <MudTh><MudTableSortLabel T="Recuria.Client.UserSummaryDto" SortLabel="name">Name</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel T="Recuria.Client.UserSummaryDto" SortLabel="email">Email</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel T="Recuria.Client.UserSummaryDto" SortLabel="role">Role</MudTableSortLabel></MudTh>
                 <MudTh></MudTh>
             </HeaderContent>
+
             <RowTemplate>
                 <MudTd>@context.Name</MudTd>
                 <MudTd>@context.Email</MudTd>
@@ -100,6 +104,7 @@ else
                     </MudStack>
                 </MudTd>
             </RowTemplate>
+
             <NoRecordsContent>
                 <StandardTableState Loading="_tableLoading" Error="_tableError" HasRows="false" EmptyText="No users found." />
             </NoRecordsContent>
