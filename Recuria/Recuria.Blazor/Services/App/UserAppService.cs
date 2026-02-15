@@ -1,3 +1,5 @@
+using Recuria.Client;
+
 namespace Recuria.Blazor.Services.App
 {
     public interface IUserAppService
@@ -82,7 +84,7 @@ namespace Recuria.Blazor.Services.App
             }
         }
 
-        Task<AppResult<Recuria.Client.PagedResultOfUserSummaryDto>> GetPageAsync(
+        public Task<AppResult<Recuria.Client.PagedResultOfUserSummaryDto>> GetPageAsync(
             Guid orgId,
             int page,
             int pageSize,
