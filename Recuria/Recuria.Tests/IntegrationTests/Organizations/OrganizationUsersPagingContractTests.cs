@@ -41,7 +41,7 @@ public sealed class OrganizationUsersPagingContractTests : IntegrationTestBase
         var orgId = await SeedOrganizationWithUsersAsync(ownerId, userCount: 8, emailPrefix: "sort");
         SetAuthHeader(ownerId, orgId, UserRole.Owner);
 
-        var searchResponse = await Client.GetAsync($"/api/organizations/{orgId}/users?page=1&pageSize=10&search=sort+1&sortBy=email&sortDir=desc");
+        var searchResponse = await Client.GetAsync($"/api/organizations/{orgId}/users?page=1&pageSize=10&search=sort1&sortBy=email&sortDir=desc");
         searchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var searchPage = await searchResponse.Content.ReadFromJsonAsync<PagedResult<UserSummaryDto>>(JsonOptions);
@@ -85,4 +85,3 @@ public sealed class OrganizationUsersPagingContractTests : IntegrationTestBase
         return org.Id;
     }
 }
-
