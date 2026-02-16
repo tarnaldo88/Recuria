@@ -25,10 +25,11 @@ public sealed class OutboxDeadLetterPagingContractTests : IntegrationTestBase
     [Fact]
     public async Task GetDeadLettered_PagingAndTotalCount_Should_Respect_Bounds()
     {
-        await SeedDeadLetteredOutboxAsync(itemCount: 8);
+        var marker = $"bounds-{Guid.NewGuid():N}";
+        await SeedDeadLetteredOutboxAsync(itemCount: 8, marker: marker);
         SetAuthHeader(Guid.NewGuid(), Guid.NewGuid(), UserRole.Owner);
 
-        var response = await Client.GetAsync("/api/outbox/dead-lettered?page=0&pageSize=1");
+        var response = await Client.GetAsync($"/api/outbox/dead-lettered?page=0&pageSize=1&search={marker}");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var page = await response.Content.ReadFromJsonAsync<PagedResult<DeadLetteredOutboxItemDto>>(JsonOptions);
@@ -42,19 +43,20 @@ public sealed class OutboxDeadLetterPagingContractTests : IntegrationTestBase
     [Fact]
     public async Task GetDeadLettered_SortAndSearch_Should_Return_Correct_Set()
     {
-        await SeedDeadLetteredOutboxAsync(itemCount: 8);
+        var marker = $"matchme-{Guid.NewGuid():N}";
+        await SeedDeadLetteredOutboxAsync(itemCount: 8, marker: marker);
         SetAuthHeader(Guid.NewGuid(), Guid.NewGuid(), UserRole.Owner);
 
-        var searchResponse = await Client.GetAsync("/api/outbox/dead-lettered?page=1&pageSize=10&search=matchme");
+        var searchResponse = await Client.GetAsync($"/api/outbox/dead-lettered?page=1&pageSize=10&search={marker}");
         searchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var searchPage = await searchResponse.Content.ReadFromJsonAsync<PagedResult<DeadLetteredOutboxItemDto>>(JsonOptions);
         searchPage.Should().NotBeNull();
         searchPage!.TotalCount.Should().Be(2);
         searchPage.Items.Should().HaveCount(2);
-        searchPage.Items.Should().OnlyContain(i => i.Type.Contains("matchme") || (i.Error ?? string.Empty).Contains("matchme"));
+        searchPage.Items.Should().OnlyContain(i => i.Type.Contains(marker) || (i.Error ?? string.Empty).Contains(marker));
 
-        var sortResponse = await Client.GetAsync("/api/outbox/dead-lettered?page=1&pageSize=10&sortBy=retryCount&sortDir=desc");
+        var sortResponse = await Client.GetAsync($"/api/outbox/dead-lettered?page=1&pageSize=10&sortBy=retryCount&sortDir=desc&search={marker}");
         sortResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var sortPage = await sortResponse.Content.ReadFromJsonAsync<PagedResult<DeadLetteredOutboxItemDto>>(JsonOptions);
@@ -63,7 +65,7 @@ public sealed class OutboxDeadLetterPagingContractTests : IntegrationTestBase
         sortPage.TotalCount.Should().Be(8);
     }
 
-    private async Task SeedDeadLetteredOutboxAsync(int itemCount)
+    private async Task SeedDeadLetteredOutboxAsync(int itemCount, string marker)
     {
         using var scope = Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
@@ -74,16 +76,15 @@ public sealed class OutboxDeadLetterPagingContractTests : IntegrationTestBase
             {
                 Id = Guid.NewGuid(),
                 OccurredOnUtc = DateTime.UtcNow.AddMinutes(-i),
-                Type = i is 3 or 6 ? $"Billing.matchme.{i}" : $"Billing.{i}",
+                Type = i is 3 or 6 ? $"Billing.{marker}.{i}" : $"Billing.{i}",
                 Content = "{}",
                 RetryCount = i
             };
 
-            message.MarkDeadLettered(i is 3 or 6 ? $"matchme-error-{i}" : $"error-{i}");
+            message.MarkDeadLettered(i is 3 or 6 ? $"{marker}-error-{i}" : $"error-{i}");
             db.OutBoxMessages.Add(message);
         }
 
         await db.SaveChangesAsync(CancellationToken.None);
     }
 }
-
