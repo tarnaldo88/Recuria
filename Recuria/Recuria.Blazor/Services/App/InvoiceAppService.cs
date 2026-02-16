@@ -2,7 +2,6 @@ namespace Recuria.Blazor.Services.App
 {
     public interface IInvoiceAppService
     {
-        Task<AppResult<ICollection<Recuria.Client.InvoiceListItemDto>>> GetByOrganizationAsync(Guid organizationId, bool notifyError = true);
         Task<AppResult<Guid>> CreateAsync(Recuria.Client.CreateInvoiceRequest request, bool notifySuccess = true);
         Task<AppResult<Recuria.Client.InvoiceDetailsDto>> GetByIdAsync(Guid invoiceId, bool notifyError = true);
 
@@ -25,23 +24,7 @@ namespace Recuria.Blazor.Services.App
         {
             _api = api;
             _runner = runner;
-        }
-
-        public async Task<AppResult<ICollection<Recuria.Client.InvoiceListItemDto>>> GetByOrganizationAsync(
-            Guid organizationId,
-            bool notifyError = true)
-        {
-            var result = await _runner.RunAsync(
-                () => _api.OrganizationAsync(organizationId, null, null, null, null, null),
-                errorPrefix: "Unable to load invoices",
-                notifyError: notifyError);
-
-            if (!result.Success || result.Data is null)
-                return AppResult<ICollection<Recuria.Client.InvoiceListItemDto>>.Fail(result.Error ?? "Unable to load invoices");
-
-            return AppResult<ICollection<Recuria.Client.InvoiceListItemDto>>.Ok(
-                result.Data.Items ?? Array.Empty<Recuria.Client.InvoiceListItemDto>());
-        }        
+        }              
 
         public Task<AppResult<Recuria.Client.InvoiceDetailsDto>> GetByIdAsync(Guid invoiceId, bool notifyError = true) =>
             _runner.RunAsync(() => _api.InvoicesGETAsync(invoiceId), errorPrefix: "Unable to load invoice", notifyError: notifyError);
