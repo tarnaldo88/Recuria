@@ -4,7 +4,7 @@ Recuria is a **SaaS subscription and billing platform** built with **ASP.NET Cor
 
 It models real-world SaaS business rules including organization ownership, subscription lifecycles, role-based access, billing, invoicing, and observability.
 
-This project is designed as a **industry-aligned system** emphasizing domain modeling, correctness, and testability rather than simple CRUD operations.
+This project is designed as an **industry-aligned system** emphasizing domain modeling, correctness, and testability rather than simple CRUD operations.
 
 ---
 
@@ -12,11 +12,15 @@ This project is designed as a **industry-aligned system** emphasizing domain mod
 
 - JWT auth with role‑based policies (Owner/Admin/Member)
 - Dev bootstrap endpoint for local JWT + org setup
+- Real auth UX flow in Blazor (login/logout + role-aware nav/page visibility)
 - Standardized ProblemDetails error responses + correlation IDs
 - Rate limiting + request size limits
 - Swagger/OpenAPI with JWT security
 - Health checks (liveness + readiness with DB)
 - Outbox retries + dead‑letter handling + admin inspection/retry endpoints
+- Server-side paging/sorting/filtering contracts for users, invoices, and dead-lettered outbox
+- Typed paged frontend app-services and MudTable `ServerData` integration
+- Standardized table loading/empty/error states via shared `StandardTableState`
 - CORS + enterprise security headers (CSP, Permissions‑Policy, HSTS)
 - Structured JSON logging (Serilog) + audit logging for sensitive actions
 - CI pipeline for build/test + migration script generation
@@ -149,7 +153,7 @@ Recuria enforces realistic SaaS constraints **in code**, not just the database:
 
 ## Frontend Features Implemented
 
-The Blazor WebAssembly frontend is now actively implemented with a MudBlazor UI layer.
+The Blazor WebAssembly frontend is implemented with a production-oriented MudBlazor UI layer.
 
 ### UI Foundation
 - MudBlazor integrated for layout, components, forms, tables, alerts, chips, skeleton loaders
@@ -167,7 +171,7 @@ The Blazor WebAssembly frontend is now actively implemented with a MudBlazor UI 
   <img src="screenshots/Home.png" alt="Home" width="600" />
 - **Bootstrap**
   - Tenant bootstrap form (org + owner setup)
-  - Submits bootstrap request and stores auth context for local dev flow
+  - Submits bootstrap request and stores auth context for local development flow
 - **Dashboard**
   - Organization + subscription summary cards
   - Status chips and loading/error states
@@ -205,7 +209,7 @@ The Blazor WebAssembly frontend is now actively implemented with a MudBlazor UI 
   <img src="screenshots/ops.png" alt="Ops" width="600" />
 
 ### UX / Interaction Improvements
-- Consistent loading, success, and error states across pages
+- Consistent loading, success, empty, and error states across pages
 - Handling of API contract mismatches during transition (e.g., 200 vs 201/204)
 - Localized date/time display patterns using `CurrentCulture` where appropriate
 - Typed frontend app-service layer (`Services/App`) to avoid page-direct API calls
@@ -214,6 +218,10 @@ The Blazor WebAssembly frontend is now actively implemented with a MudBlazor UI 
 - Graceful forbidden states with actionable messaging (`ForbiddenState`)
 - MudForm-driven field validation + server validation mapping on key forms
 - Confirmation dialogs for destructive operations (cancel/remove/retry flows)
+- Production-grade table behavior on `Users`, `Invoices`, and `Ops`:
+  - Server-side pagination
+  - Server-side sort/search
+  - Unified empty/error/loading presentation
 
 ### Frontend Runtime Notes
 - Frontend is a browser-hosted Blazor WASM app, not a desktop executable
@@ -254,6 +262,7 @@ The Blazor WebAssembly frontend is now actively implemented with a MudBlazor UI 
 ## Testing
 
 Testing focuses on **business behavior**, not implementation details.
+The suite currently includes broad unit, integration, and bUnit component coverage.
 
 ### Unit Test Coverage
 
@@ -290,6 +299,7 @@ Testing focuses on **business behavior**, not implementation details.
   - 204-compat contract handling tests (role change/remove/retry/logout)
   - User context role-capability mapping and cache behavior
   - Centralized API error mapping coverage (`401/403/404/409/500`)
+  - Server-table behavior coverage for loading/empty/error/search/sort reload triggers
   - Files:
     - `Recuria/Recuria.Tests/Unit/Frontend/ApiCallRunnerTests.cs`
     - `Recuria/Recuria.Tests/Unit/Frontend/AuthAppServiceTests.cs`
@@ -299,6 +309,9 @@ Testing focuses on **business behavior**, not implementation details.
     - `Recuria/Recuria.Tests/Unit/Frontend/InvoiceAppServiceTests.cs`
     - `Recuria/Recuria.Tests/Unit/Frontend/OpsAppServiceTests.cs`
     - `Recuria/Recuria.Tests/Unit/Frontend/UserContextServiceTests.cs`
+    - `Recuria/Recuria.Tests/Unit/Frontend/UsersServerTableBehaviorTests.cs`
+    - `Recuria/Recuria.Tests/Unit/Frontend/InvoicesServerTableBehaviorTests.cs`
+    - `Recuria/Recuria.Tests/Unit/Frontend/OpsServerTableBehaviorTests.cs`
 
 ### Integration Test Coverage
 
@@ -317,11 +330,17 @@ Testing focuses on **business behavior**, not implementation details.
   - Add user / change role / remove user
   - Rollback behavior on domain event handler failure
   - Users listing by organization (`GET /api/organizations/{id}/users`)
+  - Users paging contract coverage:
+    - page/pageSize bounds
+    - search filtering
+    - sort behavior
+    - `TotalCount` correctness
   - Files:
     - `Recuria/Recuria.Tests/IntegrationTests/Organizations/OrganizationFlowTests.cs`
     - `Recuria/Recuria.Tests/IntegrationTests/Organizations/OrganizationRollbackTests.cs`
     - `Recuria/Recuria.Tests/IntegrationTests/Organizations/OrganizationUsersListTests.cs`
     - `Recuria/Recuria.Tests/IntegrationTests/Organizations/OrganizationCreatesTrialSubscriptionTests.cs`
+    - `Recuria/Recuria.Tests/IntegrationTests/Organizations/OrganizationUsersPagingContractTests.cs`
 
 - **Subscription workflows**
   - Trial provisioning flow
@@ -337,6 +356,11 @@ Testing focuses on **business behavior**, not implementation details.
   - Details retrieval authorization and payload correctness
   - Description persistence and retrieval
   - Mark-as-paid endpoint behavior (`PaidOnUtc`)
+  - Invoice list paging contract coverage:
+    - page/pageSize bounds
+    - search filtering
+    - sort behavior
+    - `TotalCount` correctness
   - Idempotent invoice create behavior:
     - Missing key returns `400`
     - Same key and same payload replay behavior
@@ -346,11 +370,18 @@ Testing focuses on **business behavior**, not implementation details.
     - `Recuria/Recuria.Tests/IntegrationTests/Invoices/InvoiceFlowTests.cs`
     - `Recuria/Recuria.Tests/IntegrationTests/Invoices/InvoiceContractTests.cs`
     - `Recuria/Recuria.Tests/IntegrationTests/Invoices/InvoiceIdempotencyTests.cs`
+    - `Recuria/Recuria.Tests/IntegrationTests/Invoices/InvoicePagingContractTests.cs`
 
 - **Ops/Outbox authorization**
   - Role-based access checks for dead-letter listing and retry
+  - Dead-lettered outbox paging contract coverage:
+    - page/pageSize bounds
+    - search filtering
+    - sort behavior
+    - `TotalCount` correctness
   - File:
     - `Recuria/Recuria.Tests/IntegrationTests/Ops/OutboxAuthorizationTests.cs`
+    - `Recuria/Recuria.Tests/IntegrationTests/Ops/OutboxDeadLetterPagingContractTests.cs`
 
 - **Error handling contracts**
   - ProblemDetails shape and consistency
@@ -365,7 +396,6 @@ dotnet test Recuria/Recuria.Tests/Recuria.Tests.csproj
 
 ### Additional Planned Coverage
 
-- Blazor component-level tests (bUnit) for key pages (`Subscriptions`, `Invoices`, `Users`)
 - API schema stability checks for OpenAPI/NSwag contract drift
 - End-to-end smoke tests for bootstrap -> subscription -> invoice lifecycle
 
