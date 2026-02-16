@@ -160,15 +160,22 @@
     private async Task LoadInvoices()
 {
     _blockingMessage = null;
+    _loading = true;
 
-    var orgId = await GetOrganizationIdAsync();
-    if (orgId is null)
-        return;
+    try {
+        var orgId = await GetOrganizationIdAsync();
+        if (orgId is null)
+            return;
 
-    _orgId = orgId.Value;
+        _orgId = orgId.Value;
 
-    if (_table is not null)
-        await _table.ReloadServerData();
+        if (_table is not null)
+            await _table.ReloadServerData();
+    }
+    finally {
+        _loading = false;
+    }
+    
 }
 
     private async Task CreateInvoice()
