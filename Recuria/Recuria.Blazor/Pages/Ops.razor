@@ -98,10 +98,17 @@ else
 
     private Task LoadDeadLettered()
     {
-        if (_table is null)
-            return Task.CompletedTask;
+        _loading = true;
 
-        return _table.ReloadServerData();
+        try
+        {
+            if (_table is not null)
+                await _table.ReloadServerData();
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
 
