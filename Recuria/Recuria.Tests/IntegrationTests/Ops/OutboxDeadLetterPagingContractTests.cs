@@ -44,7 +44,7 @@ public sealed class OutboxDeadLetterPagingContractTests : IntegrationTestBase
     public async Task GetDeadLettered_SortAndSearch_Should_Return_Correct_Set()
     {
         var marker = $"matchme-{Guid.NewGuid():N}";
-        var needle = $"needle-{Guid.NewGuid():N}";
+        const string needle = "needle-";
         await SeedDeadLetteredOutboxAsync(itemCount: 8, marker: marker);
         SetAuthHeader(Guid.NewGuid(), Guid.NewGuid(), UserRole.Owner);
 
