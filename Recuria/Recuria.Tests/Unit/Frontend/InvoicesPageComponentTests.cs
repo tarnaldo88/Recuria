@@ -3,6 +3,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Moq;
+using MudBlazor;
 using MudBlazor.Services;
 using Recuria.Blazor.Pages;
 using Recuria.Blazor.Services;
@@ -48,6 +49,7 @@ namespace Recuria.Tests.Unit.Frontend
                 Role = "Member"
             }));
 
+            RenderComponent<MudPopoverProvider>();
             var cut = RenderComponent<Invoices>();
 
             cut.WaitForAssertion(() =>
