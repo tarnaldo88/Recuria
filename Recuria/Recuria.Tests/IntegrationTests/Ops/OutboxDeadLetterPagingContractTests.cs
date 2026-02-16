@@ -44,17 +44,18 @@ public sealed class OutboxDeadLetterPagingContractTests : IntegrationTestBase
     public async Task GetDeadLettered_SortAndSearch_Should_Return_Correct_Set()
     {
         var marker = $"matchme-{Guid.NewGuid():N}";
+        var needle = $"needle-{Guid.NewGuid():N}";
         await SeedDeadLetteredOutboxAsync(itemCount: 8, marker: marker);
         SetAuthHeader(Guid.NewGuid(), Guid.NewGuid(), UserRole.Owner);
 
-        var searchResponse = await Client.GetAsync($"/api/outbox/dead-lettered?page=1&pageSize=10&search={marker}");
+        var searchResponse = await Client.GetAsync($"/api/outbox/dead-lettered?page=1&pageSize=10&search={needle}");
         searchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var searchPage = await searchResponse.Content.ReadFromJsonAsync<PagedResult<DeadLetteredOutboxItemDto>>(JsonOptions);
         searchPage.Should().NotBeNull();
         searchPage!.TotalCount.Should().Be(2);
         searchPage.Items.Should().HaveCount(2);
-        searchPage.Items.Should().OnlyContain(i => i.Type.Contains(marker) || (i.Error ?? string.Empty).Contains(marker));
+        searchPage.Items.Should().OnlyContain(i => i.Type.Contains(needle) || (i.Error ?? string.Empty).Contains(needle));
 
         var sortResponse = await Client.GetAsync($"/api/outbox/dead-lettered?page=1&pageSize=10&sortBy=retryCount&sortDir=desc&search={marker}");
         sortResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -76,12 +77,12 @@ public sealed class OutboxDeadLetterPagingContractTests : IntegrationTestBase
             {
                 Id = Guid.NewGuid(),
                 OccurredOnUtc = DateTime.UtcNow.AddMinutes(-i),
-                Type = i is 3 or 6 ? $"Billing.{marker}.{i}" : $"Billing.{i}",
+                Type = i is 3 or 6 ? $"Billing.{marker}.needle-{i}" : $"Billing.{marker}.{i}",
                 Content = "{}",
                 RetryCount = i
             };
 
-            message.MarkDeadLettered(i is 3 or 6 ? $"{marker}-error-{i}" : $"error-{i}");
+            message.MarkDeadLettered(i is 3 or 6 ? $"{marker}-needle-error-{i}" : $"{marker}-error-{i}");
             db.OutBoxMessages.Add(message);
         }
 
