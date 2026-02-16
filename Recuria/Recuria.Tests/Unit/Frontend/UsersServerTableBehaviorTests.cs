@@ -3,6 +3,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Moq;
+using MudBlazor;
 using MudBlazor.Services;
 using Recuria.Blazor.Pages;
 using Recuria.Blazor.Services;
@@ -32,7 +33,7 @@ namespace Recuria.Tests.Unit.Frontend
                 }));
 
             RegisterUsersPageServices(orgId, usersApi.Object);
-
+            RenderComponent<MudPopoverProvider>();
             var cut = RenderComponent<Users>();
 
             cut.WaitForAssertion(() => cut.Markup.Should().Contain("No users found."));
@@ -46,7 +47,7 @@ namespace Recuria.Tests.Unit.Frontend
             var usersApi = BuildUsersApi(orgId, AppResult<Recuria.Client.UserSummaryDtoPagedResult>.Fail("Unable to load users."));
 
             RegisterUsersPageServices(orgId, usersApi.Object);
-
+            RenderComponent<MudPopoverProvider>();
             var cut = RenderComponent<Users>();
 
             cut.WaitForAssertion(() => cut.Markup.Should().Contain("Unable to load users."));
@@ -70,7 +71,7 @@ namespace Recuria.Tests.Unit.Frontend
                 .Returns(() => tcs.Task);
 
             RegisterUsersPageServices(orgId, usersApi.Object);
-
+            RenderComponent<MudPopoverProvider>();
             var cut = RenderComponent<Users>();
 
             cut.WaitForAssertion(() =>
@@ -111,7 +112,7 @@ namespace Recuria.Tests.Unit.Frontend
                 }));
 
             RegisterUsersPageServices(orgId, usersApi.Object);
-
+            RenderComponent<MudPopoverProvider>();
             var cut = RenderComponent<Users>();
             cut.WaitForAssertion(() => usersApi.Verify(x => x.GetPageAsync(
                 orgId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<bool>()), Times.AtLeastOnce));
