@@ -29,7 +29,7 @@ namespace Recuria.Tests.Unit.Frontend
         }
 
         [Fact]
-        public async Task GetDeadLetteredAsync_Should_Return_Data_When_Api_Succeeds()
+        public async Task GetDeadLetteredPageAsync_Should_Return_Data_When_Api_Succeeds()
         {
             var items = new List<Recuria.Client.DeadLetteredOutboxItem>
             {
@@ -43,12 +43,18 @@ namespace Recuria.Tests.Unit.Frontend
                 }
             };
 
+            const int page = 1;
+            const int pageSize = 50;
+            const string search = "sub";
+            const string sortBy = "deadLetteredOnUtc";
+            const string sortDir = "desc";
+
             _api.Setup(x => x.DeadLetteredAsync(
-                    It.IsAny<int?>(),
-                    It.IsAny<int?>(),
-                    It.IsAny<string?>(),
-                    It.IsAny<string?>(),
-                    It.IsAny<string?>(),
+                    page,
+                    pageSize,
+                    search,
+                    sortBy,
+                    sortDir,
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new Recuria.Client.DeadLetteredOutboxItemPagedResult
                 {
@@ -59,11 +65,12 @@ namespace Recuria.Tests.Unit.Frontend
                 });
 
             var service = new OpsAppService(_api.Object, _runner);
-            var result = await service.GetDeadLetteredAsync(50);
+            var result = await service.GetDeadLetteredPageAsync(page, pageSize, search, sortBy, sortDir);
 
             result.Success.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data!.Count.Should().Be(1);
+            result.Data!.Items.Should().NotBeNull();
+            result.Data.Items!.Count.Should().Be(1);
         }
 
         private static Recuria.Client.ApiException CreateApiException(int statusCode, string response)
