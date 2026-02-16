@@ -160,5 +160,39 @@ namespace Recuria.Tests.Unit.Frontend
 
             return usersApi;
         }
+
+        private void RegisterUsersPageServices(Guid orgId, IUserAppService usersApi)
+        {
+            Services.AddSingleton(CreateAuthState(orgId));
+            Services.AddSingleton<IUserContextService>(new FakeUserContextService(new UserContext
+            {
+                IsAuthenticated = true,
+                Role = "Admin"
+            }));
+            Services.AddSingleton(Mock.Of<IOrganizationAppService>());
+            Services.AddSingleton(usersApi);
+        }
+
+        private static AuthState CreateAuthState(Guid orgId)
+        {
+            var js = new Mock<IJSRuntime>();
+            js.Setup(x => x.InvokeAsync<string?>("localStorage.getItem", It.IsAny<object?[]>()))
+                .Returns((string _, object?[] args) =>
+                {
+                    var key = args.Length > 0 ? args[0]?.ToString() : null;
+                    return key == "recuria.orgId"
+                        ? new ValueTask<string?>(orgId.ToString())
+                        : new ValueTask<string?>((string?)null);
+                });
+
+            return new AuthState(new TokenStorage(js.Object));
+        }
+
+        private sealed class FakeUserContextService : IUserContextService
+        {
+            private readonly UserContext _ctx;
+            public FakeUserContextService(UserContext ctx) => _ctx = ctx;
+            public Task<UserContext> GetAsync(bool forceRefresh = false) => Task.FromResult(_ctx);
+        }
     }
 }
