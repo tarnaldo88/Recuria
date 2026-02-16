@@ -3,6 +3,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Moq;
+using MudBlazor;
 using MudBlazor.Services;
 using Recuria.Blazor.Pages;
 using Recuria.Blazor.Services;
@@ -39,6 +40,7 @@ namespace Recuria.Tests.Unit.Frontend
             Services.AddSingleton<IUserContextService>(new FakeUserContextService(new UserContext { IsAuthenticated = true, Role = "Owner" }));
             Services.AddSingleton(Mock.Of<MudBlazor.IDialogService>());
 
+            RenderComponent<MudPopoverProvider>();
             var cut = RenderComponent<Invoices>();
 
             cut.WaitForAssertion(() => api.Verify(x => x.GetPageAsync(

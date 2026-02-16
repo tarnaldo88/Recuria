@@ -5,6 +5,8 @@ using Moq;
 using MudBlazor.Services;
 using Recuria.Blazor.Pages;
 using Recuria.Blazor.Services.App;
+using Microsoft.JSInterop;
+using MudBlazor;
 
 namespace Recuria.Tests.Unit.Frontend
 {
@@ -38,6 +40,7 @@ namespace Recuria.Tests.Unit.Frontend
             Services.AddSingleton<IOpsAppService>(api.Object);
             Services.AddSingleton<IUserContextService>(new FakeUserContextService(new UserContext { IsAuthenticated = true, Role = "Admin" }));
 
+            RenderComponent<MudPopoverProvider>();
             var cut = RenderComponent<Ops>();
 
             cut.WaitForAssertion(() => api.Verify(x => x.GetDeadLetteredPageAsync(
