@@ -22,8 +22,22 @@ namespace Recuria.Tests.Unit.Frontend
         {
             var orgId = Guid.NewGuid();
             var invoicesApi = new Mock<IInvoiceAppService>();
-            invoicesApi.Setup(x => x.GetByOrganizationAsync(orgId, It.IsAny<bool>()))
-                .ReturnsAsync(AppResult<ICollection<Recuria.Client.InvoiceListItemDto>>.Ok(new List<Recuria.Client.InvoiceListItemDto>()));
+            invoicesApi.Setup(x => x.GetPageAsync(
+                    orgId,
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<bool>()))
+                .ReturnsAsync(AppResult<Recuria.Client.InvoiceListItemDtoPagedResult>.Ok(
+                    new Recuria.Client.InvoiceListItemDtoPagedResult
+                    {
+                        Items = Array.Empty<Recuria.Client.InvoiceListItemDto>(),
+                        Page = 1,
+                        PageSize = 10,
+                        TotalCount = 0
+                    }));
 
             Services.AddMudServices();
             Services.AddSingleton(CreateAuthState(orgId));
