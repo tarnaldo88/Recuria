@@ -97,6 +97,68 @@ namespace Recuria.Tests.Unit.Frontend
             cut.WaitForAssertion(() => cut.Markup.Should().Contain("No users found."));
         }
 
+        [Fact]
+        public void UsersTable_Search_And_Sort_Should_Trigger_Server_Reload()
+        {
+            var orgId = Guid.NewGuid();
+            var usersApi = BuildUsersApi(orgId, AppResult<Recuria.Client.UserSummaryDtoPagedResult>.Ok(
+                new Recuria.Client.UserSummaryDtoPagedResult
+                {
+                    Items = Array.Empty<Recuria.Client.UserSummaryDto>(),
+                    TotalCount = 0,
+                    Page = 1,
+                    PageSize = 10
+                }));
 
+            RegisterUsersPageServices(orgId, usersApi.Object);
+
+            var cut = RenderComponent<Users>();
+            cut.WaitForAssertion(() => usersApi.Verify(x => x.GetPageAsync(
+                orgId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<bool>()), Times.AtLeastOnce));
+
+            var searchInput = cut.FindAll("input[placeholder='Search name or email']").Last();
+            searchInput.Input("alice");
+            searchInput.Blur();
+
+            cut.WaitForAssertion(() =>
+                usersApi.Verify(x => x.GetPageAsync(
+                    orgId,
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    "alice",
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<bool>()), Times.AtLeastOnce));
+
+            var emailSort = cut.FindAll(".mud-table-sort-label")
+                .First(x => x.TextContent.Contains("Email", StringComparison.OrdinalIgnoreCase));
+            emailSort.Click();
+
+            cut.WaitForAssertion(() =>
+                usersApi.Verify(x => x.GetPageAsync(
+                    orgId,
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string?>(),
+                    "email",
+                    It.IsAny<string?>(),
+                    It.IsAny<bool>()), Times.AtLeastOnce));
+        }
+
+        private static Mock<IUserAppService> BuildUsersApi(Guid orgId, AppResult<Recuria.Client.UserSummaryDtoPagedResult> result)
+        {
+            var usersApi = new Mock<IUserAppService>();
+            usersApi.Setup(x => x.GetPageAsync(
+                    orgId,
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<bool>()))
+                .ReturnsAsync(result);
+
+            return usersApi;
+        }
     }
 }
