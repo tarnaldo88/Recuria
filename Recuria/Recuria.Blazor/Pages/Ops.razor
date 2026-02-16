@@ -64,7 +64,7 @@ else
                         </RowTemplate>
 
                         <NoRecordsContent>
-                            <StandardTableState Loading="_tableLoading" Error="_tableError" HasRows="false" EmptyText="No dead-lettered messages." />
+                            <StandardTableState Loading="@_tableLoading" Error="@_tableError" HasRows="false" EmptyText="No dead-lettered messages." />
                         </NoRecordsContent>
                     </MudTable>
                 }

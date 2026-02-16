@@ -14,6 +14,9 @@ namespace Recuria.Tests.Unit.Frontend
     {
         public OpsServerTableBehaviorTests()
         {
+            JSInterop.Mode = JSRuntimeMode.Loose;
+            JSInterop.Setup<int>("mudpopoverHelper.countProviders").SetResult(1);
+            JSInterop.SetupVoid("mudPopover.initialize", _ => true);
             Services.AddMudServices();
         }
 
