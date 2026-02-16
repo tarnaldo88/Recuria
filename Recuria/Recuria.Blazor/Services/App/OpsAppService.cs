@@ -2,7 +2,7 @@ namespace Recuria.Blazor.Services.App
 {
     public interface IOpsAppService
     {
-        Task<AppResult<ICollection<Recuria.Client.DeadLetteredOutboxItem>>> GetDeadLetteredAsync(int take, bool notifyError = true);
+        
         Task<AppResult> RetryAsync(Guid id, bool notifySuccess = true);
 
         Task<AppResult<Recuria.Client.DeadLetteredOutboxItemPagedResult>> GetDeadLetteredPageAsync(
@@ -24,22 +24,7 @@ namespace Recuria.Blazor.Services.App
         {
             _api = api;
             _runner = runner;
-        }
-
-        public async Task<AppResult<ICollection<Recuria.Client.DeadLetteredOutboxItem>>> GetDeadLetteredAsync(int take, bool notifyError = true)
-        {
-            var safeTake = Math.Clamp(take, 1, 200);
-            var result = await _runner.RunAsync(
-                () => _api.DeadLetteredAsync(1, safeTake, null, "deadLetteredOnUtc", "desc"),
-                errorPrefix: "Unable to load dead-letter queue",
-                notifyError: notifyError);
-
-            if (!result.Success || result.Data is null)
-                return AppResult<ICollection<Recuria.Client.DeadLetteredOutboxItem>>.Fail(result.Error ?? "Unable to load dead-letter queue");
-
-            return AppResult<ICollection<Recuria.Client.DeadLetteredOutboxItem>>.Ok(
-                result.Data.Items ?? Array.Empty<Recuria.Client.DeadLetteredOutboxItem>());
-        }
+        }        
 
         public async Task<AppResult> RetryAsync(Guid id, bool notifySuccess = true)
         {

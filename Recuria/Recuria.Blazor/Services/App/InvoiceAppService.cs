@@ -39,7 +39,7 @@ namespace Recuria.Blazor.Services.App
             bool notifyError = true) =>
             _runner.RunAsync(
                 () => _api.OrganizationAsync(organizationId, page, pageSize, search, sortBy, sortDir),
-                errorPrefix: "Unable to load users",
+                errorPrefix: "Unable to load invoices",
                 notifyError: notifyError);
 
         public Task<AppResult<Guid>> CreateAsync(Recuria.Client.CreateInvoiceRequest request, bool notifySuccess = true) =>
