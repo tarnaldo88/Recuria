@@ -18,6 +18,25 @@ namespace Recuria.Tests.Unit.Frontend
             Services.AddMudServices();
         }
 
+        [Fact]
+        public void UsersTable_Should_Show_Empty_State()
+        {
+            var orgId = Guid.NewGuid();
+            var usersApi = BuildUsersApi(orgId, AppResult<Recuria.Client.UserSummaryDtoPagedResult>.Ok(
+                new Recuria.Client.UserSummaryDtoPagedResult
+                { 
+                    Items = Array.Empty<Recuria.Client.UserSummaryDto>(),
+                    TotalCount = 0,
+                    Page = 1,
+                    PageSize = 10
+                }));
 
+            RegisterUsersPageServices(orgId, usersApi.Object);
+
+            var cut = RenderComponent<Users>();
+
+            cut.WaitForAssertion(() => cut.Markup.Should().Contain("No users found."));
+
+        }
     }
 }
