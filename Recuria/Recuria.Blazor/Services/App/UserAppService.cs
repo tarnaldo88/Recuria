@@ -7,7 +7,6 @@ namespace Recuria.Blazor.Services.App
     public interface IUserAppService
     {
         Task<AppResult> AddAsync(Guid orgId, Recuria.Client.AddUserRequest request, bool notifySuccess = true);
-        Task<AppResult<ICollection<Recuria.Client.UserSummaryDto>>> GetAllAsync(Guid orgId, bool notifyError = true);
         Task<AppResult> ChangeRoleAsync(Guid orgId, Guid userId, Recuria.Client.ChangeUserRoleRequest request, bool notifySuccess = true);
         Task<AppResult> RemoveAsync(Guid orgId, Guid userId, bool notifySuccess = true);
 
@@ -47,20 +46,6 @@ namespace Recuria.Blazor.Services.App
             {
                 return _runner.Fail(ex, "Unable to add user", notifyError: true);
             }
-        }
-
-        public async Task<AppResult<ICollection<Recuria.Client.UserSummaryDto>>> GetAllAsync(Guid orgId, bool notifyError = true)
-        {
-            var result = await _runner.RunAsync(
-                () => _api.UsersGETAsync(orgId, null, null, null, null, null),
-                errorPrefix: "Unable to load users",
-                notifyError: notifyError);
-
-            if (!result.Success || result.Data is null)
-                return AppResult<ICollection<Recuria.Client.UserSummaryDto>>.Fail(result.Error ?? "Unable to load users");
-
-            return AppResult<ICollection<Recuria.Client.UserSummaryDto>>.Ok(
-                result.Data.Items ?? Array.Empty<Recuria.Client.UserSummaryDto>());
         }
 
         public async Task<AppResult> ChangeRoleAsync(Guid orgId, Guid userId, Recuria.Client.ChangeUserRoleRequest request, bool notifySuccess = true)
