@@ -49,6 +49,10 @@ using System.Text.Json;
 using System.Threading.RateLimiting;
 using Microsoft.OpenApi.Models;
 using Recuria.Api.Swagger;
+using Microsoft.AspNetCore.HttpOverrides;
+using System.IO.Compression;
+using Microsoft.AspNetCore.ResponseCompression;
+using Recuria.Api.Health;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,6 +63,13 @@ builder.WebHost.ConfigureKestrel(options =>
     options.Limits.MaxRequestBodySize = 10 * 1024 * 1024; // 10 MB
     options.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(15);
     options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(2);
+});
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
 });
 
 builder.Host.UseSerilog((ctx, lc) =>
@@ -125,7 +136,16 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
 });
+builder.Services.Configure<BrotliCompressionProviderOptions>(o => o.Level = CompressionLevel.Fastest);
+builder.Services.Configure<GzipCompressionProviderOptions>(o => o.Level = CompressionLevel.Fastest);
 
 builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
 {
