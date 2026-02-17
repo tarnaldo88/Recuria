@@ -1,62 +1,106 @@
 @page "/register"
-@inject IDialogService DialogService
-@using System.Globalization
-@using Recuria.Client
 @inject Recuria.Blazor.Services.App.IAuthAppService AuthApi
 @inject Recuria.Blazor.Services.AuthState Auth
 @inject NavigationManager Nav
 
 <PageTitle>Create Account</PageTitle>
 
-<MudStack Spacing="3" Style="max-width:560px;">
-    <MudText Typo="Typo.h4">Create Organization</MudText>
-    <MudText Typo="Typo.body2">Input your organization name, email, and password.</MudText>
+<MudStack Spacing="3" Style="max-width:620px;">
+    <MudText Typo="Typo.h4">Create Account</MudText>
+    <MudText Typo="Typo.body2">Create a new organization and start on a trial subscription.</MudText>
 
-    @if(string.IsNullOrWhiteSpace(_validationMessage))
+    @if (!string.IsNullOrWhiteSpace(_validationMessage))
     {
-        <MudAlert Severity="Severity.Warning" Dense="true">@_validationMessage</MudAlert>
+        <MudAlert Severity="Severity.Error" Dense="true">@_validationMessage</MudAlert>
     }
-    else
-    {
-        <MudPaper Class="pa-4">
-            <MudStack Spacing="2">
-                <MudTextField @bind-Value="_organizationName" Label="Organization Name" Variant="Variant.Outlined" />
-                <MudTextField @bind-Value="_email" Label="Email" Variant="Variant.Outlined" />
-                <MudTextField @bind-Value="_password" Label="Password" InputType="InputType.Password" Variant="Variant.Outlined" />
-                <MudSelect T="Recuria.Client.PlanType"
-                           Label="Select Plan"
-                           Variant="Variant.Outlined"
-                           Dense="true"
-                           @bind-Value="_selectedPlan">
 
-                    <MudSelectItem Value="Recuria.Client.PlanType.Free">Free</MudSelectItem>
-                    <MudSelectItem Value="Recuria.Client.PlanType.Pro">Pro</MudSelectItem>
-                    <MudSelectItem Value="Recuria.Client.PlanType.Enterprise">Enterprise</MudSelectItem>
-                </MudSelect>
+    <MudPaper Class="pa-4">
+        <MudStack Spacing="2">
+            <MudTextField @bind-Value="_organizationName" Label="Organization Name" Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="_ownerName" Label="Your Name" Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="_email" Label="Email" Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="_password" Label="Password" InputType="InputType.Password" Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="_confirmPassword" Label="Confirm Password" InputType="InputType.Password" Variant="Variant.Outlined" />
+
+            <MudStack Row="true" Spacing="2">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_busy" OnClick="CreateAccount">
+                    @(_busy ? "Creating..." : "Create Account")
+                </MudButton>
+                <MudButton Variant="Variant.Text" Color="Color.Secondary" Href="/login">
+                    Back To Login
+                </MudButton>
             </MudStack>
-        </MudPaper>
-    }
-
+        </MudStack>
+    </MudPaper>
 </MudStack>
 
 @code {
-    [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
-
     private string _organizationName = "";
+    private string _ownerName = "";
     private string _email = "";
     private string _password = "";
-    private Recuria.Client.PlanType _selectedPlan = Recuria.Client.PlanType.Free;
-    private bool _busy;
+    private string _confirmPassword = "";
     private string? _validationMessage;
+    private bool _busy;
 
-    private static string NormalizeReturnUrl(string? returnUrl)
+    protected override async Task OnInitializedAsync()
     {
-        if (string.IsNullOrWhiteSpace(returnUrl))
-            return "/dashboard";
+        if (await Auth.IsAuthenticatedAsync())
+            Nav.NavigateTo("/dashboard", forceLoad: false);
+    }
 
-        if (!returnUrl.StartsWith("/", StringComparison.Ordinal) || returnUrl.StartsWith("//", StringComparison.Ordinal))
-            return "/dashboard";
+    private async Task CreateAccount()
+    {
+        _validationMessage = null;
 
-        return returnUrl;
+        if (string.IsNullOrWhiteSpace(_organizationName) ||
+            string.IsNullOrWhiteSpace(_ownerName) ||
+            string.IsNullOrWhiteSpace(_email) ||
+            string.IsNullOrWhiteSpace(_password))
+        {
+            _validationMessage = "Organization name, name, email, and password are required.";
+            return;
+        }
+
+        if (!System.Net.Mail.MailAddress.TryCreate(_email, out _))
+        {
+            _validationMessage = "Enter a valid email address.";
+            return;
+        }
+
+        if (_password.Length < 8)
+        {
+            _validationMessage = "Password must be at least 8 characters.";
+            return;
+        }
+
+        if (!string.Equals(_password, _confirmPassword, StringComparison.Ordinal))
+        {
+            _validationMessage = "Passwords do not match.";
+            return;
+        }
+
+        _busy = true;
+
+        try
+        {
+            var result = await AuthApi.RegisterAsync(new Recuria.Client.RegisterRequest
+            {
+                OrganizationName = _organizationName.Trim(),
+                OwnerName = _ownerName.Trim(),
+                Email = _email.Trim(),
+                Password = _password
+            });
+
+            if (!result.Success || result.Data is null)
+                return;
+
+            await Auth.SetAuthAsync(result.Data.AccessToken!, result.Data.OrganizationId.ToString());
+            Nav.NavigateTo("/dashboard", forceLoad: false);
+        }
+        finally
+        {
+            _busy = false;
+        }
     }
 }
