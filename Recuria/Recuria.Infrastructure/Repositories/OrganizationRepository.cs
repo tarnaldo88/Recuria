@@ -34,10 +34,11 @@ namespace Recuria.Infrastructure.Repositories
                 return null;
 
             var normalized = name.Trim();
+            var lower = normalized.ToLower();
             return await _context.Organizations
                 .Include(o => o.Users)
                 .Include(o => o.Subscriptions)
-                .FirstOrDefaultAsync(o => o.Name == normalized, ct);
+                .FirstOrDefaultAsync(o => o.Name.ToLower() == lower, ct);
         }
 
         public async Task AddAsync(Organization organization)
