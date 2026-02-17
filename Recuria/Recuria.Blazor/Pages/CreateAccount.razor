@@ -6,8 +6,8 @@
 <PageTitle>Create Account</PageTitle>
 
 <MudStack Spacing="3" Style="max-width:560px;">
-    <MudText Typo="Typo.h4">Sign In</MudText>
-    <MudText Typo="Typo.body2">Use your organization name, email, and password.</MudText>
+    <MudText Typo="Typo.h4">Create Organization</MudText>
+    <MudText Typo="Typo.body2">Input your organization name, email, and password.</MudText>
 
     @if(string.IsNullOrWhiteSpace(_validationMessage))
     {
@@ -15,7 +15,13 @@
     }
     else
     {
-        
+        <MudPaper Class="pa-4">
+            <MudStack Spacing="2">
+                <MudTextField @bind-Value="_organizationName" Label="Organization Name" Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_email" Label="Email" Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_password" Label="Password" InputType="InputType.Password" Variant="Variant.Outlined" />
+            </MudStack>
+        </MudPaper>
     }
 
 </MudStack>
