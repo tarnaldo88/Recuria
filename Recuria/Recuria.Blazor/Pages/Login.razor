@@ -7,7 +7,7 @@
 
 <MudStack Spacing="3" Style="max-width:560px;">
     <MudText Typo="Typo.h4">Sign In</MudText>
-    <MudText Typo="Typo.body2">Use your organization ID, email, and password.</MudText>
+    <MudText Typo="Typo.body2">Use your organization name, email, and password.</MudText>
 
     @if (!string.IsNullOrWhiteSpace(_validationMessage))
     {
@@ -16,7 +16,7 @@
 
     <MudPaper Class="pa-4">
         <MudStack Spacing="2">
-            <MudTextField @bind-Value="_organizationIdText" Label="Organization ID" Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="_organizationName" Label="Organization Name" Variant="Variant.Outlined" />
             <MudTextField @bind-Value="_email" Label="Email" Variant="Variant.Outlined" />
             <MudTextField @bind-Value="_password" Label="Password" InputType="InputType.Password" Variant="Variant.Outlined" />
 
@@ -30,7 +30,7 @@
 @code {
     [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
 
-    private string _organizationIdText = "";
+    private string _organizationName = "";
     private string _email = "";
     private string _password = "";
     private bool _busy;
@@ -46,15 +46,15 @@
     {
         _validationMessage = null;
 
-        if (!Guid.TryParse(_organizationIdText, out var organizationId))
-        {
-            _validationMessage = "Organization ID must be a valid GUID.";
-            return;
-        }
-
         if (string.IsNullOrWhiteSpace(_email) || string.IsNullOrWhiteSpace(_password))
         {
             _validationMessage = "Email and password are required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_organizationName))
+        {
+            _validationMessage = "Organization name is required.";
             return;
         }
 
@@ -64,7 +64,8 @@
         {
             var result = await AuthApi.LoginAsync(new Recuria.Client.LoginRequest
             {
-                OrganizationId = organizationId,
+                OrganizationId = Guid.Empty, // Backward compatibility; API resolves by OrganizationName first.
+                OrganizationName = _organizationName.Trim(),
                 Email = _email.Trim(),
                 Password = _password
             });
