@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  recuria-api:
+    build:
+      context: .
+      dockerfile: Recuria/Recuria.Api/Dockerfile
+    container_name: recuria-api
+    ports:
+      - "5132:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: ${DB_CONN}
+      Jwt__Issuer: Recuria
+      Jwt__Audience: Recuria.Api
+      Jwt__SigningKey: ${JWT_SIGNING_KEY}
+      Cors__AllowedOrigins__0: https://app.recuria.com
+      SecurityHeaders__ContentSecurityPolicy: "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+      SecurityHeaders__PermissionsPolicy: "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
+      Idempotency__InvoiceCreateTtlHours: "24"
