@@ -8,7 +8,7 @@
 <MudStack Spacing="3">
     <MudText Class="bootstrap-title" Typo="Typo.h4">Bootstrap</MudText>
     <MudText Typo="Typo.body2" Color="Color.Secondary">
-        Create a tenant and seed your first owner account.
+        Create a tenant and seed your first owner account. Use these credentials on the Login page.
     </MudText>
 
     @if (!string.IsNullOrEmpty(_validationMessage))
@@ -42,6 +42,14 @@
                               InputType="InputType.Email"
                               Required="true" />
             </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="_ownerPassword"
+                              Label="Owner Password"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              InputType="InputType.Password"
+                              Required="true" />
+            </MudItem>
             <MudItem xs="12" Class="bootstrap-actions">
                 <MudStack Row="true" Spacing="2">
                     <MudButton Variant="Variant.Filled"
@@ -62,15 +70,44 @@
             </MudItem>
         </MudGrid>
     </MudPaper>
-      
+
+    @if (_lastBootstrap is not null)
+    {
+        <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #C7E7D6; max-width: 760px;">
+            <MudText Typo="Typo.h6">Login Helper</MudText>
+            <MudText Typo="Typo.body2"><b>Organization Name:</b> @_lastBootstrap.OrganizationName</MudText>
+            <MudText Typo="Typo.body2"><b>Organization ID:</b> @_lastBootstrap.OrganizationId</MudText>
+            <MudText Typo="Typo.body2"><b>Email:</b> @_lastBootstrap.Email</MudText>
+            <MudText Typo="Typo.body2"><b>Password:</b> @_lastBootstrap.Password</MudText>
+
+            <MudStack Row="true" Spacing="2" Class="mt-3">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => Nav.NavigateTo("/login"))">
+                    Go To Login
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ContinueAsSeededOwner">
+                    Continue As Seeded Owner
+                </MudButton>
+            </MudStack>
+        </MudPaper>
+    }
+
 </MudStack>
 
 @code {
+    private sealed record BootstrapLoginHelper(
+        string OrganizationName,
+        string OrganizationId,
+        string Email,
+        string Password,
+        string Token);
+
     private string _orgName = "Acme Inc";
     private string _email = "owner@recuria.local";
     private string _ownerName = "Owner One";
+    private string _ownerPassword = "P@ssword123!";
     private string? _validationMessage;
     private bool _submitting;
+    private BootstrapLoginHelper? _lastBootstrap;
 
     private async Task RunBootstrap()
     {
@@ -83,9 +120,16 @@
 
         if (string.IsNullOrWhiteSpace(_orgName) ||
             string.IsNullOrWhiteSpace(_ownerName) ||
-            string.IsNullOrWhiteSpace(_email))
+            string.IsNullOrWhiteSpace(_email) ||
+            string.IsNullOrWhiteSpace(_ownerPassword))
         {
-            _validationMessage = "Organization name, owner name, and email are required.";
+            _validationMessage = "Organization name, owner name, email, and password are required.";
+            return;
+        }
+
+        if (_ownerPassword.Length < 8)
+        {
+            _validationMessage = "Password must be at least 8 characters.";
             return;
         }
 
@@ -103,7 +147,8 @@
             {
                 OrganizationName = _orgName.Trim(),
                 OwnerEmail = _email.Trim(),
-                OwnerName = _ownerName.Trim()
+                OwnerName = _ownerName.Trim(),
+                OwnerPassword = _ownerPassword
             });
 
             if (!result.Success || result.Data is null)
@@ -116,14 +161,26 @@
                 _validationMessage = "Bootstrap failed: missing token or org id.";
                 return;
             }
-
-            await Auth.SetAuthAsync(result.Data.Token, result.Data.OrganizationId.ToString());
-            Nav.NavigateTo("/dashboard");
+            _lastBootstrap = new BootstrapLoginHelper(
+                _orgName.Trim(),
+                result.Data.OrganizationId.ToString(),
+                _email.Trim(),
+                _ownerPassword,
+                result.Data.Token);
         }
         finally
         {
             _submitting = false;
         }
+    }
+
+    private async Task ContinueAsSeededOwner()
+    {
+        if (_lastBootstrap is null)
+            return;
+
+        await Auth.SetAuthAsync(_lastBootstrap.Token, _lastBootstrap.OrganizationId);
+        Nav.NavigateTo("/dashboard");
     }
 }
 
