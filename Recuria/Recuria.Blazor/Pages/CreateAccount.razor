@@ -1,4 +1,7 @@
 @page "/createAccount"
+@inject IDialogService DialogService
+@using System.Globalization
+@using Recuria.Client
 @inject Recuria.Blazor.Services.App.IAuthAppService AuthApi
 @inject Recuria.Blazor.Services.AuthState Auth
 @inject NavigationManager Nav
@@ -20,6 +23,16 @@
                 <MudTextField @bind-Value="_organizationName" Label="Organization Name" Variant="Variant.Outlined" />
                 <MudTextField @bind-Value="_email" Label="Email" Variant="Variant.Outlined" />
                 <MudTextField @bind-Value="_password" Label="Password" InputType="InputType.Password" Variant="Variant.Outlined" />
+                <MudSelect T="Recuria.Client.PlanType"
+                           Label="Select Plan"
+                           Variant="Variant.Outlined"
+                           Dense="true"
+                           @bind-Value="_selectedPlan">
+
+                    <MudSelectItem Value="Recuria.Client.PlanType.Free">Free</MudSelectItem>
+                    <MudSelectItem Value="Recuria.Client.PlanType.Pro">Pro</MudSelectItem>
+                    <MudSelectItem Value="Recuria.Client.PlanType.Enterprise">Enterprise</MudSelectItem>
+                </MudSelect>
             </MudStack>
         </MudPaper>
     }
@@ -32,6 +45,9 @@
     private string _organizationName = "";
     private string _email = "";
     private string _password = "";
+    private Recuria.Client.PlanType _selectedPlan = Recuria.Client.PlanType.Free;
     private bool _busy;
     private string? _validationMessage;
+
+
 }
