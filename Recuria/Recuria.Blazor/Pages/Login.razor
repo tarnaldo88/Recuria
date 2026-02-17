@@ -22,8 +22,8 @@
 
             <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_busy" OnClick="SignIn">
                 @(_busy ? "Signing in..." : "Sign In")
-            </MudButton>   
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_busy" OnClick="Nav.NavigateTo(register)" >
+            </MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Href="/register">
                 Create Account
             </MudButton>
         </MudStack>
