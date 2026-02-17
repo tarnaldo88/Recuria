@@ -49,5 +49,14 @@
     private bool _busy;
     private string? _validationMessage;
 
+    private static string NormalizeReturnUrl(string? returnUrl)
+    {
+        if (string.IsNullOrWhiteSpace(returnUrl))
+            return "/dashboard";
 
+        if (!returnUrl.StartsWith("/", StringComparison.Ordinal) || returnUrl.StartsWith("//", StringComparison.Ordinal))
+            return "/dashboard";
+
+        return returnUrl;
+    }
 }
