@@ -434,10 +434,13 @@ var app = builder.Build();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ErrorHandlingMiddleware>();
+app.UseSerilogRequestLogging();
+app.UseResponseCompression();
+app.UseForwardedHeaders();
 
 if (!app.Environment.IsDevelopment())
 {
-    // app.UseHsts();
+    app.UseHsts();
     app.UseHttpsRedirection();
 }
 
