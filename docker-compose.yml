@@ -11,6 +11,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
+      AllowedHosts: "api.recuria.com;localhost;127.0.0.1"
       ConnectionStrings__DefaultConnection: ${DB_CONN}
       Jwt__Issuer: Recuria
       Jwt__Audience: Recuria.Api
@@ -19,3 +20,4 @@ services:
       SecurityHeaders__ContentSecurityPolicy: "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
       SecurityHeaders__PermissionsPolicy: "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
       Idempotency__InvoiceCreateTtlHours: "24"
+      
