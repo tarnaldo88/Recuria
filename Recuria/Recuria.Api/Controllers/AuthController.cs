@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Recuria.Api.Auth;
 using Recuria.Api.Configuration;
+using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;
+using Recuria.Application.Requests;
 using System.Security.Claims;
 using System.ComponentModel.DataAnnotations;
 
@@ -15,6 +17,7 @@ namespace Recuria.Api.Controllers
     {
         private readonly IUserRepository _users;
         private readonly IOrganizationRepository _organizations;
+        private readonly IOrganizationService _organizationService;
         private readonly IUnitOfWork _uow;
         private readonly ITokenService _tokens;
         private readonly JwtOptions _jwt;
@@ -22,12 +25,14 @@ namespace Recuria.Api.Controllers
         public AuthController(
             IUserRepository users,
             IOrganizationRepository organizations,
+            IOrganizationService organizationService,
             IUnitOfWork uow,
             ITokenService tokens,
             Microsoft.Extensions.Options.IOptions<JwtOptions> jwt)
         {
             _users = users;
             _organizations = organizations;
+            _organizationService = organizationService;
             _uow = uow;
             _tokens = tokens;
             _jwt = jwt.Value;
@@ -58,6 +63,26 @@ namespace Recuria.Api.Controllers
             string Role,
             string Email,
             string Name);
+
+        public sealed class RegisterRequest
+        {
+            [Required]
+            [StringLength(200, MinimumLength = 2)]
+            public string OrganizationName { get; init; } = string.Empty;
+
+            [Required]
+            [StringLength(120, MinimumLength = 2)]
+            public string OwnerName { get; init; } = string.Empty;
+
+            [Required]
+            [EmailAddress]
+            [StringLength(256)]
+            public string Email { get; init; } = string.Empty;
+
+            [Required]
+            [StringLength(256, MinimumLength = 8)]
+            public string Password { get; init; } = string.Empty;
+        }
 
         [HttpPost("login")]
         [AllowAnonymous]
@@ -101,6 +126,46 @@ namespace Recuria.Api.Controllers
                 user.Role.ToString(),
                 user.Email,
                 user.Name));
+        }
+
+        [HttpPost("register")]
+        [AllowAnonymous]
+        [EnableRateLimiting("auth-login")]
+        [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request, CancellationToken ct)
+        {
+            var orgName = request.OrganizationName.Trim();
+            var existing = await _organizations.GetByNameAsync(orgName, ct);
+            if (existing is not null)
+                return Conflict("Organization name is already taken.");
+
+            var owner = new Domain.User(request.Email.Trim(), request.OwnerName.Trim());
+            owner.SetPassword(request.Password);
+
+            await _users.AddAsync(owner, ct);
+            await _uow.CommitAsync(ct);
+
+            var orgId = await _organizationService.CreateOrganizationAsync(
+                new CreateOrganizationRequest
+                {
+                    Name = orgName,
+                    OwnerId = owner.Id
+                },
+                ct);
+
+            var accessToken = _tokens.CreateAccessToken(owner);
+            var expiresAt = DateTime.UtcNow.AddMinutes(_jwt.AccessTokenMinutes);
+
+            return Ok(new AuthResponse(
+                accessToken,
+                expiresAt,
+                owner.Id,
+                orgId,
+                owner.Role.ToString(),
+                owner.Email,
+                owner.Name));
         }
 
         [HttpPost("refresh")]
