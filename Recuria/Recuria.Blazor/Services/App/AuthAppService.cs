@@ -3,6 +3,7 @@ namespace Recuria.Blazor.Services.App
     public interface IAuthAppService
     {
         Task<AppResult<Recuria.Client.AuthResponse>> LoginAsync(Recuria.Client.LoginRequest request);
+        Task<AppResult<Recuria.Client.AuthResponse>> RegisterAsync(Recuria.Client.RegisterRequest request);
         Task<AppResult<Recuria.Client.WhoAmIResponse>> WhoAmIAsync(bool notifyError = true);
         Task<AppResult> LogoutAsync(bool notifySuccess = false, bool notifyError = false);
     }
@@ -23,6 +24,14 @@ namespace Recuria.Blazor.Services.App
             return _runner.RunAsync(
                 () => _api.LoginAsync(request),
                 errorPrefix: "Sign in failed",
+                notifyError: true);
+        }
+
+        public Task<AppResult<Recuria.Client.AuthResponse>> RegisterAsync(Recuria.Client.RegisterRequest request)
+        {
+            return _runner.RunAsync(
+                () => _api.RegisterAsync(request),
+                errorPrefix: "Create account failed",
                 notifyError: true);
         }
 
