@@ -533,7 +533,7 @@ app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthC
 
 app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
 {
-    Predicate = check => check.Name == "db"
+    Predicate = check => check.Name is "db" or "migrations"
 }).AllowAnonymous();
 
 app.UseOpenTelemetryPrometheusScrapingEndpoint();
