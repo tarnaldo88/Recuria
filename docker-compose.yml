@@ -1,23 +1,44 @@
-version: "3.9"
-
 services:
+  sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: recuria-sql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "YourStrong!Passw0rd"
+    ports:
+      - "14333:1433"
+    volumes:
+      - recuria-sql-data:/var/opt/mssql
+    healthcheck:
+      test: [ "CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "YourStrong!Passw0rd", "-Q", "SELECT 1", "-C" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
   recuria-api:
     build:
       context: .
       dockerfile: Recuria/Recuria.Api/Dockerfile
     container_name: recuria-api
+    depends_on:
+      sql:
+        condition: service_healthy
     ports:
       - "5132:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
       AllowedHosts: "api.recuria.com;localhost;127.0.0.1"
-      ConnectionStrings__DefaultConnection: ${DB_CONN}
+      ConnectionStrings__DefaultConnection: "Server=sql,1433;Database=RecuriaDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;"
       Jwt__Issuer: Recuria
       Jwt__Audience: Recuria.Api
-      Jwt__SigningKey: ${JWT_SIGNING_KEY}
+      Jwt__SigningKey: "${JWT_SIGNING_KEY}"
       Cors__AllowedOrigins__0: https://app.recuria.com
+      Cors__AllowedOrigins__1: http://localhost:5091
+      Cors__AllowedOrigins__2: https://localhost:7289
       SecurityHeaders__ContentSecurityPolicy: "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
       SecurityHeaders__PermissionsPolicy: "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
       Idempotency__InvoiceCreateTtlHours: "24"
-      
+
+volumes:
+  recuria-sql-data:

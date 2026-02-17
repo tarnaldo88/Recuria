@@ -272,7 +272,14 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddDbContext<RecuriaDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        sql => sql.CommandTimeout(10)));
+        sql =>
+        {
+            sql.CommandTimeout(10);
+            sql.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorNumbersToAdd: null);
+        }));
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

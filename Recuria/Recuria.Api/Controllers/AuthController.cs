@@ -155,17 +155,22 @@ namespace Recuria.Api.Controllers
                 },
                 ct);
 
-            var accessToken = _tokens.CreateAccessToken(owner);
+            // IMPORTANT: reload so OrganizationId/Role are populated correctly
+            var reloadedOwner = await _users.GetByIdAsync(owner.Id, ct);
+            if (reloadedOwner is null || reloadedOwner.OrganizationId is null)
+                return Problem("Failed to finalize account provisioning.", statusCode: 500);
+
+            var accessToken = _tokens.CreateAccessToken(reloadedOwner);
             var expiresAt = DateTime.UtcNow.AddMinutes(_jwt.AccessTokenMinutes);
 
             return Ok(new AuthResponse(
                 accessToken,
                 expiresAt,
-                owner.Id,
-                orgId,
-                owner.Role.ToString(),
-                owner.Email,
-                owner.Name));
+                reloadedOwner.Id,
+                reloadedOwner.OrganizationId.Value,
+                reloadedOwner.Role.ToString(),
+                reloadedOwner.Email,
+                reloadedOwner.Name));
         }
 
         [HttpPost("refresh")]

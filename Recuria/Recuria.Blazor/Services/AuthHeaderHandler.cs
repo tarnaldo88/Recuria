@@ -18,12 +18,19 @@ namespace Recuria.Blazor.Services
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            var path = request.RequestUri?.AbsolutePath ?? string.Empty;
+            var isAuthEndpoint =
+                path.Contains("/api/auth/login", StringComparison.OrdinalIgnoreCase) ||
+                path.Contains("/api/auth/register", StringComparison.OrdinalIgnoreCase) ||
+                path.Contains("/api/auth/refresh", StringComparison.OrdinalIgnoreCase);
+
             var token = await _auth.GetTokenAsync();
-            if (!string.IsNullOrWhiteSpace(token) &&
-                _auth.ShouldRefresh(token) &&
-                !request.RequestUri!.AbsolutePath.Contains("/api/auth/refresh", StringComparison.OrdinalIgnoreCase))
+            var hasToken = !string.IsNullOrWhiteSpace(token);
+
+            // Only attempt refresh when we actually have a token and we're not already calling auth endpoints.
+            if (hasToken && _auth.ShouldRefresh(token!) && !isAuthEndpoint)
             {
-                token = await TryRefreshTokenAsync(token, request.RequestUri!, cancellationToken) ?? token;
+                token = await TryRefreshTokenAsync(token!, request.RequestUri!, cancellationToken) ?? token;
             }
 
             if (!string.IsNullOrWhiteSpace(token))
@@ -32,7 +39,9 @@ namespace Recuria.Blazor.Services
             }
 
             var response = await base.SendAsync(request, cancellationToken);
-            if (response.StatusCode == HttpStatusCode.Unauthorized)
+
+            // Only clear + redirect on 401 for protected API calls when we had a token.
+            if (response.StatusCode == HttpStatusCode.Unauthorized && hasToken && !isAuthEndpoint)
             {
                 await _auth.ClearAsync();
                 RedirectToLogin();
