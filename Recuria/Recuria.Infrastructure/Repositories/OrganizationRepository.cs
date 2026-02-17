@@ -28,6 +28,18 @@ namespace Recuria.Infrastructure.Repositories
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 
+        public async Task<Organization?> GetByNameAsync(string name, CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return null;
+
+            var normalized = name.Trim();
+            return await _context.Organizations
+                .Include(o => o.Users)
+                .Include(o => o.Subscriptions)
+                .FirstOrDefaultAsync(o => o.Name == normalized, ct);
+        }
+
         public async Task AddAsync(Organization organization)
         {
             _context.Organizations.Add(organization);

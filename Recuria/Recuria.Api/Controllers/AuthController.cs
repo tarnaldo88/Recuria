@@ -14,17 +14,20 @@ namespace Recuria.Api.Controllers
     public sealed class AuthController : ControllerBase
     {
         private readonly IUserRepository _users;
+        private readonly IOrganizationRepository _organizations;
         private readonly IUnitOfWork _uow;
         private readonly ITokenService _tokens;
         private readonly JwtOptions _jwt;
 
         public AuthController(
             IUserRepository users,
+            IOrganizationRepository organizations,
             IUnitOfWork uow,
             ITokenService tokens,
             Microsoft.Extensions.Options.IOptions<JwtOptions> jwt)
         {
             _users = users;
+            _organizations = organizations;
             _uow = uow;
             _tokens = tokens;
             _jwt = jwt.Value;
@@ -32,8 +35,10 @@ namespace Recuria.Api.Controllers
 
         public sealed class LoginRequest
         {
-            [Required]
-            public Guid OrganizationId { get; init; }
+            public Guid? OrganizationId { get; init; }
+
+            [StringLength(200)]
+            public string? OrganizationName { get; init; }
 
             [Required]
             [EmailAddress]
@@ -62,11 +67,26 @@ namespace Recuria.Api.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request, CancellationToken ct)
         {
-            if (request.OrganizationId == Guid.Empty)
-                return BadRequest("OrganizationId is required.");
+            Guid organizationId;
+            if (!string.IsNullOrWhiteSpace(request.OrganizationName))
+            {
+                var organization = await _organizations.GetByNameAsync(request.OrganizationName, ct);
+                if (organization is null)
+                    return Unauthorized();
+
+                organizationId = organization.Id;
+            }
+            else if (request.OrganizationId.HasValue && request.OrganizationId.Value != Guid.Empty)
+            {
+                organizationId = request.OrganizationId.Value;
+            }
+            else
+            {
+                return BadRequest("OrganizationName (or OrganizationId) is required.");
+            }
 
             var normalizedEmail = request.Email.Trim().ToLowerInvariant();
-            var user = await _users.GetByEmailInOrganizationAsync(request.OrganizationId, normalizedEmail, ct);
+            var user = await _users.GetByEmailInOrganizationAsync(organizationId, normalizedEmail, ct);
             if (user is null || !user.VerifyPassword(request.Password))
                 return Unauthorized();
 
