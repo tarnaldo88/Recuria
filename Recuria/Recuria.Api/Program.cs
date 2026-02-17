@@ -176,7 +176,8 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 });
 
 builder.Services.AddHealthChecks()
-    .AddDbContextCheck<RecuriaDbContext>("db", failureStatus: HealthStatus.Unhealthy);
+    .AddDbContextCheck<RecuriaDbContext>("db", failureStatus: HealthStatus.Unhealthy)
+    .AddCheck<PendingMigrationsHealthCheck>("migrations", failureStatus: HealthStatus.Unhealthy);
 
 builder.Services.AddSingleton<IAuditLogger, AuditLogger>();
 
