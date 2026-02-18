@@ -443,26 +443,35 @@ using (var scope = app.Services.CreateScope())
         .CreateLogger("StartupMigration");
     var db = scope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
 
-    try
+    // Integration tests use InMemory provider (non-relational)
+    if (!db.Database.IsRelational())
     {
-        var pending = await db.Database.GetPendingMigrationsAsync();
-        if (pending.Any())
-        {
-            logger.LogInformation("Applying {Count} pending migrations...", pending.Count());
-            await db.Database.MigrateAsync();
-            logger.LogInformation("Database migrations applied successfully.");
-        }
-        else
-        {
-            logger.LogInformation("No pending database migrations.");
-        }
+        logger.LogInformation("Skipping startup migrations for non-relational provider: {Provider}", db.Database.ProviderName);
     }
-    catch (Exception ex)
+    else
     {
-        logger.LogCritical(ex, "Database migration failed at startup.");
-        throw;
+        try
+        {
+            var pending = await db.Database.GetPendingMigrationsAsync();
+            if (pending.Any())
+            {
+                logger.LogInformation("Applying {Count} pending migrations...", pending.Count());
+                await db.Database.MigrateAsync();
+                logger.LogInformation("Database migrations applied successfully.");
+            }
+            else
+            {
+                logger.LogInformation("No pending database migrations.");
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical(ex, "Database migration failed at startup.");
+            throw;
+        }
     }
 }
+
 
 // Configure the HTTP request pipeline.
 
