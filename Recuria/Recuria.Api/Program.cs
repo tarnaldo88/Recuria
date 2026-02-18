@@ -437,6 +437,33 @@ builder.Services.AddOpenTelemetry()
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
+        .CreateLogger("StartupMigration");
+    var db = scope.ServiceProvider.GetRequiredService<RecuriaDbContext>();
+
+    try
+    {
+        var pending = await db.Database.GetPendingMigrationsAsync();
+        if (pending.Any())
+        {
+            logger.LogInformation("Applying {Count} pending migrations...", pending.Count());
+            await db.Database.MigrateAsync();
+            logger.LogInformation("Database migrations applied successfully.");
+        }
+        else
+        {
+            logger.LogInformation("No pending database migrations.");
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogCritical(ex, "Database migration failed at startup.");
+        throw;
+    }
+}
+
 // Configure the HTTP request pipeline.
 
 app.UseMiddleware<CorrelationIdMiddleware>();
