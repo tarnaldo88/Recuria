@@ -32,17 +32,22 @@ namespace Recuria.Infrastructure.Persistence
                 return;
             }
 
-            await using var tx = await _db.Database.BeginTransactionAsync(ct);
-            try
+            var strategy = _db.Database.CreateExecutionStrategy();
+
+            await strategy.ExecuteAsync(async () =>
             {
-                await CommitCoreAsync(ct);
-                await tx.CommitAsync(ct);
-            }
-            catch
-            {
-                try { await tx.RollbackAsync(ct); } catch { }
-                throw;
-            }
+                await using var tx = await _db.Database.BeginTransactionAsync(ct);
+                try
+                {
+                    await CommitCoreAsync(ct);
+                    await tx.CommitAsync(ct);
+                }
+                catch
+                {
+                    try { await tx.RollbackAsync(ct); } catch { }
+                    throw;
+                }
+            });
         }
 
         private async Task CommitCoreAsync(CancellationToken ct)
