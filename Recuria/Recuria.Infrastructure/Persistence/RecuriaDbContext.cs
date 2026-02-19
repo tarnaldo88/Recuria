@@ -27,6 +27,9 @@ namespace Recuria.Infrastructure.Persistence
         public DbSet<BillingAttempt> BillingAttempts => Set<BillingAttempt>();
         public DbSet<ProcessedEvent> ProcessedEvents => Set<ProcessedEvent>();
         public DbSet<ApiIdempotencyRecord> ApiIdempotencyRecords => Set<ApiIdempotencyRecord>();
+        public DbSet<StripeSubscriptionMap> StripeSubscriptionMaps => Set<StripeSubscriptionMap>();
+        public DbSet<StripeWebhookEvent> StripeWebhookEvents => Set<StripeWebhookEvent>();
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
