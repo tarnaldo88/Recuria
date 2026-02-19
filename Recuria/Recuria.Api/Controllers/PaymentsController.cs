@@ -20,6 +20,12 @@ namespace Recuria.Api.Controllers
             _stripe = stripe;
         }
 
+        public sealed class CreateCheckoutRequest
+        {
+            public string PriceId { get; init; } = string.Empty;
+            public int Quantity { get; init; } = 1;
+            public Guid OrganizationId {  get; init; } = Guid.Empty;
+        }
 
     }
 }
