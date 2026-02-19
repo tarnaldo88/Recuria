@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Recuria.Api.Configuration;
+using Recuria.Api.Payments;
 using Stripe;
 using Stripe.Checkout;
 using System.Runtime.InteropServices;
@@ -12,39 +13,44 @@ namespace Recuria.Api.Controllers
     [Route("api/payments")]
     public sealed class PaymentsController : ControllerBase
     {
-        private readonly SessionService _sessions;
         private readonly StripeOptions _stripe;
+        private readonly SessionService _sessions;
+        private readonly IStripeWebhookProcessor _processor;
 
-        public PaymentsController(SessionService sessions, StripeOptions stripe)
+        public PaymentsController(
+            IOptions<StripeOptions> stripe,
+            SessionService sessions,
+            IStripeWebhookProcessor processor)
         {
+            _stripe = stripe.Value;
             _sessions = sessions;
-            _stripe = stripe;
+            _processor = processor;
         }
 
-        public sealed class CreateCheckoutRequest
+        public sealed class CreateCheckoutSessionRequest
         {
+            public Guid OrganizationId { get; init; }
             public string PriceId { get; init; } = string.Empty;
             public int Quantity { get; init; } = 1;
-            public Guid OrganizationId {  get; init; } = Guid.Empty;
         }
 
         [HttpPost("checkout-session")]
         [Authorize(Policy = "MemberOrAbove")]
-        public async Task<ActionResult<Object>> CreateCheckoutSession([FromBody] CreateCheckoutRequest req, CancellationToken ct)
+        public async Task<ActionResult<object>> CreateCheckoutSession([FromBody] CreateCheckoutSessionRequest req, CancellationToken ct)
         {
             var options = new SessionCreateOptions
-            { 
+            {
                 Mode = "subscription",
-                SuccessUrl = _stripe.SuccessUrl + "?session_id={CHECKOUT_SESSION_ID",
+                SuccessUrl = _stripe.SuccessUrl + "?session_id={CHECKOUT_SESSION_ID}",
                 CancelUrl = _stripe.CancelUrl,
                 LineItems = new List<SessionLineItemOptions>
+            {
+                new()
                 {
-                    new()
-                    {
-                        Price = req.PriceId,
-                        Quantity = req.Quantity,
-                    }
-                },
+                    Price = req.PriceId,
+                    Quantity = req.Quantity
+                }
+            },
                 Metadata = new Dictionary<string, string>
                 {
                     ["org_id"] = req.OrganizationId.ToString()
@@ -52,7 +58,7 @@ namespace Recuria.Api.Controllers
             };
 
             var session = await _sessions.CreateAsync(options, cancellationToken: ct);
-            return Ok(new {sessionId = session.Id, url = session.Url});
+            return Ok(new { sessionId = session.Id, url = session.Url });
         }
 
         [HttpPost("webhook")]
@@ -60,44 +66,19 @@ namespace Recuria.Api.Controllers
         public async Task<IActionResult> Webhook(CancellationToken ct)
         {
             var json = await new StreamReader(Request.Body).ReadToEndAsync(ct);
-            var sig = Request.Headers["Stripe-Signature"];
-            Event stripeEvent;
+            var signature = Request.Headers["Stripe-Signature"];
 
+            Event stripeEvent;
             try
             {
-                stripeEvent = EventUtility.ConstructEvent(json, sig, _stripe.WebhookSecret);
+                stripeEvent = EventUtility.ConstructEvent(json, signature, _stripe.WebhookSecret);
             }
             catch
             {
                 return BadRequest();
             }
 
-            switch (stripeEvent.Type)
-            {
-                case "checkout.session.completed":
-                    // get session, org_id metadata, customer/subscription ids
-                    // create map + activate/upgrade local subscription
-                    break;
-
-                case "invoice.payment_succeeded":
-                    // resolve org by customer/sub id
-                    // mark invoice paid + ensure Active
-                    break;
-
-                case "invoice.payment_failed":
-                    // resolve org
-                    // set PastDue + trigger retry workflow
-                    break;
-
-                case "customer.subscription.updated":
-                    // sync plan + period + status
-                    break;
-
-                case "customer.subscription.deleted":
-                    // mark local subscription canceled
-                    break;
-            }
-
+            await _processor.ProcessAsync(stripeEvent, ct);
             return Ok();
         }
     }
