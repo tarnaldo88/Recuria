@@ -29,8 +29,7 @@ namespace Recuria.Infrastructure.Persistence
         public DbSet<ApiIdempotencyRecord> ApiIdempotencyRecords => Set<ApiIdempotencyRecord>();
         public DbSet<StripeSubscriptionMap> StripeSubscriptionMaps => Set<StripeSubscriptionMap>();
         public DbSet<StripeWebhookEvent> StripeWebhookEvents => Set<StripeWebhookEvent>();
-
-
+        public DbSet<StripeWebhookInboxMessage> StripeWebhookInboxMessages => Set<StripeWebhookInboxMessage>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

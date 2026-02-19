@@ -16,15 +16,19 @@ namespace Recuria.Api.Controllers
         private readonly StripeOptions _stripe;
         private readonly SessionService _sessions;
         private readonly IStripeWebhookProcessor _processor;
+        private readonly IStripeWebhookInbox _inbox;
+
 
         public PaymentsController(
             IOptions<StripeOptions> stripe,
             SessionService sessions,
-            IStripeWebhookProcessor processor)
+            IStripeWebhookProcessor processor,
+            IStripeWebhookInbox inbox)
         {
             _stripe = stripe.Value;
             _sessions = sessions;
             _processor = processor;
+            _inbox = inbox;
         }
 
         public sealed class CreateCheckoutSessionRequest
@@ -78,7 +82,7 @@ namespace Recuria.Api.Controllers
                 return BadRequest();
             }
 
-            await _processor.ProcessAsync(stripeEvent, ct);
+            await _inbox.EnqueueAsync(stripeEvent.Id, stripeEvent.Type, json, ct);
             return Ok();
         }
     }
