@@ -2,24 +2,28 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using OpenTelemetry.Exporter.Prometheus;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using Recuria.Api.Middleware;
 using Recuria.Api.Auth;
 using Recuria.Api.Configuration;
+using Recuria.Api.Health;
 using Recuria.Api.Logging;
-using Serilog;
-using Serilog.Events;
-using Serilog.Formatting.Compact;
+using Recuria.Api.Middleware;
+using Recuria.Api.Payments;
+using Recuria.Api.Swagger;
+using Recuria.Api.Payments;
 using Recuria.Application;
 using Recuria.Application.Contracts.Invoice.Validators;
 using Recuria.Application.Contracts.Organizations.Validators;
@@ -31,8 +35,8 @@ using Recuria.Application.Observability;
 using Recuria.Application.Subscriptions;
 using Recuria.Application.Validation;
 using Recuria.Domain.Abstractions;
-using Recuria.Domain.Events.Subscription;
 using Recuria.Domain.Enums;
+using Recuria.Domain.Events.Subscription;
 using Recuria.Infrastructure;
 using Recuria.Infrastructure.Idempotency;
 using Recuria.Infrastructure.Observability;
@@ -42,17 +46,17 @@ using Recuria.Infrastructure.Persistence.Locking;
 using Recuria.Infrastructure.Persistence.Queries;
 using Recuria.Infrastructure.Repositories;
 using Recuria.Infrastructure.Subscriptions;
-using System.Text.Json.Serialization;
-using System.Text;
-using System.Security.Claims;
-using System.Text.Json;
-using System.Threading.RateLimiting;
-using Microsoft.OpenApi.Models;
-using Recuria.Api.Swagger;
-using Microsoft.AspNetCore.HttpOverrides;
+using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Compact;
+using Stripe;
+using Stripe.Checkout;
 using System.IO.Compression;
-using Microsoft.AspNetCore.ResponseCompression;
-using Recuria.Api.Health;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -437,14 +441,17 @@ builder.Services.AddOpenTelemetry()
 builder.Services.AddOptions<StripeOptions>()
     .Bind(builder.Configuration.GetSection(StripeOptions.SectionName))
     .Validate(o => !string.IsNullOrWhiteSpace(o.SecretKey), "Stripe:SecretKey is required.")
+    .Validate(o => !string.IsNullOrWhiteSpace(o.WebhookSecret), "Stripe:WebhookSecret is required.")
     .ValidateOnStart();
 
 builder.Services.AddSingleton(sp =>
 {
     var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<StripeOptions>>().Value;
-    Stripe.StripeConfiguration.ApiKey = opts.SecretKey;
-    return new Stripe.Checkout.SessionService();
+    StripeConfiguration.ApiKey = opts.SecretKey;
+    return new SessionService();
 });
+
+builder.Services.AddScoped<IStripeWebhookProcessor, StripeWebhookProcessor>();
 
 
 
