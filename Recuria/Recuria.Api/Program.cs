@@ -388,14 +388,14 @@ builder.Services.AddValidatorsFromAssembly(typeof(AddUserRequestValidator).Assem
 builder.Services.AddScoped<ValidationBehavior>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
-builder.Services.AddScoped<IBillingService, BillingService>();
+builder.Services.AddScoped<IBillingService, Recuria.Application.BillingService>();
 builder.Services.AddScoped<IBillingRetryPolicy, ExponentialBackoffRetryPolicy>();
 builder.Services.AddScoped<ISubscriptionLifecycleOrchestrator, SubscriptionLifecycleOrchestrator>();
 builder.Services.AddScoped<SubscriptionLifecycleProcessor>();
 builder.Services.AddHostedService<SubscriptionLifecycleHostedService>();
 
-builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
-builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<ISubscriptionService, Recuria.Application.SubscriptionService>();
+builder.Services.AddScoped<IInvoiceService, Recuria.Application.InvoiceService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProcessedEventStore, EfProcessedEventStore>();
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
