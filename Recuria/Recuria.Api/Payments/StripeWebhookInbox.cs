@@ -74,6 +74,39 @@ namespace Recuria.Api.Payments
             _logger = logger;
         }
 
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                try
+                {
+                    using var scope = _scopeFactory.CreateScope();
+                    var inbox = scope.ServiceProvider.GetRequiredService<IStripeWebhookInbox>();
+                    var processor = scope.ServiceProvider.GetRequiredService<IStripeWebhookProcessor>();
+
+                    var batch = await inbox.GetPendingAsync(25, stoppingToken);
+                    foreach (var item in batch)
+                    {
+                        try
+                        {
+                            var stripeEvent = EventUtility.ParseEvent(item.Payload);
+                            await processor.ProcessAsync(stripeEvent, stoppingToken);
+                            await inbox.MarkProcessedAsync(item.Id, stoppingToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            await inbox.MarkFailedAsync(item.Id, ex.Message, stoppingToken);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Stripe webhook worker loop failed.");
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            }
+        }
     }
 
 }
