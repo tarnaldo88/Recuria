@@ -72,9 +72,30 @@ namespace Recuria.Api.Controllers
                 return BadRequest();
             }
 
-            if(stripeEvent.Type == "checkout.session.completed")
+            switch (stripeEvent.Type)
             {
-                //figure this out later
+                case "checkout.session.completed":
+                    // get session, org_id metadata, customer/subscription ids
+                    // create map + activate/upgrade local subscription
+                    break;
+
+                case "invoice.payment_succeeded":
+                    // resolve org by customer/sub id
+                    // mark invoice paid + ensure Active
+                    break;
+
+                case "invoice.payment_failed":
+                    // resolve org
+                    // set PastDue + trigger retry workflow
+                    break;
+
+                case "customer.subscription.updated":
+                    // sync plan + period + status
+                    break;
+
+                case "customer.subscription.deleted":
+                    // mark local subscription canceled
+                    break;
             }
 
             return Ok();
