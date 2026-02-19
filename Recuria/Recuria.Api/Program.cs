@@ -434,6 +434,19 @@ builder.Services.AddOpenTelemetry()
             .AddPrometheusExporter();
     });
 
+builder.Services.AddOptions<StripeOptions>()
+    .Bind(builder.Configuration.GetSection(StripeOptions.SectionName))
+    .Validate(o => !string.IsNullOrWhiteSpace(o.SecretKey), "Stripe:SecretKey is required.")
+    .ValidateOnStart();
+
+builder.Services.AddSingleton(sp =>
+{
+    var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<StripeOptions>>().Value;
+    Stripe.StripeConfiguration.ApiKey = opts.SecretKey;
+    return new Stripe.Checkout.SessionService();
+});
+
+
 
 var app = builder.Build();
 
