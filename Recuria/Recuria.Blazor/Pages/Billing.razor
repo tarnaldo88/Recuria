@@ -6,8 +6,21 @@
 @inject NavigationManager Nav
 
 <MudPaper Class="pa-4 d-flex flex-column gap-3">
+    <MudText Typo="Typo.h5">Billing</MudText>
+    <MudText Typo="Typo.body2">Start Stripe checkout for a subscription plan.</MudText>
 
-</MudPaper>
+    <MudTextField @bind-Value="_priceId" Label="Stripe Price ID" Variant="Variant.Outlined" />
+    <MudNumericField T="int" @bind-Value="_quantity" Label="Quantity" Variant="Variant.Outlined" Min="1" />
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@_busy" OnClick="StartCheckout">
+        @(_busy ? "Redirecting..." : "Start Checkout")
+    </MudButton>
+
+    @if(!string.IsNullOrWhiteSpace(_error))
+    {
+        <MudAlert Severity="Severity.Error">@_error</MudAlert>
+    }
+    </MudPaper>
 
 @code {
     private string _priceId = "";
