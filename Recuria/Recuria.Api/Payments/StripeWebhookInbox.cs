@@ -35,5 +35,23 @@ namespace Recuria.Api.Payments
             await _db.SaveChangesAsync(ct);
         }
 
+
+        public Task<List<StripeWebhookInboxMessage>> GetPendingAsync(int take, CancellationToken ct)
+        {
+            var now = DateTime.UtcNow;
+            return _db.StripeWebhookInboxMessages
+                .Where(x => x.ProcessedOnUtc == null && (x.NextAttemptOnUtc == null || x.NextAttemptOnUtc <= now))
+                .OrderBy(x => x.ReceivedOnUtc)
+                .Take(take)
+                .ToListAsync(ct);
+        }
+
+        public async Task MarkProcessedAsync(Guid id, CancellationToken ct)
+        {
+            var msg = await _db.StripeWebhookInboxMessages.SingleAsync(x => x.Id == id, ct);
+            msg.ProcessedOnUtc = DateTime.UtcNow;
+            msg.LastError = null;
+            await _db.SaveChangesAsync(ct);
+        }
     }
 }
