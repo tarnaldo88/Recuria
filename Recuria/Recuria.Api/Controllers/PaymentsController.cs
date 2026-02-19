@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Recuria.Api.Configuration;
 using Stripe;
 using Stripe.Checkout;
+using System.Runtime.InteropServices;
 
 namespace Recuria.Api.Controllers
 {
@@ -27,5 +28,32 @@ namespace Recuria.Api.Controllers
             public Guid OrganizationId {  get; init; } = Guid.Empty;
         }
 
+        [HttpPost("checkout-session")]
+        [Authorize(Policy = "MemberOrAbove")]
+        public async Task<ActionResult<Object>> CreateCheckoutSession([FromBody] CreateCheckoutRequest req, CancellationToken ct)
+        {
+            var options = new SessionCreateOptions
+            { 
+                Mode = "subscription",
+                SuccessUrl = _stripe.SuccessUrl + "?session_id={CHECKOUT_SESSION_ID",
+                CancelUrl = _stripe.CancelUrl,
+                LineItems = new List<SessionLineItemOptions>
+                {
+                    new()
+                    {
+                        Price = req.PriceId,
+                        Quantity = req.Quantity,
+                    }
+                },
+                Metadata = new Dictionary<string, string>
+                {
+                    ["org_id"] = req.OrganizationId.ToString()
+                }
+            };
+
+            var session = await _sessions.CreateAsync(options, cancellationToken: ct);
+            return Ok(new {sessionId = session.Id, url = session.Url});
+
+        }
     }
 }
