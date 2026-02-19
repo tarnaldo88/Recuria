@@ -10,5 +10,44 @@
 </MudPaper>
 
 @code {
+    private string _priceId = "";
+    private int _quantity = 1;
+    private bool _busy;
+    private string? _error;
 
+    private async Task StartCheckout()
+    {
+        _error = null;
+        _busy = true;
+
+        try
+        {
+            var ctx = await UserContext.GetAsync();
+
+            if (!ctx.IsAuthenticated || ctx.OrganizationId is null)
+            {
+                _error = "You must be signed in with an organization context.";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(_priceId))
+            {
+                _error = "Price ID is required.";
+                return;
+            }
+
+            var result = await Payments.CreateCheckoutUrlAsync(ctx.OrganizationId.Value, _priceId.Trim(), _quantity);
+            if (!result.Success || string.IsNullOrWhiteSpace(result.Data))
+            {
+                _error = result.Error ?? "Unable to create checkout session.";
+                return;
+            }
+
+            Nav.NavigateTo(result.Data, forceLoad: true);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
 }
