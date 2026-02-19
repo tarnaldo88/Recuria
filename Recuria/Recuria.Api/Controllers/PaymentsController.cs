@@ -53,7 +53,31 @@ namespace Recuria.Api.Controllers
 
             var session = await _sessions.CreateAsync(options, cancellationToken: ct);
             return Ok(new {sessionId = session.Id, url = session.Url});
+        }
 
+        [HttpPost("webhook")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Webhook(CancellationToken ct)
+        {
+            var json = await new StreamReader(Request.Body).ReadToEndAsync(ct);
+            var sig = Request.Headers["Stripe-Signature"];
+            Event stripeEvent;
+
+            try
+            {
+                stripeEvent = EventUtility.ConstructEvent(json, sig, _stripe.WebhookSecret);
+            }
+            catch
+            {
+                return BadRequest();
+            }
+
+            if(stripeEvent.Type == "checkout.session.completed")
+            {
+                //figure this out later
+            }
+
+            return Ok();
         }
     }
 }
