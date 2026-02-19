@@ -13,7 +13,7 @@ namespace Recuria.Api.Payments
         Task MarkFailedAsync(Guid id, string error, CancellationToken ct);
     }
 
-    public class StripeWebhookInbox
+    public sealed class StripeWebhookInbox : IStripeWebhookInbox
     {
         private readonly RecuriaDbContext _db;
 

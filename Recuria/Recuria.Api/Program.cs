@@ -399,6 +399,9 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProcessedEventStore, EfProcessedEventStore>();
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
 builder.Services.AddScoped<IApiIdempotencyStore, EfApiIdempotencyStore>();
+builder.Services.AddScoped<IStripeWebhookInbox, StripeWebhookInbox>();
+builder.Services.AddHostedService<StripeWebhookWorker>();
+
 //builder.Services.AddScoped<IDomainEventHandler<SubscriptionActivatedDomainEvent>, SubscriptionActivatedHandler>();
 
 builder.Services.AddOptions<IdempotencyOptions>()
