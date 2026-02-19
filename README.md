@@ -1,4 +1,4 @@
-﻿# Recuria
+# Recuria
 
 Recuria is a **SaaS subscription and billing platform** built with **ASP.NET Core (.NET 8)**.
 
@@ -10,21 +10,22 @@ This project is designed as an **industry-aligned system** emphasizing domain mo
 
 ## Recent Features Implemented
 
-- JWT auth with role‑based policies (Owner/Admin/Member)
+- JWT auth with role-based policies (Owner/Admin/Member)
 - Dev bootstrap endpoint for local JWT + org setup
-- Real auth UX flow in Blazor (login/logout + role-aware nav/page visibility)
+- Real auth UX flow in Blazor (register/login/logout + role-aware nav/page visibility; org-name login)
 - Standardized ProblemDetails error responses + correlation IDs
 - Rate limiting + request size limits
 - Swagger/OpenAPI with JWT security
 - Health checks (liveness + readiness with DB)
-- Outbox retries + dead‑letter handling + admin inspection/retry endpoints
+- Outbox retries + dead-letter handling + admin inspection/retry endpoints
 - Server-side paging/sorting/filtering contracts for users, invoices, and dead-lettered outbox
 - Typed paged frontend app-services and MudTable `ServerData` integration
 - Standardized table loading/empty/error states via shared `StandardTableState`
-- CORS + enterprise security headers (CSP, Permissions‑Policy, HSTS)
+- CORS + enterprise security headers (CSP, Permissions-Policy, HSTS)
+- Startup auto-migration on API boot for relational providers (skips InMemory tests safely)
 - Structured JSON logging (Serilog) + audit logging for sensitive actions
 - CI pipeline for build/test + migration script generation
-- Data integrity indexes + row‑version concurrency
+- Data integrity indexes + row-version concurrency
 - Invoice create idempotency with key replay, conflict detection, TTL, and purge endpoint
 
 ---
@@ -36,7 +37,7 @@ Recuria simulates the backend architecture of a modern SaaS product that support
 - Organization-based accounts
 - Role-based user management
 - Subscription lifecycle management  
-  *(trial → active → past-due → canceled → expired)*
+  *(trial ? active ? past-due ? canceled ? expired)*
 - Plan upgrades with enforced business invariants
 - Automated billing cycles with retry and grace periods
 - Invoice generation
@@ -53,13 +54,13 @@ Recuria follows a **Clean Architecture / DDD-inspired structure**, with strict s
 
 ```text
 Recuria
-│
-├── Recuria.Domain          // Core domain entities & business rules
-├── Recuria.Application     // Use cases, services, interfaces
-├── Recuria.Infrastructure  // EF Core, persistence, background services
-├── Recuria.Api             // ASP.NET Core Web API
-├── Recuria.Blazor          // Blazor WebAssembly frontend (in progress)
-└── Recuria.Tests           // Unit & integration tests
+�
++-- Recuria.Domain          // Core domain entities & business rules
++-- Recuria.Application     // Use cases, services, interfaces
++-- Recuria.Infrastructure  // EF Core, persistence, background services
++-- Recuria.Api             // ASP.NET Core Web API
++-- Recuria.Blazor          // Blazor WebAssembly frontend (in progress)
++-- Recuria.Tests           // Unit & integration tests
 ```
 ---
 
@@ -322,8 +323,11 @@ The suite currently includes broad unit, integration, and bUnit component covera
 
 - **Auth identity contract**
   - `/api/auth/whoami` payload and claims shape
-  - File:
+  - Register -> login happy-path and duplicate-org conflict coverage
+  - Files:
     - `Recuria/Recuria.Tests/IntegrationTests/Auth/WhoAmITests.cs`
+    - `Recuria/Recuria.Tests/IntegrationTests/Auth/AuthLoginFlowTests.cs`
+    - `Recuria/Recuria.Tests/IntegrationTests/Auth/AuthRegisterFlowTests.cs`
 
 - **Organization workflows**
   - Create organization
@@ -541,3 +545,6 @@ RECURIA_SQL_BACKUP_FILE
 ```
 
 Run a restore drill quarterly (staging or isolated environment).
+
+
+
