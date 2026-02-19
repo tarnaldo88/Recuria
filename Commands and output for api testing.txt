@@ -44,3 +44,9 @@ Invoke-RestMethod -Method Get -Uri http://localhost:5132/api/auth/whoami `
 api-http get who am i:
 GET {{Recuria.Api_HostAddress}}/api/auth/whoami
 Authorization: Bearer {{token}}
+
+
+
+FAKE ORG FOR LOGIN: Acme
+test@test.com
+test1234

@@ -22,6 +22,7 @@ builder.Services.AddScoped<IInvoiceAppService, InvoiceAppService>();
 builder.Services.AddScoped<IUserAppService, UserAppService>();
 builder.Services.AddScoped<IOpsAppService, OpsAppService>();
 builder.Services.AddScoped<IUserContextService, UserContextService>();
+builder.Services.AddScoped<IPaymentAppService, PaymentAppService>();
 builder.Services.AddMudServices();
 
 var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5132/";
@@ -37,13 +38,6 @@ builder.Services.AddScoped(sp =>
     return new Recuria.Client.RecuriaApiClient(http);
 });
 
-builder.Services.AddScoped<Recuria.Client.IRecuriaApiClient>(sp =>
-    sp.GetRequiredService<Recuria.Client.RecuriaApiClient>());
-
-await builder.Build().RunAsync();
-
-builder.Services.AddScoped<IPaymentAppService, PaymentAppService>();
-
 builder.Services.AddScoped(sp =>
 {
     var handler = sp.GetRequiredService<AuthHeaderHandler>();
@@ -53,3 +47,8 @@ builder.Services.AddScoped(sp =>
         BaseAddress = new Uri(apiBaseUrl)
     };
 });
+
+builder.Services.AddScoped<Recuria.Client.IRecuriaApiClient>(sp =>
+    sp.GetRequiredService<Recuria.Client.RecuriaApiClient>());
+
+await builder.Build().RunAsync();

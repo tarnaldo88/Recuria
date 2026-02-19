@@ -5,6 +5,8 @@
         public bool IsAuthenticated { get; init; }
         public string? Role { get; init; }
 
+        public Guid? OrganizationId { get; init; }
+
         public bool IsOwner => string.Equals(Role, "Owner", StringComparison.OrdinalIgnoreCase);
         public bool IsAdmin => string.Equals(Role, "Admin", StringComparison.OrdinalIgnoreCase);
         public bool IsMember => string.Equals(Role, "Member", StringComparison.OrdinalIgnoreCase);
@@ -23,7 +25,7 @@
     {
         private readonly IAuthAppService _authApi;
         private readonly AuthState _auth;
-        private UserContext? _cached;
+        private UserContext? _cached; 
 
         public UserContextService(IAuthAppService authApi, AuthState auth)
         {
@@ -46,10 +48,14 @@
             }
 
             var who = await _authApi.WhoAmIAsync(notifyError: false);
+            var orgIdRaw = await _auth.GetOrgIdAsync();
+            var hasOrgId = Guid.TryParse(orgIdRaw, out var orgId);
+
             _cached = new UserContext
             {
                 IsAuthenticated = true,
-                Role = who.Success ? who.Data?.Role : null
+                Role = who.Success ? who.Data?.Role : null,
+                OrganizationId = hasOrgId ? orgId : null
             };
 
             return _cached;
