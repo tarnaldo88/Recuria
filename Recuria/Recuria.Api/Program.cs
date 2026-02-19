@@ -452,8 +452,6 @@ builder.Services.AddSingleton(sp =>
 
 builder.Services.AddScoped<IStripeWebhookProcessor, StripeWebhookProcessor>();
 
-
-
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

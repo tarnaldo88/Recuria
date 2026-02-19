@@ -41,3 +41,15 @@ builder.Services.AddScoped<Recuria.Client.IRecuriaApiClient>(sp =>
     sp.GetRequiredService<Recuria.Client.RecuriaApiClient>());
 
 await builder.Build().RunAsync();
+
+builder.Services.AddScoped<IPaymentAppService, PaymentAppService>();
+
+builder.Services.AddScoped(sp =>
+{
+    var handler = sp.GetRequiredService<AuthHeaderHandler>();
+    handler.InnerHandler = new HttpClientHandler();
+    return new HttpClient(handler)
+    {
+        BaseAddress = new Uri(apiBaseUrl)
+    };
+});
