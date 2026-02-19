@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Recuria.Domain.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Recuria.Domain.Entities;
 
-namespace Recuria.Domain.Entities
+namespace Recuria.Infrastructure.Persistence.Configurations
 {
     public sealed class StripeSubscriptionMapConfiguration : IEntityTypeConfiguration<StripeSubscriptionMap>
     {

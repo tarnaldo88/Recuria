@@ -23,7 +23,6 @@ using Recuria.Api.Logging;
 using Recuria.Api.Middleware;
 using Recuria.Api.Payments;
 using Recuria.Api.Swagger;
-using Recuria.Api.Payments;
 using Recuria.Application;
 using Recuria.Application.Contracts.Invoice.Validators;
 using Recuria.Application.Contracts.Organizations.Validators;
