@@ -15,5 +15,25 @@ namespace Recuria.Api.Payments
 
     public class StripeWebhookInbox
     {
+        private readonly RecuriaDbContext _db;
+
+        public StripeWebhookInbox(RecuriaDbContext db) => _db = db;
+
+        public async Task EnqueueAsync(string eventId, string eventType, string payload, CancellationToken ct)
+        {
+            var exists = await _db.StripeWebhookInboxMessages.AnyAsync(x => x.StripeEventId == eventId, ct);
+            if (exists) return;
+
+            _db.StripeWebhookInboxMessages.Add(new StripeWebhookInboxMessage
+            {
+                StripeEventId = eventId,
+                EventType = eventType,
+                Payload = payload,
+                NextAttemptOnUtc = DateTime.UtcNow
+            });
+
+            await _db.SaveChangesAsync(ct);
+        }
+
     }
 }
