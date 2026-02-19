@@ -53,5 +53,27 @@ namespace Recuria.Api.Payments
             msg.LastError = null;
             await _db.SaveChangesAsync(ct);
         }
+        public async Task MarkFailedAsync(Guid id, string error, CancellationToken ct)
+        {
+            var msg = await _db.StripeWebhookInboxMessages.SingleAsync(x => x.Id == id, ct);
+            msg.AttemptCount += 1;
+            msg.LastError = error.Length > 2000 ? error[..2000] : error;
+            msg.NextAttemptOnUtc = DateTime.UtcNow.AddMinutes(Math.Min(30, Math.Pow(2, msg.AttemptCount)));
+            await _db.SaveChangesAsync(ct);
+        }
     }
+
+    public sealed class StripeWebhookWorker : BackgroundService
+    {
+        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ILogger<StripeWebhookWorker> _logger;
+
+        public StripeWebhookWorker(IServiceScopeFactory scopeFactory, ILogger<StripeWebhookWorker> logger)
+        {
+            _scopeFactory = scopeFactory;
+            _logger = logger;
+        }
+
+    }
+
 }
