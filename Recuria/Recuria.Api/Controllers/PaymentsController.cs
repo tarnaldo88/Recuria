@@ -56,6 +56,9 @@ namespace Recuria.Api.Controllers
                 p.Active &&
                 string.Equals(p.Code, req.PlanCode, StringComparison.OrdinalIgnoreCase));
 
+            if (plan is null)
+                return BadRequest("Invalid plan code.");
+
             var options = new SessionCreateOptions
             {
                 Mode = "subscription",
