@@ -9,7 +9,13 @@
     <MudText Typo="Typo.h5">Billing</MudText>
     <MudText Typo="Typo.body2">Start Stripe checkout for a subscription plan.</MudText>
 
-    <MudTextField @bind-Value="_priceId" Label="Stripe Price ID" Variant="Variant.Outlined" />
+    <MudSelect T="string" Label="Plan" @bind-Value="_selectedPlanCode" Variant="Variant.Outlined">
+        @foreach (var p in _plans)
+        {
+            <MudSelectItem Value="@p.Code">@($"{p.Name} - {(p.AmountCents / 100m):C}/{p.Interval}")</MudSelectItem>
+        }
+    </MudSelect>
+
     <MudNumericField T="int" @bind-Value="_quantity" Label="Quantity" Variant="Variant.Outlined" Min="1" />
 
     <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@_busy" OnClick="StartCheckout">
@@ -36,6 +42,8 @@
         try
         {
             var ctx = await UserContext.GetAsync();
+            var result = await Payments.CreateCheckoutUrlAsync(ctx.OrganizationId.Value, _selectedPlanCode, _quantity);
+
 
             if (!ctx.IsAuthenticated || ctx.OrganizationId is null)
             {
