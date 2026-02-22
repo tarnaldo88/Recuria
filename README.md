@@ -27,6 +27,8 @@ This project is designed as an **industry-aligned system** emphasizing domain mo
 - CI pipeline for build/test + migration script generation
 - Data integrity indexes + row-version concurrency
 - Invoice create idempotency with key replay, conflict detection, TTL, and purge endpoint
+- Stripe payments phase 1: checkout session endpoint, webhook signature validation, webhook inbox queue with retries, and subscription/customer mapping
+- Plan-code based billing checkout (server resolves Stripe price IDs; no client-exposed price IDs)
 
 ---
 
@@ -208,6 +210,10 @@ The Blazor WebAssembly frontend is implemented with a production-oriented MudBla
   - Dead-letter outbox inspection
   - Retry action from UI for operational recovery
   <img src="screenshots/ops.png" alt="Ops" width="600" />
+- **Billing**
+  - Plan selection UI (server-sourced plan catalog)
+  - Stripe checkout redirect flow
+  - Success/cancel return pages for checkout outcomes
 
 ### UX / Interaction Improvements
 - Consistent loading, success, empty, and error states across pages
@@ -545,6 +551,9 @@ RECURIA_SQL_BACKUP_FILE
 ```
 
 Run a restore drill quarterly (staging or isolated environment).
+
+
+
 
 
 
