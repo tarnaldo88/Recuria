@@ -42,6 +42,22 @@ namespace Recuria.Blazor.Services.App
             return payload.Url;
         }, errorPrefix: "Unable to start checkout", notifyError: notifyError);
 
+        public Task<AppResult<IReadOnlyList<BillingPlanVm>>> GetPlansAsync(bool notifyError = true) =>
+            _runner.RunAsync(async () =>
+            {
+                var plans = await _http.GetFromJsonAsync<List<BillingPlanDto>>("api/payments/plans")
+                            ?? new List<BillingPlanDto>();
+
+                return (IReadOnlyList<BillingPlanVm>)plans
+                    .Select(p => new BillingPlanVm(
+                        p.Code ?? string.Empty,
+                        p.Name ?? string.Empty,
+                        p.AmountCents,
+                        p.Currency ?? "usd",
+                        p.Interval ?? "month"))
+                    .ToList();
+            }, errorPrefix: "Unable to load billing plans", notifyError: notifyError);
+
         private sealed class CreateCheckoutSessionRequest
         {
             public Guid OrganizationId { get; init; }
