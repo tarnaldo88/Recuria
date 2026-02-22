@@ -52,31 +52,9 @@ namespace Recuria.Api.Controllers
         [Authorize(Policy = "MemberOrAbove")]
         public async Task<ActionResult<object>> CreateCheckoutSession([FromBody] CreateCheckoutSessionRequest req, CancellationToken ct)
         {
-            var options = new SessionCreateOptions
-            {
-                Mode = "subscription",
-                SuccessUrl = _stripe.SuccessUrl + "?session_id={CHECKOUT_SESSION_ID}",
-                CancelUrl = _stripe.CancelUrl,
-                LineItems = new List<SessionLineItemOptions>
-            {
-                new()
-                {
-                    Price = req.PriceId,
-                    Quantity = req.Quantity
-                }
-            },
-                Metadata = new Dictionary<string, string>
-                {
-                    ["org_id"] = req.OrganizationId.ToString()
-                }
-            };
-
             var plan = _stripe.Plans.FirstOrDefault(p =>
                 p.Active &&
                 string.Equals(p.Code, req.PlanCode, StringComparison.OrdinalIgnoreCase));
-
-            if (plan is null)
-                return BadRequest("Invalid plan code.");
 
             var options = new SessionCreateOptions
             {
@@ -94,6 +72,8 @@ namespace Recuria.Api.Controllers
                 }
             };
 
+            if (plan is null)
+                return BadRequest("Invalid plan code.");        
 
             var session = await _sessions.CreateAsync(options, cancellationToken: ct);
             return Ok(new { sessionId = session.Id, url = session.Url });
