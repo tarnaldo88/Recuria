@@ -45,8 +45,8 @@ namespace Recuria.Blazor.Services.App
         public Task<AppResult<IReadOnlyList<BillingPlanVm>>> GetPlansAsync(bool notifyError = true) =>
             _runner.RunAsync(async () =>
             {
-                var plans = await _http.GetFromJsonAsync<List<BillingPlanDto>>("api/payments/plans")
-                            ?? new List<BillingPlanDto>();
+                var plans = await _http.GetFromJsonAsync<List<Recuria.Client.BillingPlanDto>>("api/payments/plans")
+                            ?? new List<Recuria.Client.BillingPlanDto>();
 
                 return (IReadOnlyList<BillingPlanVm>)plans
                     .Select(p => new BillingPlanVm(
