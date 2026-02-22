@@ -71,5 +71,15 @@ namespace Recuria.Blazor.Services.App
             public string SessionId { get; init; } = string.Empty;
             public string Url { get; init; } = string.Empty;
         }
+        
+        private sealed class BillingPlanResponse
+        {
+            public string Code { get; init; } = string.Empty;
+            public string Name { get; init; } = string.Empty;
+            public long AmountCents { get; init; }
+            public string Currency { get; init; } = "usd";
+            public string Interval { get; init; } = "month";
+        }
+
     }
 }
