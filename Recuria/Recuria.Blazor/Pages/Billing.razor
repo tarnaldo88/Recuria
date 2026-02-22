@@ -29,10 +29,24 @@
     </MudPaper>
 
 @code {
-    private string _priceId = "";
+    private readonly List<Recuria.Blazor.Services.App.BillingPlanVm> _plans = new();
+    private string _selectedPlanCode = "";
     private int _quantity = 1;
     private bool _busy;
     private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var plansResult = await Payments.GetPlansAsync(notifyError: false);
+        if (!plansResult.Success || plansResult.Data is null)
+        {
+            _error = plansResult.Error ?? "Unable to load billing plans.";
+            return;
+        }
+
+        _plans.AddRange(plansResult.Data);
+        _selectedPlanCode = _plans.FirstOrDefault()?.Code ?? "";
+    }
 
     private async Task StartCheckout()
     {
@@ -42,8 +56,6 @@
         try
         {
             var ctx = await UserContext.GetAsync();
-            var result = await Payments.CreateCheckoutUrlAsync(ctx.OrganizationId.Value, _selectedPlanCode, _quantity);
-
 
             if (!ctx.IsAuthenticated || ctx.OrganizationId is null)
             {
@@ -51,20 +63,24 @@
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(_priceId))
+            if (string.IsNullOrWhiteSpace(_selectedPlanCode))
             {
-                _error = "Price ID is required.";
+                _error = "Select a billing plan.";
                 return;
             }
 
-            var result = await Payments.CreateCheckoutUrlAsync(ctx.OrganizationId.Value, _priceId.Trim(), _quantity);
-            if (!result.Success || string.IsNullOrWhiteSpace(result.Data))
+            var checkoutResult = await Payments.CreateCheckoutUrlAsync(
+                ctx.OrganizationId.Value,
+                _selectedPlanCode,
+                _quantity);
+
+            if (!checkoutResult.Success || string.IsNullOrWhiteSpace(checkoutResult.Data))
             {
-                _error = result.Error ?? "Unable to create checkout session.";
+                _error = checkoutResult.Error ?? "Unable to create checkout session.";
                 return;
             }
 
-            Nav.NavigateTo(result.Data, forceLoad: true);
+            Nav.NavigateTo(checkoutResult.Data, forceLoad: true);
         }
         finally
         {
