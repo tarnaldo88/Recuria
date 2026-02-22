@@ -3,9 +3,12 @@ using System.Net.Http.Json;
 
 namespace Recuria.Blazor.Services.App
 {
+    public sealed record BillingPlanVm(string Code, string Name, long AmountCents, string Currency, string Interval);
+
     public interface  IPaymentAppService
     {
-        Task<AppResult<string>> CreateCheckoutUrlAsync(Guid organizationId, string priceId, int quantity = 1, bool notifyError = true);
+        Task<AppResult<IReadOnlyList<BillingPlanVm>>> GetPlansAsync(bool notifyError = true);
+        Task<AppResult<string>> CreateCheckoutUrlAsync(Guid organizationId, string planCode, int quantity = 1, bool notifyError = true);
     }
 
     public class PaymentAppService : IPaymentAppService

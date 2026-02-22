@@ -94,6 +94,7 @@ namespace Recuria.Api.Controllers
                 }
             };
 
+
             var session = await _sessions.CreateAsync(options, cancellationToken: ct);
             return Ok(new { sessionId = session.Id, url = session.Url });
         }
