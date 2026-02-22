@@ -43,9 +43,10 @@ namespace Recuria.Api.Controllers
         public sealed class CreateCheckoutSessionRequest
         {
             public Guid OrganizationId { get; init; }
-            public string PriceId { get; init; } = string.Empty;
+            public string PlanCode { get; init; } = string.Empty;
             public int Quantity { get; init; } = 1;
         }
+
 
         [HttpPost("checkout-session")]
         [Authorize(Policy = "MemberOrAbove")]
