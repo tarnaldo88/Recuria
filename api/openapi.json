@@ -1158,6 +1158,44 @@
         }
       }
     },
+    "/api/payments/plans": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BillingPlanDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BillingPlanDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BillingPlanDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/subscriptions/current/{organizationId}": {
       "get": {
         "tags": [
@@ -1624,6 +1662,32 @@
         },
         "additionalProperties": false
       },
+      "BillingPlanDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "amountCents": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "currency": {
+            "type": "string",
+            "nullable": true
+          },
+          "interval": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "BootstrapRequest": {
         "type": "object",
         "properties": {
@@ -1682,7 +1746,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "priceId": {
+          "planCode": {
             "type": "string",
             "nullable": true
           },
