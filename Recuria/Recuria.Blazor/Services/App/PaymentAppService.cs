@@ -1,11 +1,10 @@
-﻿using Recuria.Client;
 using System.Net.Http.Json;
 
 namespace Recuria.Blazor.Services.App
 {
     public sealed record BillingPlanVm(string Code, string Name, long AmountCents, string Currency, string Interval);
 
-    public interface  IPaymentAppService
+    public interface IPaymentAppService
     {
         Task<AppResult<IReadOnlyList<BillingPlanVm>>> GetPlansAsync(bool notifyError = true);
         Task<AppResult<string>> CreateCheckoutUrlAsync(Guid organizationId, string planCode, int quantity = 1, bool notifyError = true);
@@ -22,25 +21,25 @@ namespace Recuria.Blazor.Services.App
             _runner = runner;
         }
 
-        public Task<AppResult<string>> CreateCheckoutUrlAsync(Guid organizationId, string priceId, int quantity = 1, bool notifyError = true) =>
-        _runner.RunAsync(async () =>
-        {
-            var request = new CreateCheckoutSessionRequest
+        public Task<AppResult<string>> CreateCheckoutUrlAsync(Guid organizationId, string planCode, int quantity = 1, bool notifyError = true) =>
+            _runner.RunAsync(async () =>
             {
-                OrganizationId = organizationId,
-                PriceId = priceId,
-                Quantity = quantity
-            };
+                var request = new CreateCheckoutSessionRequest
+                {
+                    OrganizationId = organizationId,
+                    PlanCode = planCode,
+                    Quantity = quantity
+                };
 
-            var response = await _http.PostAsJsonAsync("api/payments/checkout-session", request);
-            response.EnsureSuccessStatusCode();
+                var response = await _http.PostAsJsonAsync("api/payments/checkout-session", request);
+                response.EnsureSuccessStatusCode();
 
-            var payload = await response.Content.ReadFromJsonAsync<CreateCheckoutSessionResponse>();
-            if (payload is null || string.IsNullOrWhiteSpace(payload.Url))
-                throw new InvalidOperationException("Checkout URL was not returned by API.");
+                var payload = await response.Content.ReadFromJsonAsync<CreateCheckoutSessionResponse>();
+                if (payload is null || string.IsNullOrWhiteSpace(payload.Url))
+                    throw new InvalidOperationException("Checkout URL was not returned by API.");
 
-            return payload.Url;
-        }, errorPrefix: "Unable to start checkout", notifyError: notifyError);
+                return payload.Url;
+            }, errorPrefix: "Unable to start checkout", notifyError: notifyError);
 
         public Task<AppResult<IReadOnlyList<BillingPlanVm>>> GetPlansAsync(bool notifyError = true) =>
             _runner.RunAsync(async () =>
@@ -48,21 +47,20 @@ namespace Recuria.Blazor.Services.App
                 var plans = await _http.GetFromJsonAsync<List<BillingPlanResponse>>("api/payments/plans")
                             ?? new List<BillingPlanResponse>();
 
-
                 return (IReadOnlyList<BillingPlanVm>)plans
                     .Select(p => new BillingPlanVm(
-                        p.Code ?? string.Empty,
-                        p.Name ?? string.Empty,
+                        p.Code,
+                        p.Name,
                         p.AmountCents,
-                        p.Currency ?? "usd",
-                        p.Interval ?? "month"))
+                        p.Currency,
+                        p.Interval))
                     .ToList();
             }, errorPrefix: "Unable to load billing plans", notifyError: notifyError);
 
         private sealed class CreateCheckoutSessionRequest
         {
             public Guid OrganizationId { get; init; }
-            public string PriceId { get; init; } = string.Empty;
+            public string PlanCode { get; init; } = string.Empty;
             public int Quantity { get; init; }
         }
 
@@ -71,7 +69,7 @@ namespace Recuria.Blazor.Services.App
             public string SessionId { get; init; } = string.Empty;
             public string Url { get; init; } = string.Empty;
         }
-        
+
         private sealed class BillingPlanResponse
         {
             public string Code { get; init; } = string.Empty;
@@ -80,6 +78,5 @@ namespace Recuria.Blazor.Services.App
             public string Currency { get; init; } = "usd";
             public string Interval { get; init; } = "month";
         }
-
     }
 }
