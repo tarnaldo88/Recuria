@@ -44,7 +44,7 @@ namespace Recuria.Api.Controllers
         /// Create a new organization.
         /// </summary>
         [HttpPost]
-        [Authorize(Policy = "MemberOrAbove")]
+        [Authorize(Policy = AuthorizationPolicies.OrganizationsRead)]
         public async Task<ActionResult<OrganizationDto>> Create(
             [FromBody] CreateOrganizationRequest request,
             CancellationToken cancellationToken)
@@ -65,7 +65,7 @@ namespace Recuria.Api.Controllers
         /// Get an organization by id (must match org_id claim).
         /// </summary>
         [HttpGet("{id:guid}")]
-        [Authorize(Policy = "MemberOrAbove")]
+        [Authorize(Policy = AuthorizationPolicies.OrganizationsRead)]
         public async Task<ActionResult<OrganizationDto>> GetById(
             Guid id,
             CancellationToken cancellationToken)
@@ -93,7 +93,7 @@ namespace Recuria.Api.Controllers
         /// Get the organization from the current JWT (org_id claim).
         /// </summary>
         [HttpGet("me")]
-        [Authorize(Policy = "MemberOrAbove")]
+        [Authorize(Policy = AuthorizationPolicies.OrganizationsRead)]
         public async Task<ActionResult<OrganizationDto>> GetMyOrganization(
             CancellationToken cancellationToken)
         {
@@ -119,7 +119,7 @@ namespace Recuria.Api.Controllers
         /// Add a user to the organization (Admin/Owner only).
         /// </summary>
         [HttpPost("{id:guid}/users")]
-        [Authorize(Policy = "AdminOrOwner")]
+        [Authorize(Policy = AuthorizationPolicies.OrganizationsManageUsers)]
         public async Task<IActionResult> AddUser(
             Guid id,
             [FromBody] AddUserRequest request,
@@ -145,7 +145,7 @@ namespace Recuria.Api.Controllers
         /// Change a user's role in the organization (Admin/Owner only).
         /// </summary>
         [HttpPut("{orgId:guid}/users/{userId:guid}/role")]
-        [Authorize(Policy = "AdminOrOwner")]
+        [Authorize(Policy = AuthorizationPolicies.OrganizationsManageUsers)]
         public async Task<IActionResult> ChangeUserRole(
             Guid orgId,
             Guid userId,
@@ -176,7 +176,7 @@ namespace Recuria.Api.Controllers
         /// Remove a user from the organization (Admin/Owner only).
         /// </summary>
         [HttpDelete("{orgId:guid}/users/{userId:guid}")]
-        [Authorize(Policy = "AdminOrOwner")]
+        [Authorize(Policy = AuthorizationPolicies.OrganizationsManageUsers)]
         public async Task<IActionResult> RemoveUser(
             Guid orgId,
             Guid userId,
@@ -201,7 +201,7 @@ namespace Recuria.Api.Controllers
         /// Get users from the same organization.
         /// </summary>
         [HttpGet("{id:guid}/users")]
-        [Authorize(Policy = "AdminOrOwner")]
+        [Authorize(Policy = AuthorizationPolicies.OrganizationsManageUsers)]
         public async Task<ActionResult<PagedResult<UserSummaryDto>>> GetUsers(
             Guid id,
             [FromQuery] TableQuery query,
