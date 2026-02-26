@@ -419,6 +419,7 @@ builder.Services.AddScoped<IInvoiceService, Recuria.Application.InvoiceService>(
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProcessedEventStore, EfProcessedEventStore>();
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
+builder.Services.AddSingleton<IAuthChallengeService, AuthChallengeService>();
 builder.Services.AddScoped<IApiIdempotencyStore, EfApiIdempotencyStore>();
 builder.Services.AddScoped<IStripeWebhookInbox, StripeWebhookInbox>();
 builder.Services.AddHostedService<StripeWebhookWorker>();
