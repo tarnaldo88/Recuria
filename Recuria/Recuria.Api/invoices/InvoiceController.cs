@@ -22,7 +22,7 @@ namespace Recuria.Api.Invoices
     /// Invoice endpoints.
     /// </summary>
     [ApiController]
-    [Authorize(Policy = "MemberOrAbove")]
+    [Authorize(Policy = AuthorizationPolicies.InvoicesRead)]
     [Route("api/invoices")]
     public class InvoiceController : ControllerBase
     {
@@ -56,7 +56,7 @@ namespace Recuria.Api.Invoices
         /// Create an invoice for the organization's current subscription.
         /// </summary>
         [HttpPost]
-        [Authorize(Policy = "AdminOrOwner")]
+        [Authorize(Policy = AuthorizationPolicies.InvoicesWrite)]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -147,7 +147,7 @@ namespace Recuria.Api.Invoices
         /// Mark an invoice as paid.
         /// </summary>
         [HttpPost("{invoiceId:guid}/pay")]
-        [Authorize(Policy = "AdminOrOwner")]
+        [Authorize(Policy = AuthorizationPolicies.InvoicesWrite)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
