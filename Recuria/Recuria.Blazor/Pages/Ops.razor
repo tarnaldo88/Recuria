@@ -70,6 +70,61 @@ else
                 }
             </MudCardContent>
         </MudCard>
+
+        <MudCard>
+            <MudCardContent>
+                <MudText Typo="Typo.h6">Stripe Webhook Reconciliation</MudText>
+                <MudStack Row="true" Spacing="2" Class="mb-2">
+                    <MudChip T="string" Color="Color.Success" Variant="Variant.Filled">Processed: @_webhookSummary?.ProcessedCount</MudChip>
+                    <MudChip T="string" Color="Color.Info" Variant="Variant.Filled">Pending: @_webhookSummary?.PendingCount</MudChip>
+                    <MudChip T="string" Color="Color.Warning" Variant="Variant.Filled">Retrying: @_webhookSummary?.RetryingCount</MudChip>
+                    <MudChip T="string" Color="Color.Error" Variant="Variant.Filled">Dead-Letter-Like: @_webhookSummary?.DeadLetterLikeCount</MudChip>
+                </MudStack>
+
+                <MudTable T="Recuria.Blazor.Services.App.StripeWebhookInboxItemVm"
+                          @ref="_webhookTable"
+                          ServerData="LoadWebhookInbox"
+                          Dense="true"
+                          Hover="true"
+                          Loading="_webhookLoading"
+                          RowsPerPage="10">
+                    <ToolBarContent>
+                        <MudTextField @bind-Value="_webhookSearch"
+                                      Placeholder="Search Stripe event/type/error"
+                                      Immediate="true"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      OnBlur="OnWebhookSearchBlur" />
+                    </ToolBarContent>
+
+                    <HeaderContent>
+                        <MudTh><MudTableSortLabel T="Recuria.Blazor.Services.App.StripeWebhookInboxItemVm" SortLabel="receivedOnUtc">Received</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel T="Recuria.Blazor.Services.App.StripeWebhookInboxItemVm" SortLabel="eventType">Event Type</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel T="Recuria.Blazor.Services.App.StripeWebhookInboxItemVm" SortLabel="attemptCount">Attempts</MudTableSortLabel></MudTh>
+                        <MudTh>Status</MudTh>
+                        <MudTh>Error</MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+
+                    <RowTemplate>
+                        <MudTd>@context.ReceivedOnUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudTd>
+                        <MudTd>@context.EventType</MudTd>
+                        <MudTd>@context.AttemptCount</MudTd>
+                        <MudTd>@context.Status</MudTd>
+                        <MudTd>@context.LastError</MudTd>
+                        <MudTd>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" Disabled="_busy" OnClick="@(() => RequeueWebhook(context.Id))">
+                                Requeue
+                            </MudButton>
+                        </MudTd>
+                    </RowTemplate>
+
+                    <NoRecordsContent>
+                        <StandardTableState Loading="@_webhookLoading" Error="@_webhookError" HasRows="false" EmptyText="No webhook inbox items." />
+                    </NoRecordsContent>
+                </MudTable>
+            </MudCardContent>
+        </MudCard>
     </MudStack>
 }
 
@@ -84,6 +139,11 @@ else
     private bool _tableLoading;
     private string? _tableError;
     private string? _search;
+    private MudTable<Recuria.Blazor.Services.App.StripeWebhookInboxItemVm>? _webhookTable;
+    private Recuria.Blazor.Services.App.StripeWebhookSummaryVm? _webhookSummary;
+    private bool _webhookLoading;
+    private string? _webhookError;
+    private string? _webhookSearch;
 
     protected override async Task OnInitializedAsync() 
     {        
@@ -104,6 +164,12 @@ else
         {
             if (_table is not null)
                 await _table.ReloadServerData();
+            if (_webhookTable is not null)
+                await _webhookTable.ReloadServerData();
+
+            var summary = await OpsApi.GetStripeWebhookSummaryAsync(notifyError: false);
+            if (summary.Success)
+                _webhookSummary = summary.Data;
         }
         finally
         {
@@ -162,6 +228,52 @@ else
         return _table.ReloadServerData();
     }
 
+    private async Task<TableData<Recuria.Blazor.Services.App.StripeWebhookInboxItemVm>> LoadWebhookInbox(TableState state, CancellationToken ct)
+    {
+        _webhookLoading = true;
+        _webhookError = null;
+        try
+        {
+            var page = state.Page + 1;
+            var pageSize = state.PageSize;
+            var pageResult = await OpsApi.GetStripeWebhookInboxPageAsync(
+                page,
+                pageSize,
+                _webhookSearch,
+                state.SortLabel,
+                state.SortDirection == SortDirection.Descending ? "desc" : "asc",
+                notifyError: false);
+
+            if (!pageResult.Success || pageResult.Data is null)
+            {
+                _webhookError = pageResult.Error ?? "Unable to load webhook inbox.";
+                return new TableData<Recuria.Blazor.Services.App.StripeWebhookInboxItemVm>
+                {
+                    Items = Array.Empty<Recuria.Blazor.Services.App.StripeWebhookInboxItemVm>(),
+                    TotalItems = 0
+                };
+            }
+
+            return new TableData<Recuria.Blazor.Services.App.StripeWebhookInboxItemVm>
+            {
+                Items = pageResult.Data.Items,
+                TotalItems = pageResult.Data.TotalCount
+            };
+        }
+        finally
+        {
+            _webhookLoading = false;
+        }
+    }
+
+    private Task OnWebhookSearchBlur(FocusEventArgs _)
+    {
+        if (_webhookTable is null)
+            return Task.CompletedTask;
+
+        return _webhookTable.ReloadServerData();
+    }
+
 
     private async Task Retry(Guid id)
     {
@@ -170,6 +282,23 @@ else
         try
         {
             var result = await OpsApi.RetryAsync(id);
+            if (!result.Success)
+                return;
+
+            await LoadDeadLettered();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task RequeueWebhook(Guid id)
+    {
+        _busy = true;
+        try
+        {
+            var result = await OpsApi.RequeueStripeWebhookAsync(id);
             if (!result.Success)
                 return;
 

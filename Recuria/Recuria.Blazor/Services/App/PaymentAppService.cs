@@ -8,6 +8,7 @@ namespace Recuria.Blazor.Services.App
     {
         Task<AppResult<IReadOnlyList<BillingPlanVm>>> GetPlansAsync(bool notifyError = true);
         Task<AppResult<string>> CreateCheckoutUrlAsync(Guid organizationId, string planCode, int quantity = 1, bool notifyError = true);
+        Task<AppResult<string>> CreatePortalUrlAsync(Guid organizationId, bool notifyError = true);
     }
 
     public class PaymentAppService : IPaymentAppService
@@ -57,6 +58,22 @@ namespace Recuria.Blazor.Services.App
                     .ToList();
             }, errorPrefix: "Unable to load billing plans", notifyError: notifyError);
 
+        public Task<AppResult<string>> CreatePortalUrlAsync(Guid organizationId, bool notifyError = true) =>
+            _runner.RunAsync(async () =>
+            {
+                var response = await _http.PostAsJsonAsync("api/payments/portal-session", new CreatePortalSessionRequest
+                {
+                    OrganizationId = organizationId
+                });
+                response.EnsureSuccessStatusCode();
+
+                var payload = await response.Content.ReadFromJsonAsync<CreatePortalSessionResponse>();
+                if (payload is null || string.IsNullOrWhiteSpace(payload.Url))
+                    throw new InvalidOperationException("Portal URL was not returned by API.");
+
+                return payload.Url;
+            }, errorPrefix: "Unable to open billing portal", notifyError: notifyError);
+
         private sealed class CreateCheckoutSessionRequest
         {
             public Guid OrganizationId { get; init; }
@@ -67,6 +84,16 @@ namespace Recuria.Blazor.Services.App
         private sealed class CreateCheckoutSessionResponse
         {
             public string SessionId { get; init; } = string.Empty;
+            public string Url { get; init; } = string.Empty;
+        }
+
+        private sealed class CreatePortalSessionRequest
+        {
+            public Guid OrganizationId { get; init; }
+        }
+
+        private sealed class CreatePortalSessionResponse
+        {
             public string Url { get; init; } = string.Empty;
         }
 

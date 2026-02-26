@@ -121,7 +121,7 @@ namespace Recuria.Api.Payments
             if (invoice is null)
                 return;
 
-            var orgId = await ResolveOrganizationIdAsync(invoice.SubscriptionId, invoice.CustomerId, ct);
+            var orgId = await ResolveOrganizationIdAsync(null, invoice.CustomerId, ct);
             if (orgId is null)
                 return;
 
@@ -142,7 +142,7 @@ namespace Recuria.Api.Payments
             if (invoice is null)
                 return;
 
-            var orgId = await ResolveOrganizationIdAsync(invoice.SubscriptionId, invoice.CustomerId, ct);
+            var orgId = await ResolveOrganizationIdAsync(null, invoice.CustomerId, ct);
             if (orgId is null)
                 return;
 

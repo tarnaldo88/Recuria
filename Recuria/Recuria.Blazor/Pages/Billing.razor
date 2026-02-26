@@ -18,9 +18,14 @@
 
     <MudNumericField T="int" @bind-Value="_quantity" Label="Quantity" Variant="Variant.Outlined" Min="1" />
 
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@_busy" OnClick="StartCheckout">
-        @(_busy ? "Redirecting..." : "Start Checkout")
-    </MudButton>
+    <MudStack Row="true" Spacing="2">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@_busy" OnClick="StartCheckout">
+            @(_busy ? "Redirecting..." : "Start Checkout")
+        </MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="@_busy" OnClick="OpenPortal">
+            Manage Billing Portal
+        </MudButton>
+    </MudStack>
 
     @if(!string.IsNullOrWhiteSpace(_error))
     {
@@ -94,6 +99,40 @@
             }
 
             Nav.NavigateTo(checkoutResult.Data, forceLoad: true);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task OpenPortal()
+    {
+        _error = null;
+        _busy = true;
+        try
+        {
+            var ctx = await UserContext.GetAsync();
+            if (!ctx.IsAuthenticated || ctx.OrganizationId is null)
+            {
+                _error = "You must be signed in with an organization context.";
+                return;
+            }
+
+            if (!ctx.CanManageBilling)
+            {
+                _error = "Only Admin/Owner can manage billing.";
+                return;
+            }
+
+            var portalResult = await Payments.CreatePortalUrlAsync(ctx.OrganizationId.Value, notifyError: false);
+            if (!portalResult.Success || string.IsNullOrWhiteSpace(portalResult.Data))
+            {
+                _error = portalResult.Error ?? "Unable to open billing portal.";
+                return;
+            }
+
+            Nav.NavigateTo(portalResult.Data, forceLoad: true);
         }
         finally
         {
