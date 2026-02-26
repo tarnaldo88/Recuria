@@ -27,18 +27,25 @@ builder.Services.AddMudServices();
 
 var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5132/";
 
-builder.Services.AddScoped(sp =>
+// One shared authenticated HttpClient for app services
+builder.Services.AddScoped<HttpClient>(sp =>
 {
     var handler = sp.GetRequiredService<AuthHeaderHandler>();
-    handler.InnerHandler = new HttpClientHandler();
-    var http = new HttpClient(handler)
+    if (handler.InnerHandler is null)
+        handler.InnerHandler = new HttpClientHandler();
+
+    return new HttpClient(handler)
     {
         BaseAddress = new Uri(apiBaseUrl)
     };
-    return new Recuria.Client.RecuriaApiClient(http);
 });
+
+// NSwag client built from same HttpClient
+builder.Services.AddScoped<Recuria.Client.RecuriaApiClient>(sp =>
+    new Recuria.Client.RecuriaApiClient(sp.GetRequiredService<HttpClient>()));
 
 builder.Services.AddScoped<Recuria.Client.IRecuriaApiClient>(sp =>
     sp.GetRequiredService<Recuria.Client.RecuriaApiClient>());
+
 
 await builder.Build().RunAsync();
