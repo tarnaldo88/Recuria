@@ -352,17 +352,38 @@ builder.Services.AddAuthorization(options =>
         .RequireAuthenticatedUser()
         .Build();
 
-    options.AddPolicy("OwnerOnly", policy =>
+    options.AddPolicy(AuthorizationPolicies.OwnerOnly, policy =>
         policy.RequireRole(UserRole.Owner.ToString()));
 
-    options.AddPolicy("AdminOrOwner", policy =>
+    options.AddPolicy(AuthorizationPolicies.AdminOrOwner, policy =>
         policy.RequireRole(UserRole.Admin.ToString(), UserRole.Owner.ToString()));
 
-    options.AddPolicy("MemberOrAbove", policy =>
+    options.AddPolicy(AuthorizationPolicies.MemberOrAbove, policy =>
         policy.RequireRole(
             UserRole.Member.ToString(),
             UserRole.Admin.ToString(),
             UserRole.Owner.ToString()));
+
+    // Action-level policies (mapped to role policies for now; keeps room for claim-based permissions later).
+    options.AddPolicy(AuthorizationPolicies.OrganizationsRead, policy =>
+        policy.RequireRole(UserRole.Member.ToString(), UserRole.Admin.ToString(), UserRole.Owner.ToString()));
+    options.AddPolicy(AuthorizationPolicies.OrganizationsManageUsers, policy =>
+        policy.RequireRole(UserRole.Admin.ToString(), UserRole.Owner.ToString()));
+
+    options.AddPolicy(AuthorizationPolicies.InvoicesRead, policy =>
+        policy.RequireRole(UserRole.Member.ToString(), UserRole.Admin.ToString(), UserRole.Owner.ToString()));
+    options.AddPolicy(AuthorizationPolicies.InvoicesWrite, policy =>
+        policy.RequireRole(UserRole.Admin.ToString(), UserRole.Owner.ToString()));
+
+    options.AddPolicy(AuthorizationPolicies.SubscriptionsRead, policy =>
+        policy.RequireRole(UserRole.Member.ToString(), UserRole.Admin.ToString(), UserRole.Owner.ToString()));
+    options.AddPolicy(AuthorizationPolicies.SubscriptionsManage, policy =>
+        policy.RequireRole(UserRole.Admin.ToString(), UserRole.Owner.ToString()));
+
+    options.AddPolicy(AuthorizationPolicies.PaymentsCheckout, policy =>
+        policy.RequireRole(UserRole.Admin.ToString(), UserRole.Owner.ToString()));
+    options.AddPolicy(AuthorizationPolicies.OpsManage, policy =>
+        policy.RequireRole(UserRole.Admin.ToString(), UserRole.Owner.ToString()));
 });
 
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
