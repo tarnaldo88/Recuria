@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Recuria.Api.Auth;
 using Recuria.Api.Configuration;
 using Recuria.Api.Payments;
 using Stripe;
@@ -49,7 +50,7 @@ namespace Recuria.Api.Controllers
 
 
         [HttpPost("checkout-session")]
-        [Authorize(Policy = "MemberOrAbove")]
+        [Authorize(Policy = AuthorizationPolicies.PaymentsCheckout)]
         public async Task<ActionResult<object>> CreateCheckoutSession([FromBody] CreateCheckoutSessionRequest req, CancellationToken ct)
         {
             var plan = _stripe.Plans.FirstOrDefault(p =>
