@@ -13,7 +13,7 @@ namespace Recuria.Api.Controllers
     /// Operational outbox endpoints (admin or owner only).
     /// </summary>
     [ApiController]
-    [Authorize(Policy = "AdminOrOwner")]
+    [Authorize(Policy = AuthorizationPolicies.OpsManage)]
     [Route("api/outbox")]
     public sealed class OutboxController : ControllerBase
     {
