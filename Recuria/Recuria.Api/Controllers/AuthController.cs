@@ -20,6 +20,8 @@ namespace Recuria.Api.Controllers
         private readonly IOrganizationService _organizationService;
         private readonly IUnitOfWork _uow;
         private readonly ITokenService _tokens;
+        private readonly IAuthChallengeService _challenges;
+        private readonly ILogger<AuthController> _logger;
         private readonly JwtOptions _jwt;
 
         public AuthController(
@@ -28,6 +30,8 @@ namespace Recuria.Api.Controllers
             IOrganizationService organizationService,
             IUnitOfWork uow,
             ITokenService tokens,
+            IAuthChallengeService challenges,
+            ILogger<AuthController> logger,
             Microsoft.Extensions.Options.IOptions<JwtOptions> jwt)
         {
             _users = users;
@@ -35,6 +39,8 @@ namespace Recuria.Api.Controllers
             _organizationService = organizationService;
             _uow = uow;
             _tokens = tokens;
+            _challenges = challenges;
+            _logger = logger;
             _jwt = jwt.Value;
         }
 
@@ -83,6 +89,38 @@ namespace Recuria.Api.Controllers
             [StringLength(256, MinimumLength = 8)]
             public string Password { get; init; } = string.Empty;
         }
+
+        public sealed class VerificationRequest
+        {
+            [Required]
+            [StringLength(200)]
+            public string OrganizationName { get; init; } = string.Empty;
+
+            [Required]
+            [EmailAddress]
+            [StringLength(256)]
+            public string Email { get; init; } = string.Empty;
+        }
+
+        public sealed class TokenRequest
+        {
+            [Required]
+            [StringLength(300)]
+            public string Token { get; init; } = string.Empty;
+        }
+
+        public sealed class PasswordResetRequest
+        {
+            [Required]
+            [StringLength(300)]
+            public string Token { get; init; } = string.Empty;
+
+            [Required]
+            [StringLength(256, MinimumLength = 8)]
+            public string NewPassword { get; init; } = string.Empty;
+        }
+
+        public sealed record ChallengeIssuedResponse(bool Issued, string DeliveryChannel);
 
         [HttpPost("login")]
         [AllowAnonymous]
@@ -173,6 +211,117 @@ namespace Recuria.Api.Controllers
                 reloadedOwner.Name));
         }
 
+        [HttpPost("request-email-verification")]
+        [AllowAnonymous]
+        [EnableRateLimiting("auth-login")]
+        [ProducesResponseType(typeof(ChallengeIssuedResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<ChallengeIssuedResponse>> RequestEmailVerification([FromBody] VerificationRequest request, CancellationToken ct)
+        {
+            var user = await ResolveUserAsync(request.OrganizationName, request.Email, ct);
+            if (user is not null)
+            {
+                var token = _challenges.IssueEmailVerification(user.Id, TimeSpan.FromHours(24));
+                _logger.LogInformation("Email verification token generated for {Email}: {Token}", user.Email, token);
+            }
+            return Ok(new ChallengeIssuedResponse(true, "email"));
+        }
+
+        [HttpPost("verify-email")]
+        [AllowAnonymous]
+        [EnableRateLimiting("auth-login")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> VerifyEmail([FromBody] TokenRequest request, CancellationToken ct)
+        {
+            if (!_challenges.TryConsumeEmailVerification(request.Token, out var userId))
+                return BadRequest("Invalid or expired verification token.");
+
+            var user = await _users.GetByIdAsync(userId, ct);
+            if (user is null)
+                return BadRequest("User not found.");
+
+            // NOTE: no persisted flag yet; token consumption is the current proof-of-verification.
+            _logger.LogInformation("Email verification completed for user {UserId}", userId);
+            return NoContent();
+        }
+
+        [HttpPost("request-password-reset")]
+        [AllowAnonymous]
+        [EnableRateLimiting("auth-login")]
+        [ProducesResponseType(typeof(ChallengeIssuedResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<ChallengeIssuedResponse>> RequestPasswordReset([FromBody] VerificationRequest request, CancellationToken ct)
+        {
+            var user = await ResolveUserAsync(request.OrganizationName, request.Email, ct);
+            if (user is not null)
+            {
+                var token = _challenges.IssuePasswordReset(user.Id, TimeSpan.FromHours(2));
+                _logger.LogInformation("Password reset token generated for {Email}: {Token}", user.Email, token);
+            }
+            return Ok(new ChallengeIssuedResponse(true, "email"));
+        }
+
+        [HttpPost("reset-password")]
+        [AllowAnonymous]
+        [EnableRateLimiting("auth-login")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ResetPassword([FromBody] PasswordResetRequest request, CancellationToken ct)
+        {
+            if (!_challenges.TryConsumePasswordReset(request.Token, out var userId))
+                return BadRequest("Invalid or expired reset token.");
+
+            var user = await _users.GetByIdAsync(userId, ct);
+            if (user is null)
+                return BadRequest("User not found.");
+
+            user.SetPassword(request.NewPassword);
+            user.RotateTokenVersion();
+            _users.Update(user);
+            await _uow.CommitAsync(ct);
+            return NoContent();
+        }
+
+        [HttpPost("request-magic-link")]
+        [AllowAnonymous]
+        [EnableRateLimiting("auth-login")]
+        [ProducesResponseType(typeof(ChallengeIssuedResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<ChallengeIssuedResponse>> RequestMagicLink([FromBody] VerificationRequest request, CancellationToken ct)
+        {
+            var user = await ResolveUserAsync(request.OrganizationName, request.Email, ct);
+            if (user is not null)
+            {
+                var token = _challenges.IssueMagicLink(user.Id, TimeSpan.FromMinutes(20));
+                _logger.LogInformation("Magic link token generated for {Email}: {Token}", user.Email, token);
+            }
+            return Ok(new ChallengeIssuedResponse(true, "email"));
+        }
+
+        [HttpPost("magic-link-login")]
+        [AllowAnonymous]
+        [EnableRateLimiting("auth-login")]
+        [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<AuthResponse>> MagicLinkLogin([FromBody] TokenRequest request, CancellationToken ct)
+        {
+            if (!_challenges.TryConsumeMagicLink(request.Token, out var userId))
+                return BadRequest("Invalid or expired magic-link token.");
+
+            var user = await _users.GetByIdAsync(userId, ct);
+            if (user is null || user.OrganizationId is null)
+                return BadRequest("User not found.");
+
+            var accessToken = _tokens.CreateAccessToken(user);
+            var expiresAt = DateTime.UtcNow.AddMinutes(_jwt.AccessTokenMinutes);
+            return Ok(new AuthResponse(
+                accessToken,
+                expiresAt,
+                user.Id,
+                user.OrganizationId.Value,
+                user.Role.ToString(),
+                user.Email,
+                user.Name));
+        }
+
         [HttpPost("refresh")]
         [Authorize]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
@@ -219,6 +368,16 @@ namespace Recuria.Api.Controllers
             await _uow.CommitAsync(ct);
 
             return NoContent();
+        }
+
+        private async Task<Domain.User?> ResolveUserAsync(string organizationName, string email, CancellationToken ct)
+        {
+            var org = await _organizations.GetByNameAsync(organizationName.Trim(), ct);
+            if (org is null)
+                return null;
+
+            var normalizedEmail = email.Trim().ToLowerInvariant();
+            return await _users.GetByEmailInOrganizationAsync(org.Id, normalizedEmail, ct);
         }
     }
 }
