@@ -49,7 +49,7 @@
 
             var who = await _authApi.WhoAmIAsync(notifyError: false);
             var orgIdRaw = await _auth.GetOrgIdAsync();
-            var hasOrgId = Guid.TryParse(orgIdRaw, out var orgId);
+            var hasOrgId = Guid.TryParse(orgIdRaw, out var orgId) && orgId != Guid.Empty;
 
             _cached = new UserContext
             {
@@ -57,6 +57,7 @@
                 Role = who.Success ? who.Data?.Role : null,
                 OrganizationId = hasOrgId ? orgId : null
             };
+
 
             return _cached;
         }
