@@ -14,7 +14,7 @@ namespace Recuria.Api.Controllers
     /// User management endpoints.
     /// </summary>
     [ApiController]
-    [Authorize(Policy = "AdminOrOwner")]
+    [Authorize(Policy = AuthorizationPolicies.OrganizationsManageUsers)]
     [Route("api/users")]
     public sealed class UsersController : ControllerBase
     {
