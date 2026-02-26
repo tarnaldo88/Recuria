@@ -288,6 +288,12 @@ else
     private async Task<Guid?> GetOrganizationIdAsync()
     {
         var orgIdRaw = await Auth.GetOrgIdAsync();
+        if (orgId == Guid.Empty)
+        {
+            _blockingMessage = "Organization id is missing. Sign out and sign in again.";
+            return null;
+        }
+
 
         if (string.IsNullOrWhiteSpace(orgIdRaw))
         {
