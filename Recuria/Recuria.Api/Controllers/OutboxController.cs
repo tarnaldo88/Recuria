@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Recuria.Api.Auth;
 using Recuria.Infrastructure.Outbox;
 using Recuria.Infrastructure.Persistence;
 using Recuria.Application.Interface.Idempotency;
