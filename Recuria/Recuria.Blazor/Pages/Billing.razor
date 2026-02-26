@@ -37,6 +37,13 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var ctx = await UserContext.GetAsync();
+        if (!ctx.IsAuthenticated || !ctx.CanManageBilling)
+        {
+            _error = "Only Admin/Owner can manage billing.";
+            return;
+        }
+
         var plansResult = await Payments.GetPlansAsync(notifyError: false);
         if (!plansResult.Success || plansResult.Data is null)
         {
@@ -60,6 +67,12 @@
             if (!ctx.IsAuthenticated || ctx.OrganizationId is null)
             {
                 _error = "You must be signed in with an organization context.";
+                return;
+            }
+
+            if (!ctx.CanManageBilling)
+            {
+                _error = "Only Admin/Owner can manage billing.";
                 return;
             }
 
