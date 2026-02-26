@@ -83,8 +83,10 @@ namespace Recuria.Domain.Entities
 
         public void Activate(DateTime now)
         {
-            if (Status != SubscriptionStatus.Trial && Status != SubscriptionStatus.PastDue)
-                throw new InvalidOperationException("Only trial or past-due subscriptions can be activated.");
+            if (Status != SubscriptionStatus.Trial &&
+                Status != SubscriptionStatus.PastDue &&
+                Status != SubscriptionStatus.Canceled)
+                throw new InvalidOperationException("Only trial, past-due, or canceled subscriptions can be activated.");
 
             Status = SubscriptionStatus.Active;
             PeriodStart = now;
