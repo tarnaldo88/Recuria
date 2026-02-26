@@ -288,12 +288,6 @@ else
     private async Task<Guid?> GetOrganizationIdAsync()
     {
         var orgIdRaw = await Auth.GetOrgIdAsync();
-        if (orgId == Guid.Empty)
-        {
-            _blockingMessage = "Organization id is missing. Sign out and sign in again.";
-            return null;
-        }
-
 
         if (string.IsNullOrWhiteSpace(orgIdRaw))
         {
@@ -304,6 +298,12 @@ else
         if (!Guid.TryParse(orgIdRaw, out var orgId))
         {
             _blockingMessage = "Organization id is invalid. Re-bootstrap your session.";
+            return null;
+        }
+
+        if (orgId == Guid.Empty)
+        {
+            _blockingMessage = "Organization id is missing. Sign out and sign in again.";
             return null;
         }
 
@@ -343,6 +343,16 @@ else
 
         try
         {
+            if (_orgId == Guid.Empty)
+            {
+                _tableError = "No organization context found. Sign out and sign in again.";
+                return new TableData<Recuria.Client.UserSummaryDto>
+                {
+                    Items = Array.Empty<Recuria.Client.UserSummaryDto>(),
+                    TotalItems = 0
+                };
+            }
+
             var page = state.Page + 1;
             var pageSize = state.PageSize;
 
