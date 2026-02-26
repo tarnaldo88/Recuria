@@ -8,6 +8,7 @@ public sealed class StripeOptions
     public string WebhookSecret { get; init; } = string.Empty;
     public string SuccessUrl { get; init; } = string.Empty;
     public string CancelUrl { get; init; } = string.Empty;
+    public string PortalReturnUrl { get; init; } = string.Empty;
 
     public List<StripePlanOption> Plans { get; init; } = new();
 }
