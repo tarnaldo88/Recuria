@@ -38,16 +38,6 @@ builder.Services.AddScoped(sp =>
     return new Recuria.Client.RecuriaApiClient(http);
 });
 
-builder.Services.AddScoped(sp =>
-{
-    var handler = sp.GetRequiredService<AuthHeaderHandler>();
-    handler.InnerHandler = new HttpClientHandler();
-    return new HttpClient(handler)
-    {
-        BaseAddress = new Uri(apiBaseUrl)
-    };
-});
-
 builder.Services.AddScoped<Recuria.Client.IRecuriaApiClient>(sp =>
     sp.GetRequiredService<Recuria.Client.RecuriaApiClient>());
 
