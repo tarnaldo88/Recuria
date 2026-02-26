@@ -39,6 +39,19 @@ services:
       SecurityHeaders__ContentSecurityPolicy: "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
       SecurityHeaders__PermissionsPolicy: "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
       Idempotency__InvoiceCreateTtlHours: "24"
+      Stripe__SecretKey: "sk_test_xxx"
+      Stripe__WebhookSecret: "whsec_xxx"
+      Stripe__SuccessUrl: "http://localhost:5091/billing/success"
+      Stripe__CancelUrl: "http://localhost:5091/billing/cancel"
+
+      #some mock data for dev
+      Stripe__Plans__0__Code: "pro_monthly"
+      Stripe__Plans__0__Name: "Pro Monthly"
+      Stripe__Plans__0__StripePriceId: "price_xxx"
+      Stripe__Plans__0__AmountCents: "2900"
+      Stripe__Plans__0__Currency: "usd"
+      Stripe__Plans__0__Interval: "month"
+      Stripe__Plans__0__Active: "true"
 
 volumes:
   recuria-sql-data:
