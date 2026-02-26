@@ -43,7 +43,7 @@ namespace Recuria.Api.Controllers
         /// Get the current subscription for an organization.
         /// </summary>
         [HttpGet("current/{organizationId:guid}")]
-        [Authorize(Policy = "MemberOrAbove")]
+        [Authorize(Policy = AuthorizationPolicies.SubscriptionsRead)]
         public async Task<ActionResult<SubscriptionDetailsDto>> GetCurrent(Guid organizationId, CancellationToken ct)
         {
             if (!IsSameOrganization(organizationId))
@@ -65,7 +65,7 @@ namespace Recuria.Api.Controllers
         /// Create a trial subscription for an organization.
         /// </summary>
         [HttpPost("trial/{organizationId:guid}")]
-        [Authorize(Policy = "AdminOrOwner")]
+        [Authorize(Policy = AuthorizationPolicies.SubscriptionsManage)]
         [ProducesResponseType(typeof(SubscriptionDetailsDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<SubscriptionDto>> CreateTrial(Guid organizationId, CancellationToken ct)
@@ -87,7 +87,7 @@ namespace Recuria.Api.Controllers
         /// Upgrade a subscription plan.
         /// </summary>
         [HttpPost("{subscriptionId:guid}/upgrade")]
-        [Authorize(Policy = "AdminOrOwner")]
+        [Authorize(Policy = AuthorizationPolicies.SubscriptionsManage)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -117,7 +117,7 @@ namespace Recuria.Api.Controllers
         /// Cancel a subscription.
         /// </summary>
         [HttpPost("{subscriptionId:guid}/cancel")]
-        [Authorize(Policy = "AdminOrOwner")]
+        [Authorize(Policy = AuthorizationPolicies.SubscriptionsManage)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
