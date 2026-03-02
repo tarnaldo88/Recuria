@@ -109,6 +109,8 @@
     private string? _blockingMessage;
     private Recuria.Client.SubscriptionDetailsDto? _subscription;
     private string _organizationName = "unknown";
+    private InvoiceStats _invoiceStats = new();
+    private List<Recuria.Client.InvoiceListItemDto> _recentInvoices = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -128,6 +130,25 @@
 
             var subResult = await Subscriptions.GetCurrentAsync(parsedOrgId);
             if (!subResult.Success || subResult.Data is null){
+                _blockingMessage = "Unable to load subscription.";
+                return;
+            }
+
+            // Load organization and subscription in parallel
+            var orgTask = Organizations.GetByIdAsync(parsedOrgId);
+            var subTask = Subscriptions.GetCurrentAsync(parsedOrgId);
+            var invoicesTask = LoadInvoiceData(parsedOrgId);
+
+            await Task.WhenAll(orgTask, subTask, invoicesTask);
+
+            if (!orgTask.Result.Success || orgTask.Result.Data is null)
+            {
+                _blockingMessage = "Unable to load organization.";
+                return;
+            }
+
+            if (!subTask.Result.Success || subTask.Result.Data is null)
+            {
                 _blockingMessage = "Unable to load subscription.";
                 return;
             }
