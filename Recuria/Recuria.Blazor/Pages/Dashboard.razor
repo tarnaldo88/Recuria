@@ -109,9 +109,10 @@
     private bool _loading = true;
     private string? _blockingMessage;
     private Recuria.Client.SubscriptionDetailsDto? _subscription;
+    private Recuria.Client.OrganizationDetailsDto? _organization;
     private string _organizationName = "unknown";
     private InvoiceStats _invoiceStats = new();
-    private List<Recuria.Client.InvoiceListItemDto> _recentInvoices = new();+
+    private List<Recuria.Client.InvoiceListItemDto> _recentInvoices = new();
     private UserStats _userStats = new();
 
     protected override async Task OnInitializedAsync()
@@ -157,6 +158,7 @@
 
             _subscription = subResult.Data;
             _organizationName = orgResult.Data.Name ?? "unknown";
+            _organization = orgTask.Result.Data;
         }
         finally
         {
