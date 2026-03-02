@@ -250,5 +250,43 @@
       };
 
     private static string FormatMoney(double amount) => $"${amount:N2}";
+
+    private static List<string> GetPlanFeatures(string? planCode) =>
+        planCode?.ToLowerInvariant() switch
+        {
+            "free" => new()
+            {
+                "Up to 3 users",
+                "Basic features",
+                "Community support"
+            },
+            "pro" => new()
+            {
+                "Up to 25 users",
+                "Advanced features",
+                "Priority support",
+                "API access",
+                "Custom integrations"
+            },
+            "enterprise" => new()
+            {
+                "Unlimited users",
+                "All features",
+                "Dedicated support",
+                "Advanced API access",
+                "Custom integrations",
+                "SLA guarantee",
+                "Custom branding"
+            },
+            _ => new() { "Basic features" }
+        };
+
+    private record InvoiceStats
+    {
+        public int TotalInvoices { get; init; }
+        public int PaidInvoices { get; init; }
+        public int UnpaidInvoices { get; init; }
+        public double TotalRevenue { get; init; }
+    }
 }
 
