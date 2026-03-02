@@ -61,7 +61,56 @@
                     </MudCardContent>
                 </MudCard>
             </MudItem>
+            <MudItem xs="12" md="6">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Team Overview</MudText>
+                            <MudText Typo="Typo.body2">Organization members</MudText>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Href="/users">
+                                Manage
+                            </MudButton>
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="4">
+                                <MudStack Spacing="1" AlignItems="AlignItems.Center">
+                                    <MudText Typo="Typo.h4" Color="Color.Primary">@_userStats.TotalUsers</MudText>
+                                    <MudText Typo="Typo.body2">Total</MudText>
+                                </MudStack>
+                            </MudItem>
+                            <MudItem xs="4">
+                                <MudStack Spacing="1" AlignItems="AlignItems.Center">
+                                    <MudText Typo="Typo.h4" Color="Color.Success">@_userStats.Admins</MudText>
+                                    <MudText Typo="Typo.body2">Admins</MudText>
+                                </MudStack>
+                            </MudItem>
+                            <MudItem xs="4">
+                                <MudStack Spacing="1" AlignItems="AlignItems.Center">
+                                    <MudText Typo="Typo.h4" Color="Color.Info">@_userStats.Members</MudText>
+                                    <MudText Typo="Typo.body2">Members</MudText>
+                                </MudStack>
+                            </MudItem>
+                        </MudGrid>
 
+                        <MudDivider Class="mt-3 mb-2" />
+
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.caption" Color="Color.Default">
+                                <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" />
+                                Owner: @_userStats.OwnerName ?? "Unknown"
+                            </MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Default">
+                                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" />
+                                Created: @_organization?.CreatedOnUtc?.ToString("d") ?? "Unknown"
+                            </MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
             <MudItem xs="12" md="6">
                 <MudCard>
                     <MudCardHeader>
