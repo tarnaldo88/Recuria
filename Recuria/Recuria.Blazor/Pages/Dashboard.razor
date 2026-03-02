@@ -152,9 +152,33 @@
                 _blockingMessage = "Unable to load subscription.";
                 return;
             }
-           
+
             _subscription = subResult.Data;
             _organizationName = orgResult.Data.Name ?? "unknown";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task LoadInvoiceData(Guid orgId)
+    {
+        _loading = true;
+
+        try
+        {
+            var recentResult = await Invoices.GetPageAsync(orgId, 1, 5, null, "issuedOnUtc", "desc", false);
+
+            if(recentResult.Success && recentResult.Data?.Items != null)
+            {
+                _recentInvoices = recentResult.Data.Items.ToList();
+            }
+
+        } 
+        catch
+        {
+
         }
         finally
         {
