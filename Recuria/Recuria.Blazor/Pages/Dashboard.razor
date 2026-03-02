@@ -192,7 +192,7 @@
             var invoicesTask = LoadInvoiceData(parsedOrgId);
             var usersTask = LoadUserData(parsedOrgId);
 
-            await Task.WhenAll(orgTask, subTask, invoicesTask);
+            await Task.WhenAll(orgTask, subTask, invoicesTask, usersTask);
 
             if (!orgTask.Result.Success || orgTask.Result.Data is null)
             {
@@ -206,11 +206,11 @@
                 return;
             }
 
-            if(!usersTask.Result.Success || subTask.Result.Data is null)
-            {
-                _blockingMessage =  "Unable to load users"; 
-                return;
-            }
+            // if(!usersTask.Result.Success || subTask.Result.Data is null)
+            // {
+            //     _blockingMessage =  "Unable to load users"; 
+            //     return;
+            // }
 
             _subscription = subResult.Data;
             _organizationName = orgResult.Data.Name ?? "unknown";
@@ -258,7 +258,7 @@
         }
     }
 
-    private async LoadUserData(Guid orgId)
+    private async Task LoadUserData(Guid orgId)
     {
         try
         {
