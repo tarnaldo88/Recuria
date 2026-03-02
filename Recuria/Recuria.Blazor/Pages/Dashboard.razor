@@ -89,6 +89,12 @@
                                     <MudText Typo="Typo.body2">Unpaid</MudText>
                                 </MudStack>
                             </MudItem>
+                            <MudItem xs="6">
+                                <MudStack Spacing="1" AlignItems="AlignItems.Center">
+                                    <MudText Typo="Typo.h4" Color="Color.Primary">@FormatMoney(@_invoiceStats.TotalRevenue)</MudText>
+                                    <MudText Typo="Typo.body2">Total Revenue</MudText>
+                                </MudStack>
+                            </MudItem>
                         </MudGrid>
                     </MudCardContent>
                 </MudCard>
