@@ -3,6 +3,7 @@
 @inject Recuria.Blazor.Services.App.IOrganizationAppService Organizations
 @inject Recuria.Blazor.Services.App.ISubscriptionAppService Subscriptions
 @inject Recuria.Blazor.Services.App.IInvoiceAppService Invoices
+@inject Recuria.Blazor.Services.App.IUserAppService Users
 
 <PageTitle>Dashboard</PageTitle>
 
@@ -110,7 +111,8 @@
     private Recuria.Client.SubscriptionDetailsDto? _subscription;
     private string _organizationName = "unknown";
     private InvoiceStats _invoiceStats = new();
-    private List<Recuria.Client.InvoiceListItemDto> _recentInvoices = new();
+    private List<Recuria.Client.InvoiceListItemDto> _recentInvoices = new();+
+    private UserStats _userStats = new();
 
     protected override async Task OnInitializedAsync()
     {
