@@ -237,5 +237,18 @@
           "enterprise" => Color.Success,
           _ => Color.Default
       };
+
+    private static Color GetInvoiceStatusColor(string? status) =>
+      status?.ToLowerInvariant() switch
+      {
+          "paid" => Color.Success,
+          "open" => Color.Info,
+          "pending" => Color.Warning,
+          "failed" => Color.Error,
+          "void" => Color.Default,
+          _ => Color.Default
+      };
+
+    private static string FormatMoney(double amount) => $"${amount:N2}";
 }
 
