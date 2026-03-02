@@ -105,7 +105,7 @@
                             </MudText>
                             <MudText Typo="Typo.caption" Color="Color.Default">
                                 <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" />
-                                Created: @_organization?.CreatedOnUtc?.ToString("d") ?? "Unknown"
+                                Created: @_organization?.CreatedAt.ToString("d") ?? "Unknown"
                             </MudText>
                         </MudStack>
                     </MudCardContent>
@@ -158,7 +158,7 @@
     private bool _loading = true;
     private string? _blockingMessage;
     private Recuria.Client.SubscriptionDetailsDto? _subscription;
-    private Recuria.Client.OrganizationDetailsDto? _organization;
+    private Recuria.Client.OrganizationDto? _organization;
     private string _organizationName = "unknown";
     private InvoiceStats _invoiceStats = new();
     private List<Recuria.Client.InvoiceListItemDto> _recentInvoices = new();
