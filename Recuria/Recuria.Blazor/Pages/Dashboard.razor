@@ -175,10 +175,22 @@
                 _recentInvoices = recentResult.Data.Items.ToList();
             }
 
+            // Calculate statistics from recent invoices
+            _invoiceStats = new InvoiceStats
+            {
+                TotalInvoices = _recentInvoices.Count,
+                PaidInvoices = _recentInvoices.Count(i => i.Status?.ToLowerInvariant() == "paid"),
+                UnpaidInvoices = _recentInvoices.Count(i => i.Status?.ToLowerInvariant() != "paid"),
+                TotalRevenue = _recentInvoices
+                    .Where(i => i.Status?.ToLowerInvariant() == "paid")
+                    .Sum(i => i.Total.Amount)
+            };
         } 
         catch
         {
-
+            // Silently fail invoice loading - don't block the dashboard
+            _invoiceStats = new InvoiceStats();
+            _recentInvoices = new();
         }
         finally
         {
