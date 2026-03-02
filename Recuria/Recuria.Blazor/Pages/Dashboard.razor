@@ -228,5 +228,14 @@
          Recuria.Client.SubscriptionStatus.Expired => Color.Default,
          _ => Color.Default
      };
+
+    private static Color GetPlanColor(string? planCode) =>
+      planCode?.ToLowerInvariant() switch
+      {
+          "free" => Color.Default,
+          "pro" => Color.Primary,
+          "enterprise" => Color.Success,
+          _ => Color.Default
+      };
 }
 
