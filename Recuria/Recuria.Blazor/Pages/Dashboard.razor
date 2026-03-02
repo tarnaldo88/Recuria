@@ -69,6 +69,28 @@
                             <MudText Typo="Typo.body2">Last 30 Days</MudText>
                         </CardHeaderContent>
                     </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="6">
+                                <MudStack Spacing="1" AlignItems="AlignItems.Center">
+                                    <MudText Typo="Typo.h4" Color="Color.Primary">@_invoiceStats.TotalInvoices</MudText>
+                                    <MudText Typo="Typo.body2">Total Invoices</MudText>
+                                </MudStack>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudStack Spacing="1" AlignItems="AlignItems.Center">
+                                    <MudText Typo="Typo.h4" Color="Color.Success">@_invoiceStats.PaidInvoices</MudText>
+                                    <MudText Typo="Typo.body2">Paid</MudText>
+                                </MudStack>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudStack Spacing="1" AlignItems="AlignItems.Center">
+                                    <MudText Typo="Typo.h4" Color="Color.Warning">@_invoiceStats.UnpaidInvoices</MudText>
+                                    <MudText Typo="Typo.body2">Unpaid</MudText>
+                                </MudStack>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
                 </MudCard>
             </MudItem>
 
