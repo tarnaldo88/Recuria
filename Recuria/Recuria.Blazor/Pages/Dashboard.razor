@@ -2,6 +2,7 @@
 @inject Recuria.Blazor.Services.AuthState Auth
 @inject Recuria.Blazor.Services.App.IOrganizationAppService Organizations
 @inject Recuria.Blazor.Services.App.ISubscriptionAppService Subscriptions
+@inject Recuria.Blazor.Services.App.IInvoiceAppService Invoices
 
 <PageTitle>Dashboard</PageTitle>
 
@@ -16,6 +17,12 @@
             </MudItem>
             <MudItem xs="12" md="6">
                 <MudSkeleton Height="180px" Width="100%" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSkeleton Height="200px" Width="100%" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSkeleton Height="200px" Width="100%" />
             </MudItem>
         </MudGrid>
     }
