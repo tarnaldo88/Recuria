@@ -141,6 +141,7 @@
             var orgTask = Organizations.GetByIdAsync(parsedOrgId);
             var subTask = Subscriptions.GetCurrentAsync(parsedOrgId);
             var invoicesTask = LoadInvoiceData(parsedOrgId);
+            var usersTask = LoadUserData(parsedOrgId);
 
             await Task.WhenAll(orgTask, subTask, invoicesTask);
 
@@ -153,6 +154,12 @@
             if (!subTask.Result.Success || subTask.Result.Data is null)
             {
                 _blockingMessage = "Unable to load subscription.";
+                return;
+            }
+
+            if(!usersTask.Result.Success || subTask.Result.Data is null)
+            {
+                _blockingMessage =  "Unable to load users"; 
                 return;
             }
 
