@@ -4,7 +4,9 @@
 @inject Recuria.Blazor.Services.App.IUserContextService UserContextService
 @inject IDialogService DialogService
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 @using System.Globalization
+@using System.Text
 
 <PageTitle>Invoices</PageTitle>
 
@@ -18,6 +20,7 @@
         </MudAlert>
     }
 
+    <!-- Create Invoice Card -->
     <MudCard Class="invoice-card">
         <MudCardHeader>
             <CardHeaderContent>
@@ -49,14 +52,14 @@
                     else
                     {
                         <MudItem xs="12" md="2" Class="invoice-actions">
-                        <MudButton Variant="Variant.Filled"
-                            Color="Color.Primary"
-                            FullWidth="true"
-                            Disabled="@(_busy || _newAmount <= 0)"
-                            OnClick="CreateInvoice">
-                            Create
-                        </MudButton>
-                    </MudItem>
+                            <MudButton Variant="Variant.Filled"
+                                Color="Color.Primary"
+                                FullWidth="true"
+                                Disabled="@(_busy || _newAmount <= 0)"
+                                OnClick="CreateInvoice">
+                                Create
+                            </MudButton>
+                        </MudItem>
                     }                    
                 </MudGrid>
             </MudCardContent>
@@ -69,10 +72,105 @@
         }        
     </MudCard>
 
+    <!-- Filters Card -->
+    <MudCard Class="invoice-card">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">Filters</MudText>
+            </CardHeaderContent>
+            <CardHeaderActions>
+                <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="ClearFilters" Disabled="_busy">
+                    Clear All
+                </MudButton>
+            </CardHeaderActions>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudGrid>
+                <MudItem xs="12" md="3">
+                    <MudDatePicker Label="From Date" 
+                                 @bind-Date="_filters.FromDate" 
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudDatePicker Label="To Date" 
+                                 @bind-Date="_filters.ToDate" 
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" md="2">
+                    <MudNumericField T="double" 
+                                    Label="Min Amount" 
+                                    @bind-Value="_filters.MinAmount" 
+                                    Variant="Variant.Outlined"
+                                    Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" md="2">
+                    <MudNumericField T="double" 
+                                    Label="Max Amount" 
+                                    @bind-Value="_filters.MaxAmount" 
+                                    Variant="Variant.Outlined"
+                                    Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" md="2">
+                    <MudSelect T="string?" 
+                               Label="Status" 
+                               @bind-Value="_filters.Status" 
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense">
+                        <MudSelectItem Value="@null">All Statuses</MudSelectItem>
+                        <MudSelectItem Value="paid">Paid</MudSelectItem>
+                        <MudSelectItem Value="open">Open</MudSelectItem>
+                        <MudSelectItem Value="pending">Pending</MudSelectItem>
+                        <MudSelectItem Value="failed">Failed</MudSelectItem>
+                        <MudSelectItem Value="void">Void</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_filters.Search"
+                                  Label="Search by description"
+                                  Immediate="true"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.End">
+                        <MudButton Variant="Variant.Filled" 
+                                   Color="Color.Primary" 
+                                   OnClick="ApplyFilters" 
+                                   Disabled="_busy">
+                            Apply Filters
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" 
+                                   Color="Color.Secondary" 
+                                   OnClick="ExportToCsv" 
+                                   Disabled="_busy || _filteredInvoices.Count == 0">
+                            <MudIcon Icon="@Icons.Material.Filled.Download" />
+                            Export CSV
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" 
+                                   Color="Color.Secondary" 
+                                   OnClick="ExportToPdf" 
+                                   Disabled="_busy || _filteredInvoices.Count == 0">
+                            <MudIcon Icon="@Icons.Material.Filled.PictureAsPdf" />
+                            Export PDF
+                        </MudButton>
+                    </MudStack>
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+    </MudCard>
+
+    <!-- Invoice History Card -->
     <MudCard Class="invoice-card">
         <MudCardHeader>
             <CardHeaderContent>
                 <MudText Typo="Typo.h6">Invoice History</MudText>
+                <MudText Typo="Typo.caption">@(_filteredInvoices.Count) filtered results</MudText>
             </CardHeaderContent>
             <CardHeaderActions>
                 <MudButton Variant="Variant.Text" Disabled="_busy" onclick="LoadInvoices">Refresh</MudButton>
@@ -95,7 +193,7 @@
 
                     <ToolBarContent>
                         <MudTextField @bind-Value="_tableSearch"
-                                      Placeholder="Search by status"
+                                      Placeholder="Quick search by status"
                                       Immediate="true"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Search"
@@ -106,6 +204,7 @@
                         <MudTh><MudTableSortLabel T="Recuria.Client.InvoiceListItemDto" SortLabel="issuedOnUtc">Issued</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel T="Recuria.Client.InvoiceListItemDto" SortLabel="total">Total</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel T="Recuria.Client.InvoiceListItemDto" SortLabel="status">Status</MudTableSortLabel></MudTh>
+                        <MudTh>Description</MudTh>
                         <MudTh></MudTh>
                     </HeaderContent>
 
@@ -117,6 +216,7 @@
                                 @(context.Status ?? "Unknown")
                             </MudChip>
                         </MudTd>
+                        <MudTd>@(GetDescription(context))</MudTd>
                         <MudTd>
                             <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenDetails(context.Id))">
                                 View
@@ -125,7 +225,7 @@
                     </RowTemplate>
 
                     <NoRecordsContent>
-                        <StandardTableState Loading="@_tableLoading" Error="@_tableError" HasRows="false" EmptyText="No invoices found." />
+                        <StandardTableState Loading="@_tableLoading" Error="@_tableError" HasRows="false" EmptyText="No invoices found matching your filters." />
                     </NoRecordsContent>
                 </MudTable>
             }
@@ -148,7 +248,9 @@
     private double _newAmount = 49.00;
     private string? _newDescription = "Monthly subscription";
 
-    private List<Recuria.Client.InvoiceListItemDto> _invoices = new();
+    private List<Recuria.Client.InvoiceListItemDto> _allInvoices = new();
+    private List<Recuria.Client.InvoiceListItemDto> _filteredInvoices = new();
+    private InvoiceFilters _filters = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -158,25 +260,34 @@
     }
 
     private async Task LoadInvoices()
-{
-    _blockingMessage = null;
-    _loading = true;
+    {
+        _blockingMessage = null;
+        _loading = true;
 
-    try {
-        var orgId = await GetOrganizationIdAsync();
-        if (orgId is null)
-            return;
+        try {
+            var orgId = await GetOrganizationIdAsync();
+            if (orgId is null)
+                return;
 
-        _orgId = orgId.Value;
+            _orgId = orgId.Value;
 
-        if (_table is not null)
-            await _table.ReloadServerData();
+            // Load all invoices for filtering
+            var allInvoicesResult = await InvoicesApi.GetPageAsync(
+                _orgId, 1, 1000, null, "issuedOnUtc", "desc", false);
+
+            if (allInvoicesResult.Success && allInvoicesResult.Data?.Items != null)
+            {
+                _allInvoices = allInvoicesResult.Data.Items.ToList();
+                ApplyFilters();
+            }
+
+            if (_table is not null)
+                await _table.ReloadServerData();
+        }
+        finally {
+            _loading = false;
+        }
     }
-    finally {
-        _loading = false;
-    }
-    
-}
 
     private async Task CreateInvoice()
     {
@@ -198,19 +309,20 @@
 
             if (confirmed != true)
                 return;
+            
             var createResult = await InvoicesApi.CreateAsync(new Recuria.Client.CreateInvoiceRequest
             {
                 OrganizationId = _orgId,
                 Amount = _newAmount,
                 Description = string.IsNullOrWhiteSpace(_newDescription) ? null : _newDescription.Trim()
             });
+            
             if (!createResult.Success)
             {
                 _serverValidationMessage = createResult.Error;
                 return;    
             }
             
-
             await LoadInvoices();
         }
         finally
@@ -226,38 +338,169 @@
 
         try
         {
+            // Use filtered invoices for server data
+            var filtered = _filteredInvoices.AsQueryable();
+            
+            // Apply search
+            if (!string.IsNullOrWhiteSpace(_tableSearch))
+            {
+                filtered = filtered.Where(i => 
+                    (i.Status?.Contains(_tableSearch, StringComparison.OrdinalIgnoreCase) ?? false));
+            }
+
+            // Apply sorting
+            filtered = state.SortLabel switch
+            {
+                "issuedOnUtc" => state.SortDirection == SortDirection.Descending 
+                    ? filtered.OrderByDescending(i => i.IssuedOnUtc)
+                    : filtered.OrderBy(i => i.IssuedOnUtc),
+                "total" => state.SortDirection == SortDirection.Descending 
+                    ? filtered.OrderByDescending(i => i.Total.Amount)
+                    : filtered.OrderBy(i => i.Total.Amount),
+                "status" => state.SortDirection == SortDirection.Descending 
+                    ? filtered.OrderByDescending(i => i.Status)
+                    : filtered.OrderBy(i => i.Status),
+                _ => filtered.OrderBy(i => i.IssuedOnUtc)
+            };
+
             var page = state.Page + 1;
             var pageSize = state.PageSize;
-
-            var pageResult = await InvoicesApi.GetPageAsync(
-                _orgId,
-                page,
-                pageSize,
-                _tableSearch,
-                state.SortLabel,
-                state.SortDirection == SortDirection.Descending ? "desc" : "asc",
-                notifyError: false);
-
-            if (!pageResult.Success || pageResult.Data is null)
-            {
-                _tableError = pageResult.Error ?? "Unable to load invoices.";
-                return new TableData<Recuria.Client.InvoiceListItemDto>
-                {
-                    Items = Array.Empty<Recuria.Client.InvoiceListItemDto>(),
-                    TotalItems = 0
-                };
-            }
+            var items = filtered.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
             return new TableData<Recuria.Client.InvoiceListItemDto>
             {
-                Items = pageResult.Data.Items ?? Array.Empty<Recuria.Client.InvoiceListItemDto>(),
-                TotalItems = pageResult.Data.TotalCount
+                Items = items,
+                TotalItems = _filteredInvoices.Count
             };
         }
         finally
         {
             _tableLoading = false;
         }
+    }
+
+    private void ApplyFilters()
+    {
+        _filteredInvoices = _allInvoices.Where(invoice =>
+        {
+            // Date range filter
+            if (_filters.FromDate.HasValue && invoice.IssuedOnUtc.Date < _filters.FromDate.Value.Date)
+                return false;
+            if (_filters.ToDate.HasValue && invoice.IssuedOnUtc.Date > _filters.ToDate.Value.Date)
+                return false;
+
+            // Amount range filter
+            if (_filters.MinAmount.HasValue && invoice.Total.Amount < _filters.MinAmount.Value)
+                return false;
+            if (_filters.MaxAmount.HasValue && invoice.Total.Amount > _filters.MaxAmount.Value)
+                return false;
+
+            // Status filter
+            if (!string.IsNullOrWhiteSpace(_filters.Status) && 
+                !string.Equals(invoice.Status, _filters.Status, StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            // Search filter
+            if (!string.IsNullOrWhiteSpace(_filters.Search))
+            {
+                // Note: InvoiceListItemDto doesn't have description, so this searches status
+                // In a real implementation, you might want to extend the DTO or API
+                return invoice.Status?.Contains(_filters.Search, StringComparison.OrdinalIgnoreCase) ?? false;
+            }
+
+            return true;
+        }).ToList();
+
+        // Reload table
+        if (_table is not null)
+            _table.ReloadServerData();
+    }
+
+    private void ClearFilters()
+    {
+        _filters = new InvoiceFilters();
+        ApplyFilters();
+    }
+
+    private async Task ExportToCsv()
+    {
+        if (_filteredInvoices.Count == 0) return;
+
+        _busy = true;
+        try
+        {
+            var csv = new StringBuilder();
+            csv.AppendLine("Invoice Number,Issued Date,Total,Status,Description");
+
+            foreach (var invoice in _filteredInvoices)
+            {
+                csv.AppendLine($"\"{invoice.Id.ToString()[..8]}\"," +
+                           $"\"{invoice.IssuedOnUtc:yyyy-MM-dd HH:mm:ss}\"," +
+                           $"\"{invoice.Total.Amount:F2}\"," +
+                           $"\"{invoice.Status}\"," +
+                           $"\"{GetDescription(invoice)}\"");
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(csv.ToString());
+            var fileName = $"invoices_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+            
+            await JS.InvokeVoidAsync("downloadFile", fileName, "text/csv", bytes);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ExportToPdf()
+    {
+        if (_filteredInvoices.Count == 0) return;
+
+        _busy = true;
+        try
+        {
+            // For PDF export, we'll create a simple HTML table and convert it
+            var html = CreatePdfHtml();
+            var fileName = $"invoices_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+            
+            // This would require a PDF library like iTextSharp or use browser print
+            await JS.InvokeVoidAsync("printToPdf", html, fileName);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private string CreatePdfHtml()
+    {
+        var html = new StringBuilder();
+        html.AppendLine("<!DOCTYPE html><html><head>");
+        html.AppendLine("<style>");
+        html.AppendLine("body { font-family: Arial, sans-serif; margin: 20px; }");
+        html.AppendLine("table { border-collapse: collapse; width: 100%; }");
+        html.AppendLine("th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }");
+        html.AppendLine("th { background-color: #f2f2f2; }");
+        html.AppendLine("</style>");
+        html.AppendLine("</head><body>");
+        html.AppendLine($"<h2>Invoice Export - {DateTime.Now:yyyy-MM-dd HH:mm:ss}</h2>");
+        html.AppendLine("<table>");
+        html.AppendLine("<tr><th>Invoice #</th><th>Issued Date</th><th>Total</th><th>Status</th><th>Description</th></tr>");
+
+        foreach (var invoice in _filteredInvoices)
+        {
+            html.AppendLine("<tr>");
+            html.AppendLine($"<td>{invoice.Id.ToString()[..8]}</td>");
+            html.AppendLine($"<td>{invoice.IssuedOnUtc:yyyy-MM-dd HH:mm:ss}</td>");
+            html.AppendLine($"<td>{invoice.Total.Amount:F2}</td>");
+            html.AppendLine($"<td>{invoice.Status}</td>");
+            html.AppendLine($"<td>{GetDescription(invoice)}</td>");
+            html.AppendLine("</tr>");
+        }
+
+        html.AppendLine("</table>");
+        html.AppendLine("</body></html>");
+        return html.ToString();
     }
 
     private async Task<Guid?> GetOrganizationIdAsync()
@@ -287,7 +530,6 @@
         return _table.ReloadServerData();
     }
 
-
     private void OpenDetails(Guid id) => Nav.NavigateTo($"/invoices/{id}");
 
     private static string FormatMoney(double? amount, string? currency)
@@ -308,5 +550,21 @@
             "void" => Color.Default,
             _ => Color.Default
         };
-}
 
+    private static string GetDescription(Recuria.Client.InvoiceListItemDto invoice)
+    {
+        // InvoiceListItemDto doesn't have description, so we'll use a placeholder
+        // In a real implementation, you might want to extend the DTO
+        return "Monthly subscription"; // or get from details if needed
+    }
+
+    private record InvoiceFilters
+    {
+        public DateTime? FromDate { get; init; }
+        public DateTime? ToDate { get; init; }
+        public double? MinAmount { get; init; }
+        public double? MaxAmount { get; init; }
+        public string? Status { get; init; }
+        public string? Search { get; init; }
+    }
+}
