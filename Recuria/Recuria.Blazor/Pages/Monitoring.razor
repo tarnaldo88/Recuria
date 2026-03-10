@@ -126,13 +126,14 @@
                             <MudTh>Status</MudTh>
                             <MudTh>Environment</MudTh>
                             <MudTh>Last Modified</MudTh>
+                            <MudTh></MudTh>
                         </HeaderContent>
                         <RowTemplate>
                             <MudTd>@context.Name</MudTd>
                             <MudTd>
                                 <MudSwitch T="bool" 
                                           Checked="@context.IsEnabled" 
-                                          CheckedChanged="@(enabled => ToggleFeatureFlag(context.Name, enabled))"
+                                          CheckedChanged="@((bool enabled) => ToggleFeatureFlag(context.Name, enabled))"
                                           Color="Color.Primary" />
                             </MudTd>
                             <MudTd>@context.Environment</MudTd>
