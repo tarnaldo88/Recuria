@@ -114,17 +114,17 @@
                                     Margin="Margin.Dense" />
                 </MudItem>
                 <MudItem xs="12" md="2">
-                    <MudSelect T="string?" 
+                    <MudSelect T="string" 
                                Label="Status" 
                                @bind-Value="_filters.Status" 
                                Variant="Variant.Outlined"
                                Margin="Margin.Dense">
-                        <MudSelectItem T="string?" Value="@null">All Statuses</MudSelectItem>
-                        <MudSelectItem T="string?" Value="@("paid")">Paid</MudSelectItem>
-                        <MudSelectItem T="string?" Value="@("open")">Open</MudSelectItem>
-                        <MudSelectItem T="string?" Value="@("pending")">Pending</MudSelectItem>
-                        <MudSelectItem T="string?" Value="@("failed")">Failed</MudSelectItem>
-                        <MudSelectItem T="string?" Value="@("voids")">Void</MudSelectItem>
+                        <MudSelectItem T="string" Value="@null">All Statuses</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("paid")">Paid</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("open")">Open</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("pending")">Pending</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("failed")">Failed</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("voids")">Void</MudSelectItem>
                     </MudSelect>
                 </MudItem>
             </MudGrid>
