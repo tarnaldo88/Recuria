@@ -30,6 +30,7 @@ namespace Recuria.Infrastructure.Persistence
         public DbSet<StripeSubscriptionMap> StripeSubscriptionMaps => Set<StripeSubscriptionMap>();
         public DbSet<StripeWebhookEvent> StripeWebhookEvents => Set<StripeWebhookEvent>();
         public DbSet<StripeWebhookInboxMessage> StripeWebhookInboxMessages => Set<StripeWebhookInboxMessage>();
+        public DbSet<FeatureFlag> FeatureFlags => Set<FeatureFlag>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
