@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Recuria.Application.Interface;
 using Recuria.Application.Interface.Abstractions;

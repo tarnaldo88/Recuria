@@ -133,8 +133,8 @@
                             <MudTd>@context.Name</MudTd>
                             <MudTd>
                                 <MudSwitch T="bool" 
-                                          Checked="@context.IsEnabled" 
-                                          CheckedChanged="@((bool enabled) => ToggleFeatureFlag(context.Name, enabled))"
+                                          checked="@context.IsEnabled" 
+                                          checkedChanged="@((bool enabled) => ToggleFeatureFlag(context.Name, enabled))"
                                           Color="Color.Primary" />
                             </MudTd>
                             <MudTd>@context.Environment</MudTd>

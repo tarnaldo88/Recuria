@@ -9,11 +9,13 @@ namespace Recuria.Tests.Unit.Frontend
     {
         private readonly Mock<Recuria.Client.IRecuriaApiClient> _api = new();
         private readonly ApiCallRunner _runner;
+        private readonly HttpClient _http;
 
         public OpsAppServiceTests()
         {
             var snackbar = new Mock<ISnackbar>();
             _runner = new ApiCallRunner(snackbar.Object);
+            _http = new HttpClient();
         }
 
         [Fact]
@@ -22,7 +24,7 @@ namespace Recuria.Tests.Unit.Frontend
             _api.Setup(x => x.RetryAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(CreateApiException(204, string.Empty));
 
-            var service = new OpsAppService(_api.Object, _runner);
+            var service = new OpsAppService(_api.Object, _http, _runner);
             var result = await service.RetryAsync(Guid.NewGuid());
 
             result.Success.Should().BeTrue();
@@ -64,7 +66,7 @@ namespace Recuria.Tests.Unit.Frontend
                     TotalCount = items.Count
                 });
 
-            var service = new OpsAppService(_api.Object, _runner);
+            var service = new OpsAppService(_api.Object, _http, _runner);
             var result = await service.GetDeadLetteredPageAsync(page, pageSize, search, sortBy, sortDir);
 
             result.Success.Should().BeTrue();
