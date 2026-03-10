@@ -118,12 +118,12 @@
                                @bind-Value="_filters.Status" 
                                Variant="Variant.Outlined"
                                Margin="Margin.Dense">
-                        <MudSelectItem Value="@null">All Statuses</MudSelectItem>
-                        <MudSelectItem Value="@("paid")">Paid</MudSelectItem>
-                        <MudSelectItem Value="@("open")">Open</MudSelectItem>
-                        <MudSelectItem Value="@("pending")">Pending</MudSelectItem>
-                        <MudSelectItem Value="@("failed")">Failed</MudSelectItem>
-                        <MudSelectItem Value="@("voids")">Void</MudSelectItem>
+                        <MudSelectItem T="string?" Value="@null">All Statuses</MudSelectItem>
+                        <MudSelectItem T="string?" Value="@("paid")">Paid</MudSelectItem>
+                        <MudSelectItem T="string?" Value="@("open")">Open</MudSelectItem>
+                        <MudSelectItem T="string?" Value="@("pending")">Pending</MudSelectItem>
+                        <MudSelectItem T="string?" Value="@("failed")">Failed</MudSelectItem>
+                        <MudSelectItem T="string?" Value="@("voids")">Void</MudSelectItem>
                     </MudSelect>
                 </MudItem>
             </MudGrid>
