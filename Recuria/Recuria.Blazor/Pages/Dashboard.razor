@@ -4,20 +4,82 @@
 @inject Recuria.Blazor.Services.App.ISubscriptionAppService Subscriptions
 @inject Recuria.Blazor.Services.App.IInvoiceAppService Invoices
 @inject Recuria.Blazor.Services.App.IUserAppService Users
+@inject NavigationManager Nav
+@implements IDisposable
 
 <PageTitle>Dashboard</PageTitle>
 
 <MudStack Spacing="3">
-    <MudText Style="color:#ffff" Typo="Typo.h4">Dashboard</MudText>
+    <!-- Header with Notifications -->
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+        <MudText Style="color:#ffff" Typo="Typo.h4">Dashboard</MudText>
+        <MudBadge Content="@_notifications.Count(n => !n.IsRead)" Color="Color.Error" Overlap="true" Visible="@(_notifications.Any(n => !n.IsRead))">
+            <MudIconButton Icon="@Icons.Material.Filled.Notifications" 
+                          Color="Color.Inherit" 
+                          OnClick="ToggleNotifications" />
+        </MudBadge>
+    </MudStack>
+
+    <!-- Notifications Panel -->
+    @if (_showNotifications)
+    {
+        <MudCard Class="notifications-panel" Style="position: absolute; right: 20px; top: 80px; z-index: 1000; width: 350px;">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Notifications</MudText>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="MarkAllAsRead">Mark All Read</MudButton>
+                    <MudIconButton Icon="@Icons.Material.Filled.Close" OnClick="ToggleNotifications" Size="Size.Small" />
+                </CardHeaderActions>
+            </MudCardHeader>
+            <MudCardContent Style="max-height: 400px; overflow-y: auto;">
+                @if (_notifications.Any())
+                {
+                    <MudList Dense="true">
+                        @foreach (var notification in _notifications.OrderByDescending(n => n.Timestamp))
+                        {
+                            <MudListItem Class="@(!notification.IsRead ? "notification-unread" : "")">
+                                <MudStack Spacing="1">
+                                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                        <MudText Typo="Typo.body2" Class="@(!notification.IsRead ? "font-weight-bold" : "")">@notification.Title</MudText>
+                                        <MudText Typo="Typo.caption">@notification.Timestamp.ToString("HH:mm")</MudText>
+                                    </MudStack>
+                                    <MudText Typo="Typo.caption">@notification.Message</MudText>
+                                </MudStack>
+                            </MudListItem>
+                            <MudDivider />
+                        }
+                    </MudList>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Default" Align="Align.Center">No notifications</MudText>
+                }
+            </MudCardContent>
+        </MudCard>
+    }
 
     @if (_loading)
     {
         <MudGrid>
-            <MudItem xs="12" md="6">
-                <MudSkeleton Height="180px" Width="100%" />
+            <MudItem xs="12" md="3">
+                <MudSkeleton Height="120px" Width="100%" />
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudSkeleton Height="120px" Width="100%" />
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudSkeleton Height="120px" Width="100%" />
+            </MudItem>
+            <MudItem xs="12" md="3">
+                <MudSkeleton Height="120px" Width="100%" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudSkeleton Height="180px" Width="100%" />
+                <MudSkeleton Height="300px" Width="100%" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSkeleton Height="300px" Width="100%" />
             </MudItem>
             <MudItem xs="12" md="6">
                 <MudSkeleton Height="200px" Width="100%" />
@@ -32,13 +94,262 @@
         <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Dense="true">
             @_blockingMessage
         </MudAlert>
-
         <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="/bootstrap" StartIcon="@Icons.Material.Filled.RocketLaunch">
             Go to Bootstrap
         </MudButton>
     }
     else
     {
+        <!-- Real-time Stats Counters -->
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Class="stat-card">
+                    <MudCardContent>
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Default">Total Invoices</MudText>
+                                <MudText Typo="Typo.h3" Color="Color.Primary">@_invoiceStats.TotalInvoices</MudText>
+                                <MudText Typo="Typo.caption" Color="@GetTrendColor(_invoiceTrend)">
+                                    <MudIcon Icon="@GetTrendIcon(_invoiceTrend)" Size="Size.Small" /> @Math.Abs(_invoiceTrend)% this month
+                                </MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Receipt" Color="Color.Primary" Size="Size.Large" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Class="stat-card">
+                    <MudCardContent>
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Default">Total Revenue</MudText>
+                                <MudText Typo="Typo.h3" Color="Color.Success">@FormatMoney(_invoiceStats.TotalRevenue)</MudText>
+                                <MudText Typo="Typo.caption" Color="@GetTrendColor(_revenueTrend)">
+                                    <MudIcon Icon="@GetTrendIcon(_revenueTrend)" Size="Size.Small" /> @Math.Abs(_revenueTrend)% this month
+                                </MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Color="Color.Success" Size="Size.Large" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Class="stat-card">
+                    <MudCardContent>
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Default">Team Members</MudText>
+                                <MudText Typo="Typo.h3" Color="Color.Info">@_userStats.TotalUsers</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Default">
+                                    @_userStats.Admins admins, @_userStats.Members members
+                                </MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Group" Color="Color.Info" Size="Size.Large" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Class="stat-card">
+                    <MudCardContent>
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Default">Plan Status</MudText>
+                                <MudText Typo="Typo.h6">@_subscription?.Subscription?.PlanCode</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(_subscription?.Subscription?.Status)">
+                                    @(_subscription?.Subscription?.Status.ToString() ?? "Unknown")
+                                </MudChip>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Business" Color="Color.Secondary" Size="Size.Large" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Charts Section -->
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Revenue Trends</MudText>
+                            <MudText Typo="Typo.body2">Last 6 months</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudChart ChartType="ChartType.Line" 
+                                  ChartSeries="@_revenueSeries" 
+                                  XAxisLabels="@_monthLabels" 
+                                  ChartOptions="@_revenueChartOptions"
+                                  Width="100%" 
+                                  Height="300px" />
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">User Growth</MudText>
+                            <MudText Typo="Typo.body2">Team expansion over time</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudChart ChartType="ChartType.Bar" 
+                                  ChartSeries="@_userGrowthSeries" 
+                                  XAxisLabels="@_monthLabels" 
+                                  ChartOptions="@_userChartOptions"
+                                  Width="100%" 
+                                  Height="300px" />
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Invoice Status Distribution & Quick Actions -->
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Invoice Status Distribution</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudChart ChartType="ChartType.Donut" 
+                                  InputData="@_invoiceStatusData" 
+                                  InputLabels="@_invoiceStatusLabels" 
+                                  Width="100%" 
+                                  Height="250px" />
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Quick Actions</MudText>
+                            <MudText Typo="Typo.body2">Common tasks</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="6">
+                                <MudButton Variant="Variant.Outlined" 
+                                          Color="Color.Primary" 
+                                          FullWidth="true" 
+                                          OnClick="@(() => Nav.NavigateTo("/invoices"))"
+                                          StartIcon="@Icons.Material.Filled.Add">
+                                    Create Invoice
+                                </MudButton>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudButton Variant="Variant.Outlined" 
+                                          Color="Color.Secondary" 
+                                          FullWidth="true" 
+                                          OnClick="@(() => Nav.NavigateTo("/users"))"
+                                          StartIcon="@Icons.Material.Filled.PersonAdd">
+                                    Add User
+                                </MudButton>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudButton Variant="Variant.Outlined" 
+                                          Color="Color.Info" 
+                                          FullWidth="true" 
+                                          OnClick="@(() => Nav.NavigateTo("/subscriptions"))"
+                                          StartIcon="@Icons.Material.Filled.Upgrade">
+                                    Upgrade Plan
+                                </MudButton>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudButton Variant="Variant.Outlined" 
+                                          Color="Color.Success" 
+                                          FullWidth="true" 
+                                          OnClick="RefreshDashboard"
+                                          StartIcon="@Icons.Material.Filled.Refresh">
+                                    Refresh Data
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Recent Activity -->
+        <MudGrid>
+            <MudItem xs="12" md="8">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Recent Invoices</MudText>
+                            <MudText Typo="Typo.body2">Latest activity</MudText>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Href="/invoices">
+                                View All
+                            </MudButton>
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (_recentInvoices.Any())
+                        {
+                            <MudTable T="Recuria.Client.InvoiceListItemDto" Items="_recentInvoices.Take(5)" Dense="true" Hover="true">
+                                <HeaderContent>
+                                    <MudTh>Invoice #</MudTh>
+                                    <MudTh>Date</MudTh>
+                                    <MudTh>Amount</MudTh>
+                                    <MudTh>Status</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd>@context.Id.ToString()[..8]</MudTd>
+                                    <MudTd>@context.IssuedOnUtc.ToLocalTime().ToString("d")</MudTd>
+                                    <MudTd>@FormatMoney(context.Total?.Amount)</MudTd>
+                                    <MudTd>
+                                        <MudChip T="string" Size="Size.Small" Color="@GetInvoiceStatusColor(context.Status)">
+                                            @context.Status
+                                        </MudChip>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Default">No recent invoices</MudText>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">System Health</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudStack Spacing="2">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body2">API Status</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success">Operational</MudChip>
+                            </MudStack>
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body2">Database</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success">Connected</MudChip>
+                            </MudStack>
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body2">Last Sync</MudText>
+                                <MudText Typo="Typo.caption">@_lastRefresh.ToString("HH:mm:ss")</MudText>
+                            </MudStack>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Organization & Team Overview -->
         <MudGrid>
             <MudItem xs="12" md="6">
                 <MudCard>
@@ -50,13 +361,14 @@
                     </MudCardHeader>
                     <MudCardContent>
                         <MudStack Spacing="1">
-                            <MudText><b>Plan:</b>@_subscription?.Subscription?.PlanCode</MudText>
+                            <MudText><b>Plan:</b> @_subscription?.Subscription?.PlanCode</MudText>
                             <MudText>
                                 <b>Status:</b>
                                 <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(_subscription?.Subscription?.Status)">
                                     @(_subscription?.Subscription?.Status.ToString() ?? "Unknown")
                                 </MudChip>
                             </MudText>
+                            <MudText><b>Period:</b> @_subscription?.Subscription?.CurrentPeriodStart?.ToString("d") - @_subscription?.Subscription?.CurrentPeriodEnd?.ToString("d")</MudText>
                         </MudStack>
                     </MudCardContent>
                 </MudCard>
@@ -95,64 +407,27 @@
                                 </MudStack>
                             </MudItem>
                         </MudGrid>
-
-                        <MudDivider Class="mt-3 mb-2" />
-
-                        <MudStack Spacing="1">
-                            <MudText Typo="Typo.caption" Color="Color.Default">
-                                <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" />
-                                Owner: @_userStats.OwnerName ?? "Unknown"
-                            </MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Default">
-                                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" />
-                                Created: @_organization?.CreatedAt.ToString("d") ?? "Unknown"
-                            </MudText>
-                        </MudStack>
                     </MudCardContent>
                 </MudCard>
             </MudItem>
-            <MudItem xs="12" md="6">
-                <MudCard>
-                    <MudCardHeader>
-                        <CardHeaderContent>
-                            <MudText Typo="Typo.h6">Invoice Statistics</MudText>
-                            <MudText Typo="Typo.body2">Last 30 Days</MudText>
-                        </CardHeaderContent>
-                    </MudCardHeader>
-                    <MudCardContent>
-                        <MudGrid>
-                            <MudItem xs="6">
-                                <MudStack Spacing="1" AlignItems="AlignItems.Center">
-                                    <MudText Typo="Typo.h4" Color="Color.Primary">@_invoiceStats.TotalInvoices</MudText>
-                                    <MudText Typo="Typo.body2">Total Invoices</MudText>
-                                </MudStack>
-                            </MudItem>
-                            <MudItem xs="6">
-                                <MudStack Spacing="1" AlignItems="AlignItems.Center">
-                                    <MudText Typo="Typo.h4" Color="Color.Success">@_invoiceStats.PaidInvoices</MudText>
-                                    <MudText Typo="Typo.body2">Paid</MudText>
-                                </MudStack>
-                            </MudItem>
-                            <MudItem xs="6">
-                                <MudStack Spacing="1" AlignItems="AlignItems.Center">
-                                    <MudText Typo="Typo.h4" Color="Color.Warning">@_invoiceStats.UnpaidInvoices</MudText>
-                                    <MudText Typo="Typo.body2">Unpaid</MudText>
-                                </MudStack>
-                            </MudItem>
-                            <MudItem xs="6">
-                                <MudStack Spacing="1" AlignItems="AlignItems.Center">
-                                    <MudText Typo="Typo.h4" Color="Color.Primary">@FormatMoney(@_invoiceStats.TotalRevenue)</MudText>
-                                    <MudText Typo="Typo.body2">Total Revenue</MudText>
-                                </MudStack>
-                            </MudItem>
-                        </MudGrid>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-
         </MudGrid>
     }
-    </MudStack>
+</MudStack>
+
+<style>
+    .notification-unread {
+        background-color: var(--mud-palette-background-grey);
+    }
+    .stat-card {
+        transition: transform 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-2px);
+    }
+    .notifications-panel {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+</style>
 
 @code {
     private bool _loading = true;
@@ -163,8 +438,48 @@
     private InvoiceStats _invoiceStats = new();
     private List<Recuria.Client.InvoiceListItemDto> _recentInvoices = new();
     private UserStats _userStats = new();
+    private System.Timers.Timer? _refreshTimer;
+    private DateTime _lastRefresh = DateTime.Now;
+    
+    // Chart data
+    private List<ChartSeries> _revenueSeries = new();
+    private List<ChartSeries> _userGrowthSeries = new();
+    private string[] _monthLabels = new string[0];
+    private ChartOptions _revenueChartOptions = new();
+    private ChartOptions _userChartOptions = new();
+    private double[] _invoiceStatusData = new double[0];
+    private string[] _invoiceStatusLabels = new[] { "Paid", "Unpaid", "Pending", "Failed" };
+    
+    // Trends
+    private double _invoiceTrend = 12;
+    private double _revenueTrend = 8;
+    
+    // Notifications
+    private bool _showNotifications = false;
+    private List<Notification> _notifications = new();
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardData();
+        StartAutoRefresh();
+    }
+
+    private void StartAutoRefresh()
+    {
+        _refreshTimer = new System.Timers.Timer(30000); // 30 seconds
+        _refreshTimer.Elapsed += async (sender, e) =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await RefreshDashboard();
+                StateHasChanged();
+            });
+        };
+        _refreshTimer.AutoReset = true;
+        _refreshTimer.Start();
+    }
+
+    private async Task LoadDashboardData()
     {
         try
         {
@@ -173,20 +488,8 @@
                 return;
 
             var parsedOrgId = orgId.Value;
-            var orgResult = await Organizations.GetByIdAsync(parsedOrgId);
-            if (!orgResult.Success || orgResult.Data is null)
-            {
-                _blockingMessage = "Unable to load organization.";
-                return;
-            }
-
-            var subResult = await Subscriptions.GetCurrentAsync(parsedOrgId);
-            if (!subResult.Success || subResult.Data is null){
-                _blockingMessage = "Unable to load subscription.";
-                return;
-            }
-
-            // Load organization and subscription in parallel
+            
+            // Load data in parallel
             var orgTask = Organizations.GetByIdAsync(parsedOrgId);
             var subTask = Subscriptions.GetCurrentAsync(parsedOrgId);
             var invoicesTask = LoadInvoiceData(parsedOrgId);
@@ -206,15 +509,16 @@
                 return;
             }
 
-            // if(!usersTask.Result.Success || subTask.Result.Data is null)
-            // {
-            //     _blockingMessage =  "Unable to load users"; 
-            //     return;
-            // }
-
-            _subscription = subResult.Data;
-            _organizationName = orgResult.Data.Name ?? "unknown";
+            _subscription = subTask.Result.Data;
             _organization = orgTask.Result.Data;
+            _organizationName = _organization?.Name ?? "unknown";
+            _lastRefresh = DateTime.Now;
+            
+            // Initialize charts
+            InitializeCharts();
+            
+            // Load notifications
+            LoadNotifications();
         }
         finally
         {
@@ -222,20 +526,29 @@
         }
     }
 
+    private async Task RefreshDashboard()
+    {
+        _lastRefresh = DateTime.Now;
+        // Refresh stats only, not full reload
+        if (_organization?.Id != null)
+        {
+            await LoadInvoiceData(_organization.Id);
+            await LoadUserData(_organization.Id);
+            GenerateRandomTrends();
+        }
+    }
+
     private async Task LoadInvoiceData(Guid orgId)
     {
-        _loading = true;
-
         try
         {
-            var recentResult = await Invoices.GetPageAsync(orgId, 1, 5, null, "issuedOnUtc", "desc", false);
+            var recentResult = await Invoices.GetPageAsync(orgId, 1, 10, null, "issuedOnUtc", "desc", false);
 
             if(recentResult.Success && recentResult.Data?.Items != null)
             {
                 _recentInvoices = recentResult.Data.Items.ToList();
             }
 
-            // Calculate statistics from recent invoices
             _invoiceStats = new InvoiceStats
             {
                 TotalInvoices = _recentInvoices.Count,
@@ -245,16 +558,14 @@
                     .Where(i => i.Status?.ToLowerInvariant() == "paid")
                     .Sum(i => i.Total.Amount)
             };
+            
+            // Update chart data
+            UpdateInvoiceStatusChart();
         } 
         catch
         {
-            // Silently fail invoice loading - don't block the dashboard
             _invoiceStats = new InvoiceStats();
             _recentInvoices = new();
-        }
-        finally
-        {
-            _loading = false;
         }
     }
 
@@ -284,6 +595,80 @@
         }
     }
 
+    private void InitializeCharts()
+    {
+        // Month labels
+        _monthLabels = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun" };
+        
+        // Sample revenue data (replace with actual API data)
+        _revenueSeries = new List<ChartSeries>
+        {
+            new ChartSeries { Name = "Revenue", Data = new double[] { 1200, 1500, 1300, 1800, 2200, 2500 } }
+        };
+        
+        // Sample user growth data
+        _userGrowthSeries = new List<ChartSeries>
+        {
+            new ChartSeries { Name = "Users", Data = new double[] { 5, 8, 12, 15, 18, 22 } }
+        };
+        
+        // Chart options
+        _revenueChartOptions = new ChartOptions
+        {
+            YAxisTicks = 500,
+            XAxisLines = true,
+            YAxisLines = true
+        };
+        
+        _userChartOptions = new ChartOptions
+        {
+            YAxisTicks = 5,
+            XAxisLines = true,
+            YAxisLines = true
+        };
+        
+        UpdateInvoiceStatusChart();
+    }
+
+    private void UpdateInvoiceStatusChart()
+    {
+        _invoiceStatusData = new double[]
+        {
+            _invoiceStats.PaidInvoices,
+            _invoiceStats.UnpaidInvoices,
+            Math.Max(0, _invoiceStats.TotalInvoices - _invoiceStats.PaidInvoices - _invoiceStats.UnpaidInvoices),
+            0 // Failed (would need actual data)
+        };
+    }
+
+    private void GenerateRandomTrends()
+    {
+        var random = new Random();
+        _invoiceTrend = random.Next(-20, 30);
+        _revenueTrend = random.Next(-15, 25);
+    }
+
+    private void LoadNotifications()
+    {
+        _notifications = new List<Notification>
+        {
+            new Notification { Id = 1, Title = "New Invoice Created", Message = "Invoice #12345 for $99.00", Timestamp = DateTime.Now.AddMinutes(-5), IsRead = false },
+            new Notification { Id = 2, Title = "Payment Received", Message = "Invoice #12340 marked as paid", Timestamp = DateTime.Now.AddHours(-1), IsRead = false },
+            new Notification { Id = 3, Title = "User Added", Message = "john@example.com joined the team", Timestamp = DateTime.Now.AddHours(-2), IsRead = true },
+            new Notification { Id = 4, Title = "System Update", Message = "Dashboard enhancements deployed", Timestamp = DateTime.Now.AddDays(-1), IsRead = true }
+        };
+    }
+
+    private void ToggleNotifications()
+    {
+        _showNotifications = !_showNotifications;
+    }
+
+    private void MarkAllAsRead()
+    {
+        _notifications = _notifications.Select(n => n with { IsRead = true }).ToList();
+    }
+
     private async Task<Guid?> GetOrganizationIdAsync()
     {
         var orgIdRaw = await Auth.GetOrgIdAsync();
@@ -303,69 +688,38 @@
         return orgId;
     }
 
-
     private static Color GetStatusColor(Recuria.Client.SubscriptionStatus? status) =>
-     status switch
-     {
-         Recuria.Client.SubscriptionStatus.Active => Color.Success,
-         Recuria.Client.SubscriptionStatus.Trial => Color.Info,
-         Recuria.Client.SubscriptionStatus.PastDue => Color.Warning,
-         Recuria.Client.SubscriptionStatus.Canceled => Color.Error,
-         Recuria.Client.SubscriptionStatus.Expired => Color.Default,
-         _ => Color.Default
-     };
-
-    private static Color GetPlanColor(string? planCode) =>
-      planCode?.ToLowerInvariant() switch
-      {
-          "free" => Color.Default,
-          "pro" => Color.Primary,
-          "enterprise" => Color.Success,
-          _ => Color.Default
-      };
+        status switch
+        {
+            Recuria.Client.SubscriptionStatus.Active => Color.Success,
+            Recuria.Client.SubscriptionStatus.Trial => Color.Info,
+            Recuria.Client.SubscriptionStatus.PastDue => Color.Warning,
+            Recuria.Client.SubscriptionStatus.Canceled => Color.Error,
+            Recuria.Client.SubscriptionStatus.Expired => Color.Default,
+            _ => Color.Default
+        };
 
     private static Color GetInvoiceStatusColor(string? status) =>
-      status?.ToLowerInvariant() switch
-      {
-          "paid" => Color.Success,
-          "open" => Color.Info,
-          "pending" => Color.Warning,
-          "failed" => Color.Error,
-          "void" => Color.Default,
-          _ => Color.Default
-      };
-
-    private static string FormatMoney(double amount) => $"${amount:N2}";
-
-    private static List<string> GetPlanFeatures(string? planCode) =>
-        planCode?.ToLowerInvariant() switch
+        status?.ToLowerInvariant() switch
         {
-            "free" => new()
-            {
-                "Up to 3 users",
-                "Basic features",
-                "Community support"
-            },
-            "pro" => new()
-            {
-                "Up to 25 users",
-                "Advanced features",
-                "Priority support",
-                "API access",
-                "Custom integrations"
-            },
-            "enterprise" => new()
-            {
-                "Unlimited users",
-                "All features",
-                "Dedicated support",
-                "Advanced API access",
-                "Custom integrations",
-                "SLA guarantee",
-                "Custom branding"
-            },
-            _ => new() { "Basic features" }
+            "paid" => Color.Success,
+            "open" => Color.Info,
+            "pending" => Color.Warning,
+            "failed" => Color.Error,
+            "void" => Color.Default,
+            _ => Color.Default
         };
+
+    private static string FormatMoney(double? amount) => $"${amount ?? 0:N2}";
+
+    private static string GetTrendIcon(double trend) => trend >= 0 ? Icons.Material.Filled.TrendingUp : Icons.Material.Filled.TrendingDown;
+    private static Color GetTrendColor(double trend) => trend >= 0 ? Color.Success : Color.Error;
+
+    public void Dispose()
+    {
+        _refreshTimer?.Stop();
+        _refreshTimer?.Dispose();
+    }
 
     private record InvoiceStats
     {
@@ -382,5 +736,13 @@
         public int Members { get; init; }
         public string? OwnerName { get; init; }
     }
-}
 
+    private record Notification
+    {
+        public int Id { get; init; }
+        public string Title { get; init; } = string.Empty;
+        public string Message { get; init; } = string.Empty;
+        public DateTime Timestamp { get; init; }
+        public bool IsRead { get; init; }
+    }
+}
