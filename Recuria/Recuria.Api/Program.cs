@@ -402,6 +402,7 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+builder.Services.AddScoped<IFeatureFlagRepository, FeatureFlagRepository>();
 builder.Services.AddScoped<IOrganizationQueries, OrganizationQueries>();
 builder.Services.AddScoped<ISubscriptionQueries, SubscriptionQueries>();
 builder.Services.AddScoped<IInvoiceQueries, InvoiceQueries>();
