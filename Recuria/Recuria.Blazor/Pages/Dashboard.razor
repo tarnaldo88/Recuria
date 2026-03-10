@@ -36,10 +36,10 @@
             <MudCardContent Style="max-height: 400px; overflow-y: auto;">
                 @if (_notifications.Any())
                 {
-                    <MudList Dense="true">
+                    <MudList T="Notification" Dense="true">
                         @foreach (var notification in _notifications.OrderByDescending(n => n.Timestamp))
                         {
-                            <MudListItem Class="@(!notification.IsRead ? "notification-unread" : "")">
+                            <MudListItem T="Notification" Class="@(!notification.IsRead ? "notification-unread" : "")">
                                 <MudStack Spacing="1">
                                     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                                         <MudText Typo="Typo.body2" Class="@(!notification.IsRead ? "font-weight-bold" : "")">@notification.Title</MudText>
@@ -368,7 +368,7 @@
                                     @(_subscription?.Subscription?.Status.ToString() ?? "Unknown")
                                 </MudChip>
                             </MudText>
-                            <MudText><b>Period:</b> @_subscription?.Subscription?.CurrentPeriodStart?.ToString("d") - @_subscription?.Subscription?.CurrentPeriodEnd?.ToString("d")</MudText>
+                            <MudText><b>Period:</b> @_subscription?.Subscription?.PeriodStart.ToString("d") - @_subscription?.Subscription?.PeriodEnd.ToString("d")</MudText>
                         </MudStack>
                     </MudCardContent>
                 </MudCard>
