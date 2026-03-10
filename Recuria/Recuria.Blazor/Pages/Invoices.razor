@@ -119,11 +119,11 @@
                                Variant="Variant.Outlined"
                                Margin="Margin.Dense">
                         <MudSelectItem Value="@null">All Statuses</MudSelectItem>
-                        <MudSelectItem Value="paid">Paid</MudSelectItem>
-                        <MudSelectItem Value="open">Open</MudSelectItem>
-                        <MudSelectItem Value="pending">Pending</MudSelectItem>
+                        <MudSelectItem Value="@("paid")">Paid</MudSelectItem>
+                        <MudSelectItem Value="@("open")">Open</MudSelectItem>
+                        <MudSelectItem Value="@("pending")">Pending</MudSelectItem>
                         <MudSelectItem Value="@("failed")">Failed</MudSelectItem>
-                        <MudSelectItem Value="@("void")">Void</MudSelectItem>
+                        <MudSelectItem Value="@("voids")">Void</MudSelectItem>
                     </MudSelect>
                 </MudItem>
             </MudGrid>
@@ -547,7 +547,7 @@
             "open" => Color.Info,
             "pending" => Color.Warning,
             "failed" => Color.Error,
-            "void" => Color.Default,
+            "voids" => Color.Default,
             _ => Color.Default
         };
 
