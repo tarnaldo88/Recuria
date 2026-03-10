@@ -1,0 +1,556 @@
+@page "/monitoring"
+@attribute [Authorize(Roles = "Admin,Owner")]
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>System Monitoring</PageTitle>
+
+<MudStack Spacing="3">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+        <MudText Typo="Typo.h4" Style="color:#ffff">System Monitoring</MudText>
+        <MudButton Variant="Variant.Filled" 
+                   Color="Color.Primary" 
+                   StartIcon="@Icons.Material.Filled.Refresh"
+                   OnClick="LoadAllData"
+                   Disabled="_loading">
+            Refresh Data
+        </MudButton>
+    </MudStack>
+
+    @if (_loading)
+    {
+        <MudGrid>
+            <MudItem xs="12" md="3"><MudSkeleton Height="120px" /></MudItem>
+            <MudItem xs="12" md="3"><MudSkeleton Height="120px" /></MudItem>
+            <MudItem xs="12" md="3"><MudSkeleton Height="120px" /></MudItem>
+            <MudItem xs="12" md="3"><MudSkeleton Height="120px" /></MudItem>
+        </MudGrid>
+    }
+    else
+    {
+        <!-- System Health Cards -->
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Class="@GetHealthCardClass(_healthStatus?.Status)">
+                    <MudCardContent>
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <div>
+                                <MudText Typo="Typo.caption">System Status</MudText>
+                                <MudText Typo="Typo.h5">@(_healthStatus?.Status ?? "Unknown")</MudText>
+                                <MudText Typo="Typo.caption">@_healthStatus?.TotalDuration ms</MudText>
+                            </div>
+                            <MudIcon Icon="@GetHealthIcon(_healthStatus?.Status)" 
+                                    Size="Size.Large" 
+                                    Color="@GetHealthColor(_healthStatus?.Status)" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Class="@GetHealthCardClass(_dbMetrics?.Status)">
+                    <MudCardContent>
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <div>
+                                <MudText Typo="Typo.caption">Database</MudText>
+                                <MudText Typo="Typo.h5">@(_dbMetrics?.Status ?? "Unknown")</MudText>
+                                <MudText Typo="Typo.caption">@_dbMetrics?.ResponseTime ms</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Storage" 
+                                    Size="Size.Large" 
+                                    Color="@GetHealthColor(_dbMetrics?.Status)" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard>
+                    <MudCardContent>
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <div>
+                                <MudText Typo="Typo.caption">Memory Usage</MudText>
+                                <MudText Typo="Typo.h5">@(_perfMetrics?.Process?.WorkingSet ?? 0) MB</MudText>
+                                <MudText Typo="Typo.caption">GC: @(_perfMetrics?.GC?.TotalMemory ?? 0) MB</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Memory" 
+                                    Size="Size.Large" 
+                                    Color="Color.Info" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard>
+                    <MudCardContent>
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <div>
+                                <MudText Typo="Typo.caption">Recent Errors</MudText>
+                                <MudText Typo="Typo.h5">@_recentErrors.Count</MudText>
+                                <MudText Typo="Typo.caption">Last 24 hours</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Error" 
+                                    Size="Size.Large" 
+                                    Color="@(_recentErrors.Count > 0 ? Color.Error : Color.Success)" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Feature Flags Management -->
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Feature Flags</MudText>
+                    <MudText Typo="Typo.body2">Toggle features without deployment</MudText>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               Size="Size.Small"
+                               OnClick="OpenCreateFeatureFlagDialog"
+                               StartIcon="@Icons.Material.Filled.Add">
+                        Add Flag
+                    </MudButton>
+                </CardHeaderActions>
+            </MudCardHeader>
+            <MudCardContent>
+                @if (_featureFlags.Any())
+                {
+                    <MudTable T="FeatureFlagDto" Items="_featureFlags" Dense="true" Hover="true">
+                        <HeaderContent>
+                            <MudTh>Name</MudTh>
+                            <MudTh>Status</MudTh>
+                            <MudTh>Environment</MudTh>
+                            <MudTh>Last Modified</MudTh>
+                            <MudTh></MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@context.Name</MudTd>
+                            <MudTd>
+                                <MudSwitch T="bool" 
+                                          Checked="@context.IsEnabled" 
+                                          CheckedChanged="@(enabled => ToggleFeatureFlag(context.Name, enabled))"
+                                          Color="Color.Primary" />
+                            </MudTd>
+                            <MudTd>@context.Environment</MudTd>
+                            <MudTd>@(context.ModifiedAt?.ToString("g") ?? "Never")</MudTd>
+                            <MudTd>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                              Size="Size.Small" 
+                                              Color="Color.Error"
+                                              OnClick="@(() => DeleteFeatureFlag(context.Id))" />
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Default">No feature flags configured</MudText>
+                }
+            </MudCardContent>
+        </MudCard>
+
+        <!-- Performance Metrics -->
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Performance Metrics</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (_perfMetrics != null)
+                        {
+                            <MudStack Spacing="2">
+                                <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                    <MudText Typo="Typo.body2">Process ID</MudText>
+                                    <MudText Typo="Typo.body2">@_perfMetrics.Process.Id</MudText>
+                                </MudStack>
+                                <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                    <MudText Typo="Typo.body2">Working Set</MudText>
+                                    <MudText Typo="Typo.body2">@_perfMetrics.Process.WorkingSet MB</MudText>
+                                </MudStack>
+                                <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                    <MudText Typo="Typo.body2">Private Memory</MudText>
+                                    <MudText Typo="Typo.body2">@_perfMetrics.Process.PrivateMemory MB</MudText>
+                                </MudStack>
+                                <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                    <MudText Typo="Typo.body2">Thread Count</MudText>
+                                    <MudText Typo="Typo.body2">@_perfMetrics.Process.ThreadCount</MudText>
+                                </MudStack>
+                                <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                    <MudText Typo="Typo.body2">GC Gen 0/1/2</MudText>
+                                    <MudText Typo="Typo.body2">
+                                        @_perfMetrics.GC.Gen0Collections / 
+                                        @_perfMetrics.GC.Gen1Collections / 
+                                        @_perfMetrics.GC.Gen2Collections
+                                    </MudText>
+                                </MudStack>
+                                <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                    <MudText Typo="Typo.body2">Uptime</MudText>
+                                    <MudText Typo="Typo.body2">
+                                        @((DateTime.Now - _perfMetrics.Process.StartTime).ToString(@"dd\.hh\:mm\:ss"))
+                                    </MudText>
+                                </MudStack>
+                            </MudStack>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            
+            <MudItem xs="12" md="6">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Database Metrics</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (_dbMetrics?.TableStatistics != null)
+                        {
+                            <MudTable T="TableStat" Items="_dbMetrics.TableStatistics" Dense="true">
+                                <HeaderContent>
+                                    <MudTh>Table</MudTh>
+                                    <MudTh>Rows</MudTh>
+                                    <MudTh>Size (KB)</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd>@context.TableName</MudTd>
+                                    <MudTd>@context.RowCount</MudTd>
+                                    <MudTd>@context.SizeKB</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Recent Errors -->
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Recent Errors</MudText>
+                    <MudText Typo="Typo.body2">Last 50 tracked errors</MudText>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudButton Variant="Variant.Text" 
+                               Color="Color.Error" 
+                               Size="Size.Small"
+                               OnClick="ClearErrors">
+                        Clear All
+                    </MudButton>
+                </CardHeaderActions>
+            </MudCardHeader>
+            <MudCardContent>
+                @if (_recentErrors.Any())
+                {
+                    <MudExpansionPanels>
+                        @foreach (var error in _recentErrors.Take(10))
+                        {
+                            <MudExpansionPanel>
+                                <TitleContent>
+                                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                        <MudText Typo="Typo.body2" Class="@(error.Type == "Error" ? "mud-error-text" : "mud-warning-text")">
+                                            [@error.Type] @error.Context
+                                        </MudText>
+                                        <MudText Typo="Typo.caption">@error.Timestamp.ToString("g")</MudText>
+                                    </MudStack>
+                                </TitleContent>
+                                <ChildContent>
+                                    <MudText Typo="Typo.body2">@error.Message</MudText>
+                                    @if (!string.IsNullOrEmpty(error.StackTrace))
+                                    {
+                                        <MudText Typo="Typo.caption" Style="white-space: pre-wrap; font-family: monospace;">
+                                            @error.StackTrace
+                                        </MudText>
+                                    }
+                                </ChildContent>
+                            </MudExpansionPanel>
+                        }
+                    </MudExpansionPanels>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Success">No errors tracked - System is healthy!</MudText>
+                }
+            </MudCardContent>
+        </MudCard>
+    }
+</MudStack>
+
+@code {
+    private bool _loading = true;
+    private HealthStatusDto? _healthStatus;
+    private DbMetricsDto? _dbMetrics;
+    private PerfMetricsDto? _perfMetrics;
+    private List<ErrorRecordDto> _recentErrors = new();
+    private List<FeatureFlagDto> _featureFlags = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAllData();
+    }
+
+    private async Task LoadAllData()
+    {
+        _loading = true;
+        try
+        {
+            await Task.WhenAll(
+                LoadHealthStatus(),
+                LoadDbMetrics(),
+                LoadPerfMetrics(),
+                LoadErrors(),
+                LoadFeatureFlags()
+            );
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task LoadHealthStatus()
+    {
+        try
+        {
+            _healthStatus = await Http.GetFromJsonAsync<HealthStatusDto>("api/health/detailed");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load health status: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task LoadDbMetrics()
+    {
+        try
+        {
+            _dbMetrics = await Http.GetFromJsonAsync<DbMetricsDto>("api/health/database");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load database metrics: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task LoadPerfMetrics()
+    {
+        try
+        {
+            _perfMetrics = await Http.GetFromJsonAsync<PerfMetricsDto>("api/health/performance");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load performance metrics: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task LoadErrors()
+    {
+        try
+        {
+            _recentErrors = await Http.GetFromJsonAsync<List<ErrorRecordDto>>("api/errors") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load errors: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task LoadFeatureFlags()
+    {
+        try
+        {
+            _featureFlags = await Http.GetFromJsonAsync<List<FeatureFlagDto>>("api/feature-flags") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load feature flags: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task ToggleFeatureFlag(string name, bool enabled)
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync($"api/feature-flags/{name}/toggle", new { Enabled = enabled });
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Feature flag '{name}' {(enabled ? "enabled" : "disabled")}", Severity.Success);
+                await LoadFeatureFlags();
+            }
+            else
+            {
+                Snackbar.Add($"Failed to toggle feature flag", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task DeleteFeatureFlag(Guid id)
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Delete Feature Flag",
+            "Are you sure you want to delete this feature flag?",
+            yesText: "Delete", cancelText: "Cancel");
+
+        if (confirmed != true) return;
+
+        try
+        {
+            var response = await Http.DeleteAsync($"api/feature-flags/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Feature flag deleted", Severity.Success);
+                await LoadFeatureFlags();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task OpenCreateFeatureFlagDialog()
+    {
+        // Dialog implementation would go here
+        Snackbar.Add("Create feature flag dialog would open here", Severity.Info);
+    }
+
+    private async Task ClearErrors()
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Clear All Errors",
+            "This will permanently delete all tracked errors. Continue?",
+            yesText: "Clear", cancelText: "Cancel");
+
+        if (confirmed != true) return;
+
+        try
+        {
+            var response = await Http.DeleteAsync("api/errors");
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("All errors cleared", Severity.Success);
+                _recentErrors.Clear();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private static string GetHealthCardClass(string? status) => status?.ToLower() switch
+    {
+        "healthy" => "border-l-4 border-l-success",
+        "degraded" => "border-l-4 border-l-warning",
+        "unhealthy" => "border-l-4 border-l-error",
+        _ => ""
+    };
+
+    private static string GetHealthIcon(string? status) => status?.ToLower() switch
+    {
+        "healthy" => Icons.Material.Filled.CheckCircle,
+        "degraded" => Icons.Material.Filled.Warning,
+        "unhealthy" => Icons.Material.Filled.Error,
+        _ => Icons.Material.Filled.Help
+    };
+
+    private static Color GetHealthColor(string? status) => status?.ToLower() switch
+    {
+        "healthy" => Color.Success,
+        "degraded" => Color.Warning,
+        "unhealthy" => Color.Error,
+        _ => Color.Default
+    };
+
+    // DTOs
+    private class HealthStatusDto
+    {
+        public string Status { get; set; } = string.Empty;
+        public long TotalDuration { get; set; }
+        public DateTime Timestamp { get; set; }
+        public List<HealthEntryDto> Entries { get; set; } = new();
+    }
+
+    private class HealthEntryDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public double Duration { get; set; }
+        public string? Description { get; set; }
+        public string? Exception { get; set; }
+    }
+
+    private class DbMetricsDto
+    {
+        public string Status { get; set; } = string.Empty;
+        public long ResponseTime { get; set; }
+        public int PendingMigrations { get; set; }
+        public int AppliedMigrations { get; set; }
+        public List<TableStat> TableStatistics { get; set; } = new();
+    }
+
+    private class TableStat
+    {
+        public string TableName { get; set; } = string.Empty;
+        public long RowCount { get; set; }
+        public long SizeKB { get; set; }
+    }
+
+    private class PerfMetricsDto
+    {
+        public ProcessMetricsDto Process { get; set; } = new();
+        public GCMetricsDto GC { get; set; } = new();
+    }
+
+    private class ProcessMetricsDto
+    {
+        public int Id { get; set; }
+        public string ProcessName { get; set; } = string.Empty;
+        public long WorkingSet { get; set; }
+        public long PrivateMemory { get; set; }
+        public long VirtualMemory { get; set; }
+        public DateTime StartTime { get; set; }
+        public int ThreadCount { get; set; }
+    }
+
+    private class GCMetricsDto
+    {
+        public long TotalMemory { get; set; }
+        public int Gen0Collections { get; set; }
+        public int Gen1Collections { get; set; }
+        public int Gen2Collections { get; set; }
+    }
+
+    private class ErrorRecordDto
+    {
+        public Guid Id { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string Type { get; set; } = string.Empty;
+        public string Context { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+        public string? StackTrace { get; set; }
+    }
+
+    private class FeatureFlagDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public bool IsEnabled { get; set; }
+        public string Environment { get; set; } = string.Empty;
+        public DateTime? ModifiedAt { get; set; }
+    }
+}
