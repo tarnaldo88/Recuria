@@ -178,9 +178,23 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     };
 });
 
+// Error tracking
+builder.Services.AddSingleton<IErrorTrackingService, ErrorTrackingService>();
+
+// Feature flags
+builder.Services.AddScoped<IFeatureFlagService, FeatureFlagService>();
+
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<RecuriaDbContext>("db", failureStatus: HealthStatus.Unhealthy)
-    .AddCheck<PendingMigrationsHealthCheck>("migrations", failureStatus: HealthStatus.Unhealthy);
+    .AddCheck<PendingMigrationsHealthCheck>("migrations", failureStatus: HealthStatus.Unhealthy)
+    .AddCheck("memory", () =>
+    {
+        var usedMemory = GC.GetTotalMemory(false);
+        var maxMemory = 1024L * 1024L * 1024L; // 1GB threshold
+        return usedMemory < maxMemory 
+            ? HealthCheckResult.Healthy($"Memory usage: {usedMemory / 1024 / 1024}MB") 
+            : HealthCheckResult.Degraded($"High memory usage: {usedMemory / 1024 / 1024}MB");
+    });
 
 builder.Services.AddSingleton<IAuditLogger, AuditLogger>();
 
