@@ -560,11 +560,11 @@
 
     private record InvoiceFilters
     {
-        public DateTime? FromDate { get; init; }
-        public DateTime? ToDate { get; init; }
-        public double? MinAmount { get; init; }
-        public double? MaxAmount { get; init; }
-        public string? Status { get; init; }
-        public string? Search { get; init; }
+        public DateTime? FromDate { get; set; }
+        public DateTime? ToDate { get; set; }
+        public double? MinAmount { get; set; }
+        public double? MaxAmount { get; set; }
+        public string? Status { get; set; }
+        public string? Search { get; set; }
     }
 }
