@@ -12,6 +12,8 @@ namespace Recuria.Domain
         public decimal Amount { get; private set; }
         public bool Paid { get; private set; }
         public DateTime? PaidOnUtc { get; private set; }
+        public bool Voided { get; private set; }
+        public DateTime? VoidedOnUtc { get; private set; }
         public string InvoiceNumber { get; private set; }
         public string? Description { get; private set; }
 
@@ -22,16 +24,27 @@ namespace Recuria.Domain
             Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
             Paid = false;
             PaidOnUtc = null;
+            Voided = false;
+            VoidedOnUtc = null;
             InvoiceNumber = string.Empty;
         }
 
         public void MarkAsPaid(DateTime? paidOnUtc = null)
         {
-            if (Paid)
+            if (Paid || Voided)
                 return;
 
             Paid = true;
             PaidOnUtc = (paidOnUtc ?? DateTime.UtcNow).ToUniversalTime();
+        }
+
+        public void Void(DateTime? voidedOnUtc = null)
+        {
+            if (Voided || Paid)
+                return;
+
+            Voided = true;
+            VoidedOnUtc = (voidedOnUtc ?? DateTime.UtcNow).ToUniversalTime();
         }
     }
 }
