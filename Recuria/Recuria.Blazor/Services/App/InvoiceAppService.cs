@@ -13,6 +13,9 @@ namespace Recuria.Blazor.Services.App
             string? sortBy,
             string? sortDir,
             bool notifyError = true);
+
+        Task<AppResult> MarkAsPaidAsync(Guid invoiceId);
+        Task<AppResult> VoidAsync(Guid invoiceId);
     }
 
     public sealed class InvoiceAppService : IInvoiceAppService
@@ -48,6 +51,22 @@ namespace Recuria.Blazor.Services.App
                 successMessage: "Invoice created.",
                 errorPrefix: "Unable to create invoice",
                 notifySuccess: notifySuccess,
+                notifyError: true);
+
+        public Task<AppResult> MarkAsPaidAsync(Guid invoiceId) =>
+            _runner.RunAsync(
+                () => _api.PayAsync(invoiceId),
+                successMessage: "Invoice marked as paid.",
+                errorPrefix: "Unable to mark invoice as paid",
+                notifySuccess: true,
+                notifyError: true);
+
+        public Task<AppResult> VoidAsync(Guid invoiceId) =>
+            _runner.RunAsync(
+                () => _api.VoidAsync(invoiceId),
+                successMessage: "Invoice voided.",
+                errorPrefix: "Unable to void invoice",
+                notifySuccess: true,
                 notifyError: true);
     }
 }
