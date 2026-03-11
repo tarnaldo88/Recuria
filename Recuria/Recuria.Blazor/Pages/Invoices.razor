@@ -163,6 +163,44 @@
                     </MudStack>
                 </MudItem>
             </MudGrid>
+            
+            @if (_selectedInvoiceIds.Count > 0)
+            {
+                <MudDivider Class="my-3" />
+                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.body2">@_selectedInvoiceIds.Count selected</MudText>
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Success" 
+                               Size="Size.Small"
+                               OnClick="MarkSelectedAsPaid" 
+                               Disabled="_busy">
+                        <MudIcon Icon="@Icons.Material.Filled.Check" />
+                        Mark as Paid
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Warning" 
+                               Size="Size.Small"
+                               OnClick="VoidSelectedInvoices" 
+                               Disabled="_busy">
+                        <MudIcon Icon="@Icons.Material.Filled.Cancel" />
+                        Void Selected
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" 
+                               Color="Color.Secondary" 
+                               Size="Size.Small"
+                               OnClick="ExportSelectedToCsv" 
+                               Disabled="_busy">
+                        <MudIcon Icon="@Icons.Material.Filled.Download" />
+                        Export Selected
+                    </MudButton>
+                    <MudButton Variant="Variant.Text" 
+                               Color="Color.Default" 
+                               Size="Size.Small"
+                               OnClick="ClearSelection">
+                        Clear Selection
+                    </MudButton>
+                </MudStack>
+            }
         </MudCardContent>
     </MudCard>
 
@@ -202,6 +240,11 @@
                     </ToolBarContent>
 
                     <HeaderContent>
+                        <MudTh>
+                            <MudCheckBox T="bool" 
+                                        @bind-Checked="_selectAllMode" 
+                                        CheckedChanged="ToggleSelectAll" />
+                        </MudTh>
                         <MudTh><MudTableSortLabel T="Recuria.Client.InvoiceListItemDto" SortLabel="issuedOnUtc">Issued</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel T="Recuria.Client.InvoiceListItemDto" SortLabel="total">Total</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel T="Recuria.Client.InvoiceListItemDto" SortLabel="status">Status</MudTableSortLabel></MudTh>
@@ -210,6 +253,11 @@
                     </HeaderContent>
 
                     <RowTemplate>
+                        <MudTd>
+                            <MudCheckBox T="bool" 
+                                        @bind-Checked="@_selectedInvoiceIds.Contains(context.Id)" 
+                                        CheckedChanged="@(bool checked => ToggleInvoiceSelection(context.Id, checked))" />
+                        </MudTd>
                         <MudTd>@context.IssuedOnUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudTd>
                         <MudTd>@FormatMoney(context.Total?.Amount, context.Total?.Currency)</MudTd>
                         <MudTd>
@@ -251,6 +299,8 @@
 
     private List<Recuria.Client.InvoiceListItemDto> _allInvoices = new();
     private List<Recuria.Client.InvoiceListItemDto> _filteredInvoices = new();
+    private HashSet<Guid> _selectedInvoiceIds = new();
+    private bool _selectAllMode = false;
     private InvoiceFilters _filters = new();
 
     protected override async Task OnInitializedAsync()
@@ -421,6 +471,181 @@
     {
         _filters = new InvoiceFilters();
         ApplyFilters();
+    }
+
+    private void ToggleSelectAll(bool checked)
+    {
+        if (checked)
+        {
+            _selectedInvoiceIds.Clear();
+            foreach (var invoice in _filteredInvoices)
+                _selectedInvoiceIds.Add(invoice.Id);
+        }
+        else
+        {
+            _selectedInvoiceIds.Clear();
+        }
+    }
+
+    private void ToggleInvoiceSelection(Guid invoiceId, bool checked)
+    {
+        if (checked)
+            _selectedInvoiceIds.Add(invoiceId);
+        else
+            _selectedInvoiceIds.Remove(invoiceId);
+    }
+
+    private void ClearSelection()
+    {
+        _selectedInvoiceIds.Clear();
+        _selectAllMode = false;
+        StateHasChanged();
+    }
+
+    private async Task MarkSelectedAsPaid()
+    {
+        if (_selectedInvoiceIds.Count == 0) return;
+
+        var confirmed = await DialogService.ShowMessageBox(
+            "Mark as Paid",
+            $"Mark {_selectedInvoiceIds.Count} invoice(s) as paid?",
+            yesText: "Mark Paid",
+            cancelText: "Cancel");
+
+        if (confirmed != true) return;
+
+        _busy = true;
+        try
+        {
+            var successCount = 0;
+            var errors = new List<string>();
+
+            foreach (var invoiceId in _selectedInvoiceIds)
+            {
+                try
+                {
+                    var result = await InvoicesApi.MarkAsPaidAsync(invoiceId);
+                    if (result.Success)
+                        successCount++;
+                    else
+                        errors.Add($"Invoice {invoiceId.ToString()[..8]}: {result.Error}");
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Invoice {invoiceId.ToString()[..8]}: {ex.Message}");
+                }
+            }
+
+            if (errors.Count > 0)
+            {
+                await DialogService.ShowMessageBox(
+                    "Partial Success",
+                    $"{successCount} invoice(s) marked as paid. {errors.Count} failed:\n{string.Join("\n", errors)}");
+            }
+            else
+            {
+                await DialogService.ShowMessageBox(
+                    "Success",
+                    $"{successCount} invoice(s) marked as paid.");
+            }
+
+            ClearSelection();
+            await LoadInvoices();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task VoidSelectedInvoices()
+    {
+        if (_selectedInvoiceIds.Count == 0) return;
+
+        var confirmed = await DialogService.ShowMessageBox(
+            "Void Invoices",
+            $"Void {_selectedInvoiceIds.Count} invoice(s)? This action cannot be undone.",
+            yesText: "Void",
+            cancelText: "Cancel");
+
+        if (confirmed != true) return;
+
+        _busy = true;
+        try
+        {
+            var successCount = 0;
+            var errors = new List<string>();
+
+            foreach (var invoiceId in _selectedInvoiceIds)
+            {
+                try
+                {
+                    var result = await InvoicesApi.VoidAsync(invoiceId);
+                    if (result.Success)
+                        successCount++;
+                    else
+                        errors.Add($"Invoice {invoiceId.ToString()[..8]}: {result.Error}");
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Invoice {invoiceId.ToString()[..8]}: {ex.Message}");
+                }
+            }
+
+            if (errors.Count > 0)
+            {
+                await DialogService.ShowMessageBox(
+                    "Partial Success",
+                    $"{successCount} invoice(s) voided. {errors.Count} failed:\n{string.Join("\n", errors)}");
+            }
+            else
+            {
+                await DialogService.ShowMessageBox(
+                    "Success",
+                    $"{successCount} invoice(s) voided.");
+            }
+
+            ClearSelection();
+            await LoadInvoices();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ExportSelectedToCsv()
+    {
+        var selectedInvoices = _filteredInvoices
+            .Where(i => _selectedInvoiceIds.Contains(i.Id))
+            .ToList();
+
+        if (selectedInvoices.Count == 0) return;
+
+        _busy = true;
+        try
+        {
+            var csv = new StringBuilder();
+            csv.AppendLine("Invoice Number,Issued Date,Total,Status,Description");
+
+            foreach (var invoice in selectedInvoices)
+            {
+                csv.AppendLine($"\"{invoice.Id.ToString()[..8]}\"," +
+                           $"\"{invoice.IssuedOnUtc:yyyy-MM-dd HH:mm:ss}\"," +
+                           $"\"{invoice.Total.Amount:F2}\"," +
+                           $"\"{invoice.Status}\"," +
+                           $"\"{GetDescription(invoice)}\"");
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(csv.ToString());
+            var fileName = $"selected_invoices_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+            
+            await JS.InvokeVoidAsync("downloadFile", fileName, "text/csv", bytes);
+        }
+        finally
+        {
+            _busy = false;
+        }
     }
 
     private async Task ExportToCsv()
