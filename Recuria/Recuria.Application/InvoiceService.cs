@@ -85,5 +85,20 @@ namespace Recuria.Application
 
             await _invoices.SaveChangesAsync(ct);
         }
+
+        public async Task VoidAsync(
+            Guid invoiceId,
+            CancellationToken ct)
+        {
+            var invoice = await _invoices.GetByIdAsync(invoiceId, ct);
+            await _validator.ValidateAsync(invoice);
+
+            if (invoice == null)
+                throw new InvalidOperationException("Invoice not found");
+
+            invoice.Void();
+
+            await _invoices.SaveChangesAsync(ct);
+        }
     }
 }
