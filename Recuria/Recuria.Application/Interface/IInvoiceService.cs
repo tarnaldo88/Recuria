@@ -14,6 +14,8 @@ namespace Recuria.Application.Interface
 
         Task MarkPaidAsync(Guid invoiceId, CancellationToken ct);
 
+        Task VoidAsync(Guid invoiceId, CancellationToken ct);
+
         Task<Invoice> GenerateFirstInvoice(Subscription subscription, CancellationToken ct = default);
     }
 }
