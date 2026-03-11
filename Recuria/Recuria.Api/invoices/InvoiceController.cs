@@ -172,6 +172,34 @@ namespace Recuria.Api.Invoices
         }
 
         /// <summary>
+        /// Void an invoice.
+        /// </summary>
+        [HttpPost("{invoiceId:guid}/void")]
+        [Authorize(Policy = AuthorizationPolicies.InvoicesWrite)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> VoidInvoice(Guid invoiceId, CancellationToken ct)
+        {
+            var orgId = await GetOrganizationIdForInvoiceAsync(invoiceId, ct);
+            if (orgId == null)
+                return NotFound();
+
+            if (!IsSameOrganization(orgId.Value))
+                return Forbid();
+
+            await _invoiceService.VoidAsync(invoiceId, ct);
+
+            _audit.Log(HttpContext, "invoice.void", new
+            {
+                invoiceId,
+                organizationId = orgId.Value
+            });
+
+            return NoContent();
+        }
+
+        /// <summary>
         /// List invoices for an organization.
         /// </summary>
         [HttpGet("organization/{organizationId:guid}")]
