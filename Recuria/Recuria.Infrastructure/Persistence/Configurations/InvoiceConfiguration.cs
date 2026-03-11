@@ -22,6 +22,11 @@ namespace Recuria.Infrastructure.Persistence.Configurations
 
             builder.Property(i => i.PaidOnUtc);
 
+            builder.Property(i => i.Voided)
+                .IsRequired();
+
+            builder.Property(i => i.VoidedOnUtc);
+
             builder.Property(i => i.Description)
                 .HasMaxLength(500);
 
