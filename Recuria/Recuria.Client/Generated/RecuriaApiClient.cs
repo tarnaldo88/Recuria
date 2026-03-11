@@ -3859,14 +3859,8 @@ namespace Recuria.Client
 #pragma warning restore 8603
 #pragma warning restore 8604
 #pragma warning restore 8625
-#pragma warning restore 8765/// <summary>
-        /// Void an invoice.
-        /// </summary>
-        /// <returns>No Content</returns>
-        /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task VoidAsync(System.Guid invoiceId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
-        {
-            if (invoiceId == null)
+#pragma warning restore 8765
+}
                 throw new System.ArgumentNullException("invoiceId");
 
             var client_ = _httpClient;
