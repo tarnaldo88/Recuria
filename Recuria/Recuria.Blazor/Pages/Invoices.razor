@@ -256,7 +256,7 @@
                         <MudTd>
                             <MudCheckBox T="bool" 
                                         @bind-Checked="@_selectedInvoiceIds.Contains(context.Id)" 
-                                        CheckedChanged="@(bool checked => ToggleInvoiceSelection(context.Id, checked))" />
+                                        CheckedChanged="@(bool isChecked => ToggleInvoiceSelection(context.Id, isChecked))" />
                         </MudTd>
                         <MudTd>@context.IssuedOnUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudTd>
                         <MudTd>@FormatMoney(context.Total?.Amount, context.Total?.Currency)</MudTd>
