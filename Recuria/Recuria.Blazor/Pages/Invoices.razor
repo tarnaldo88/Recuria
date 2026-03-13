@@ -242,8 +242,7 @@
                     <HeaderContent>
                         <MudTh>
                             <MudCheckBox T="bool" 
-                                        @bind-Check="_selectAllMode" 
-                                        CheckedChanged="ToggleSelectAll" />
+                                        @bind-Checked="_selectAllMode" />
                         </MudTh>
                         <MudTh><MudTableSortLabel T="Recuria.Client.InvoiceListItemDto" SortLabel="issuedOnUtc">Issued</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel T="Recuria.Client.InvoiceListItemDto" SortLabel="total">Total</MudTableSortLabel></MudTh>
@@ -255,8 +254,8 @@
                     <RowTemplate>
                         <MudTd>
                             <MudCheckBox T="bool" 
-                                        @bind-Checked="@_selectedInvoiceIds.Contains(context.Id)" 
-                                        CheckedChanged="@(var isChecked => ToggleInvoiceSelection(context.Id, isChecked))" />
+                                        Checked="@_selectedInvoiceIds.Contains(context.Id)" 
+                                        CheckedChanged="@((bool isChecked) => ToggleInvoiceSelection(context.Id, isChecked))" />
                         </MudTd>
                         <MudTd>@context.IssuedOnUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudTd>
                         <MudTd>@FormatMoney(context.Total?.Amount, context.Total?.Currency)</MudTd>
