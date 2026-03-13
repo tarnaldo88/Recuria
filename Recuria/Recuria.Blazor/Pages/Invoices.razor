@@ -254,7 +254,7 @@
                     <RowTemplate>
                         <MudTd>
                             <MudCheckBox T="bool" 
-                                        Checked="@_selectedInvoiceIds.Contains(context.Id)" 
+                                        Checked="_selectedInvoiceIds.Contains(context.Id)" 
                                         CheckedChanged="@((bool isChecked) => ToggleInvoiceSelection(context.Id, isChecked))" />
                         </MudTd>
                         <MudTd>@context.IssuedOnUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudTd>
