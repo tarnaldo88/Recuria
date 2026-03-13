@@ -242,7 +242,7 @@
                     <HeaderContent>
                         <MudTh>
                             <MudCheckBox T="bool" 
-                                        @bind-Checked="_selectAllMode" 
+                                        @bind-Check="_selectAllMode" 
                                         CheckedChanged="ToggleSelectAll" />
                         </MudTh>
                         <MudTh><MudTableSortLabel T="Recuria.Client.InvoiceListItemDto" SortLabel="issuedOnUtc">Issued</MudTableSortLabel></MudTh>
@@ -255,8 +255,8 @@
                     <RowTemplate>
                         <MudTd>
                             <MudCheckBox T="bool" 
-                                        @bind-Checked="@_selectedInvoiceIds.Contains(context.Id)" 
-                                        CheckedChanged="@(bool isChecked => ToggleInvoiceSelection(context.Id, isChecked))" />
+                                        @bind-Check="@_selectedInvoiceIds.Contains(context.Id)" 
+                                        CheckedChanged="@(var isChecked => ToggleInvoiceSelection(context.Id, isChecked))" />
                         </MudTd>
                         <MudTd>@context.IssuedOnUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudTd>
                         <MudTd>@FormatMoney(context.Total?.Amount, context.Total?.Currency)</MudTd>
@@ -473,9 +473,9 @@
         ApplyFilters();
     }
 
-    private void ToggleSelectAll(bool checked)
+    private void ToggleSelectAll(bool check)
     {
-        if (checked)
+        if (check)
         {
             _selectedInvoiceIds.Clear();
             foreach (var invoice in _filteredInvoices)
@@ -487,9 +487,9 @@
         }
     }
 
-    private void ToggleInvoiceSelection(Guid invoiceId, bool checked)
+    private void ToggleInvoiceSelection(Guid invoiceId, bool check)
     {
-        if (checked)
+        if (check)
             _selectedInvoiceIds.Add(invoiceId);
         else
             _selectedInvoiceIds.Remove(invoiceId);
