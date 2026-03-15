@@ -125,7 +125,7 @@ namespace Recuria.Tests.IntegrationTests.Subscriptions
 
             act.Should()
                 .Throw<InvalidOperationException>()
-                .WithMessage("Only trial or past-due subscriptions can be activated.");
+                .WithMessage("Only trial, past-due, or canceled subscriptions can be activated.");
 
             // Persist unchanged state (should remain unchanged).
             _subscriptions.Update(subscription);
