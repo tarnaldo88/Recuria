@@ -234,6 +234,16 @@ else
         _webhookError = null;
         try
         {
+            if (OpsApi is null)
+            {
+                _webhookError = "Unable to load webhook inbox.";
+                return new TableData<Recuria.Blazor.Services.App.StripeWebhookInboxItemVm>
+                {
+                    Items = Array.Empty<Recuria.Blazor.Services.App.StripeWebhookInboxItemVm>(),
+                    TotalItems = 0
+                };
+            }
+
             var page = state.Page + 1;
             var pageSize = state.PageSize;
             var pageResult = await OpsApi.GetStripeWebhookInboxPageAsync(
