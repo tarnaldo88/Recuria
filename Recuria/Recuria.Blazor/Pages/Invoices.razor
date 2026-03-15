@@ -124,7 +124,7 @@
                         <MudSelectItem T="string" Value="@("open")">Open</MudSelectItem>
                         <MudSelectItem T="string" Value="@("pending")">Pending</MudSelectItem>
                         <MudSelectItem T="string" Value="@("failed")">Failed</MudSelectItem>
-                        <MudSelectItem T="string" Value="@("voids")">Void</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("void")">Void</MudSelectItem>
                     </MudSelect>
                 </MudItem>
             </MudGrid>
@@ -232,7 +232,7 @@
 
                     <ToolBarContent>
                         <MudTextField @bind-Value="_tableSearch"
-                                      Placeholder="Quick search by status"
+                                      Placeholder="Search by status"
                                       Immediate="true"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Search"
@@ -242,7 +242,8 @@
                     <HeaderContent>
                         <MudTh>
                             <MudCheckBox T="bool" 
-                                        @bind-Checked="_selectAllMode" />
+                                         @bind-Checked="_selectAllMode"
+                                         CheckedChanged="ToggleSelectAll" />
                         </MudTh>
                         <MudTh><MudTableSortLabel T="Recuria.Client.InvoiceListItemDto" SortLabel="issuedOnUtc">Issued</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel T="Recuria.Client.InvoiceListItemDto" SortLabel="total">Total</MudTableSortLabel></MudTh>
@@ -254,8 +255,8 @@
                     <RowTemplate>
                         <MudTd>
                             <MudCheckBox T="bool" 
-                                        Checked="_selectedInvoiceIds.Contains(context.Id)" 
-                                        CheckedChanged="@((bool isChecked) => ToggleInvoiceSelection(context.Id, isChecked))" />
+                                         Checked="_selectedInvoiceIds.Contains(context.Id)" 
+                                         CheckedChanged="@((bool isChecked) => ToggleInvoiceSelection(context.Id, isChecked))" />
                         </MudTd>
                         <MudTd>@context.IssuedOnUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</MudTd>
                         <MudTd>@FormatMoney(context.Total?.Amount, context.Total?.Currency)</MudTd>
